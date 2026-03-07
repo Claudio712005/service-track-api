@@ -1,16 +1,32 @@
-# Compiled class file
-*.class
+### JetBrains (IntelliJ IDEA) ###
+.idea/
+*.iml
+*.iws
+out/
+/out/
 
-# Log file
+### Gradle ###
+.gradle/
+build/
+/build/
+gradle-app.setting
+!gradle-wrapper.jar
+
+### Kotlin ###
+.kotlin/
+kotlin-js-store/
+
+### Spring Boot ###
+# Logs de aplicação
+logs/
 *.log
 
-# BlueJ files
-*.ctxt
+# Arquivos de configuração sensíveis (Opcional - caso não queira subir senhas)
+# application-local.properties
+# .env
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
+### Java / JVM ###
+*.class
 *.jar
 *.war
 *.nar
@@ -18,7 +34,13 @@
 *.zip
 *.tar.gz
 *.rar
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+### OS (Sistema Operacional) ###
+.DS_Store
+Thumbs.db
+
+### Mobile / Temp ###
+.mtj.tmp/
+*.ctxt
