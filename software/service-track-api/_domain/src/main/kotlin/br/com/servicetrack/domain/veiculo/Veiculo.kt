@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 
 class Veiculo private constructor(
     val id: VeiculoId,
-    var proprietarioId: UsuarioId,
+    private var proprietarioId: UsuarioId,
     private var placa: Placa,
     private var modelo: String,
     private var marca: String,
@@ -26,18 +26,7 @@ class Veiculo private constructor(
             marca: String,
             ano: Int
         ): Veiculo {
-
-            if (modelo.isBlank()) {
-                throw DomainException("Modelo não pode ser vazio")
-            }
-
-            if (marca.isBlank()) {
-                throw DomainException("Marca não pode ser vazia")
-            }
-
-            if (ano < 1900) {
-                throw DomainException("Ano inválido")
-            }
+            validarDados(modelo, marca, ano)
 
             val agora = LocalDateTime.now()
 
@@ -52,39 +41,27 @@ class Veiculo private constructor(
                 dataAtualizacao = agora
             )
         }
+
+        private fun validarDados(modelo: String, marca: String, ano: Int) {
+            if (modelo.isBlank()) throw DomainException("Modelo não pode ser vazio")
+            if (marca.isBlank()) throw DomainException("Marca não pode ser vazia")
+            if (ano < 1900) throw DomainException("Ano inválido")
+        }
     }
 
     fun alterarPlaca(novaPlaca: Placa) {
         if (this.placa == novaPlaca) {
             throw DomainException("A nova placa deve ser diferente da atual")
         }
-
         this.placa = novaPlaca
         atualizarData()
     }
 
-    fun alterarDados(
-        modelo: String,
-        marca: String,
-        ano: Int
-    ) {
-
-        if (modelo.isBlank()) {
-            throw DomainException("Modelo não pode ser vazio")
-        }
-
-        if (marca.isBlank()) {
-            throw DomainException("Marca não pode ser vazia")
-        }
-
-        if (ano < 1900) {
-            throw DomainException("Ano inválido")
-        }
-
+    fun alterarDados(modelo: String, marca: String, ano: Int) {
+        validarDados(modelo, marca, ano)
         this.modelo = modelo
         this.marca = marca
         this.ano = ano
-
         atualizarData()
     }
 
@@ -96,13 +73,8 @@ class Veiculo private constructor(
         if (this.proprietarioId == novoProprietarioId) {
             throw DomainException("O veículo já pertence a este usuário")
         }
-
         this.proprietarioId = novoProprietarioId
         atualizarData()
-    }
-
-    private fun atualizarData() {
-        this.dataAtualizacao = LocalDateTime.now()
     }
 
     fun obterDados(): DadosVeiculo {
@@ -114,5 +86,9 @@ class Veiculo private constructor(
             marca = marca,
             ano = ano
         )
+    }
+
+    private fun atualizarData() {
+        this.dataAtualizacao = LocalDateTime.now()
     }
 }

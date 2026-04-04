@@ -7,7 +7,7 @@ enum class StatusOrdemServicoEnum(
     CANCELADA(0, "Cancelada"),
     RECEBIDA(1, "Recebida"),
     EM_DIAGNOSTICO(2, "Em Diagnóstico"),
-    AGUARDANDO_APROVACAO(3, "Em Aprovação"),
+    AGUARDANDO_APROVACAO(3, "Aguardando Aprovação"),
     EM_EXECUCAO(4, "Em Execução"),
     FINALIZADA(5, "Finalizada"),
     ENTREGUE(6, "Entregue");

@@ -9,8 +9,8 @@ value class StatusOrdemServico private constructor(
 
     companion object {
         fun de(ordem: Int): StatusOrdemServico {
-            val status = StatusOrdemServicoEnum.values().getOrNull(ordem)
-                ?: throw IllegalArgumentException("Status inválido")
+            val status = StatusOrdemServicoEnum.values().find { it.ordem == ordem }
+                ?: throw IllegalArgumentException("Status com ordem $ordem não encontrado")
 
             return StatusOrdemServico(status)
         }

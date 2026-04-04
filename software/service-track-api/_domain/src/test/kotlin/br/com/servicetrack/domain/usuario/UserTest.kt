@@ -69,7 +69,7 @@ class UsuarioTest {
 
         usuario.desativar()
 
-        assertFalse(usuario.ehCliente() && usuario.ehMecanico()) // sanity check
+        assertFalse(usuario.ehCliente() && usuario.ehMecanico())
     }
 
     @Test

@@ -1,0 +1,59 @@
+package br.com.servicetrack.domain.orcamento
+
+import br.com.servicetrack.domain.orcamento.vo.OrcamentoId
+import br.com.servicetrack.domain.shared.exception.DomainException
+import br.com.servicetrack.domain.shared.vo.ValorMonetario
+import java.time.LocalDateTime
+
+class Orcamento private constructor(
+    val id: OrcamentoId,
+    val dataCriacao: LocalDateTime,
+    private var dataAtualizacao: LocalDateTime,
+    val custoMaoDeObra: ValorMonetario,
+    val custoInsumos: ValorMonetario,
+    private var aprovado: Boolean,
+    private var observacao: String
+) {
+
+    companion object {
+
+        fun gerar(
+            custoMaoDeObra: ValorMonetario,
+            custoInsumos: ValorMonetario
+        ): Orcamento {
+            val agora = LocalDateTime.now()
+            return Orcamento(
+                id = OrcamentoId.gerar(),
+                dataCriacao = agora,
+                dataAtualizacao = agora,
+                custoMaoDeObra = custoMaoDeObra,
+                custoInsumos = custoInsumos,
+                aprovado = false,
+                observacao = ""
+            )
+        }
+    }
+
+    val valorTotal: ValorMonetario
+        get() = custoMaoDeObra.somar(custoInsumos)
+
+    fun estaAprovado(): Boolean = aprovado
+
+    fun obterObservacao(): String = observacao
+
+    fun aprovar() {
+        check(!aprovado) { "Orçamento já foi aprovado" }
+        aprovado = true
+        dataAtualizacao = LocalDateTime.now()
+        observacao += "\nOrçamento aprovado em $dataAtualizacao;"
+    }
+
+    fun reprovar(motivo: String) {
+        if (motivo.isBlank()) {
+            throw DomainException("Motivo para reprovação do orçamento deve ser informado")
+        }
+        check(!aprovado) { "Orçamento já aprovado não pode ser reprovado" }
+        dataAtualizacao = LocalDateTime.now()
+        observacao += "\nMotivo da reprovação: $motivo;"
+    }
+}

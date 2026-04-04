@@ -4,17 +4,31 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9bbff119-e592-4c86-aca0-93bdef91375f" name="Changes" comment="Commit inicial, app kotlin com Spring">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HELP.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/gradlew" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradlew.bat" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/gradlew.bat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/settings.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/br/com/claus/servicetrackapi/ServiceTrackApiApplication.kt" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/_infrastructure/src/main/kotlin/br/com/servicetrack/infrastructure/ServiceTrackApiApplication.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/br/com/claus/servicetrackapi/ServiceTrackApiApplicationTests.kt" beforeDir="false" />
+    <list default="true" id="9bbff119-e592-4c86-aca0-93bdef91375f" name="Changes" comment="Adicionando case na doc">
+      <change afterPath="$PROJECT_DIR$/.idea/kotlinc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/ServiceTrack-Api.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/ServiceTrack-Api.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/ServiceTrack-Api.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/mvp-1/ddd/event-storming.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/service-track-api/_domain/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/_domain/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/contrato/Contrato.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/contrato/vo/ContratoId.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/insumo/Insumo.kt" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/insumo/Insumo.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/insumo/vo/InsumoId.kt" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/insumo/vo/InsumoId.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/mecanico/Mecanico.kt" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/mecanico/Mecanico.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/ordemServico/OrdemServico.kt" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/ordemServico/OrdemServico.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/ordemServico/StatusOrdemServicoEnum.kt" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/ordemServico/StatusOrdemServicoEnum.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/ordemServico/vo/StatusOrdemServico.kt" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/ordemServico/vo/StatusOrdemServico.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/ordemServico/vo/TempoExecucao.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/usuario/Usuario.kt" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/usuario/Usuario.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/usuario/vo/Telefone.kt" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/usuario/vo/Telefone.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/veiculo/Veiculo.kt" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/_domain/src/main/kotlin/br/com/servicetrack/domain/veiculo/Veiculo.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/service-track-api/_domain/src/test/kotlin/br/com/servicetrack/domain/usuario/vo/CpfTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/_domain/src/test/kotlin/br/com/servicetrack/domain/usuario/vo/CpfTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/service-track-api/_domain/src/test/kotlin/br/com/servicetrack/domain/usuario/vo/EmailTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/_domain/src/test/kotlin/br/com/servicetrack/domain/usuario/vo/EmailTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/service-track-api/_domain/src/test/kotlin/br/com/servicetrack/domain/veiculo/vo/PlacaTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/software/service-track-api/_domain/src/test/kotlin/br/com/servicetrack/domain/veiculo/vo/PlacaTest.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,10 +38,14 @@
   <component name="CopilotPersistence">
     <persistenceIdMap>
       <entry key="_/Users/clauaraujo11/codes/back-end(s)/ServiceTrack-API" value="3AcK3EAyOfhuDUr0Y0cdg0AOmI8" />
+      <entry key="_/Users/clauaraujo11/codes/back-end(s)/ServiceTrack-API/software/service-track-api" value="3BuahB2O3pOqs9fUor45nafklds" />
     </persistenceIdMap>
   </component>
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+    <projectState path="$PROJECT_DIR$/software/service-track-api">
       <ProjectState />
     </projectState>
   </component>
@@ -70,7 +88,7 @@
     &quot;accountId&quot;: &quot;460426ea-3ad8-476e-8064-d33911bf6e75&quot;
   }
 }</component>
-  <component name="GradleScriptDefinitionsStorage" workingDir="$PROJECT_DIR$" gradleHome="$USER_HOME$/.gradle/wrapper/dists/gradle-9.3.1-bin/23ovyewtku6u96viwx3xl3oks/gradle-9.3.1" javaHome="/opt/homebrew/Cellar/openjdk@21/21.0.10/libexec/openjdk.jdk/Contents/Home" gradleVersion="9.3.1" />
+  <component name="GradleScriptDefinitionsStorage" workingDir="$PROJECT_DIR$/software/service-track-api" gradleHome="$USER_HOME$/.gradle/wrapper/dists/gradle-8.7-bin/bhs2wmbdwecv87pi65oeuq5iu/gradle-8.7" javaHome="/opt/homebrew/Cellar/openjdk@21/21.0.10/libexec/openjdk.jdk/Contents/Home" gradleVersion="8.7" />
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0
 }</component>
@@ -79,29 +97,59 @@
     <option name="flattenModules" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Gradle.Build ServiceTrack-API.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;Spring Boot.ServiceTrackApiApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/clauaraujo11/codes/back-end(s)/ServiceTrack-API/software/service-track-api/infraestructure&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
+    "Gradle.Build ServiceTrack-API.executor": "Run",
+    "Gradle.Tests in 'service-track-api._domain.test'.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Spring Boot.ServiceTrackApiApplication.executor": "Run",
+    "git-widget-placeholder": "fase-1",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/clauaraujo11/codes/back-end(s)/ServiceTrack-API"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/software/service-track-api/infraestructure" />
       <recent name="$PROJECT_DIR$/software/service-track-api/domain" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/docs/mvp-1/ddd" />
       <recent name="$PROJECT_DIR$/software/service-track-api/application/src/main/kotlin" />
       <recent name="$PROJECT_DIR$/software/service-track-api/infraestructure" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Gradle.Tests in 'service-track-api._domain.test'">
+    <configuration name="Tests in 'service-track-api._domain.test'" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/software/service-track-api" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":_domain:test" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <GradleProfilingDisabled>false</GradleProfilingDisabled>
+      <GradleCoverageDisabled>false</GradleCoverageDisabled>
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="JetRunConfigurationType">
       <module name="ServiceTrack-API" />
       <method v="2">
@@ -129,6 +177,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.Tests in 'service-track-api._domain.test'" />
         <item itemvalue="Spring Boot.ServiceTrackApiApplication" />
       </list>
     </recent_temporary>
@@ -136,7 +185,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.240" />
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.32098.37" />
       </set>
     </attachedChunks>
   </component>
@@ -156,12 +205,21 @@
       <option name="project" value="LOCAL" />
       <updated>1772886383263</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Adicionando case na doc">
+      <option name="closed" value="true" />
+      <created>1775341726164</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1775341726164</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Commit inicial, app kotlin com Spring" />
-    <option name="LAST_COMMIT_MESSAGE" value="Commit inicial, app kotlin com Spring" />
+    <MESSAGE value="Adicionando case na doc" />
+    <option name="LAST_COMMIT_MESSAGE" value="Adicionando case na doc" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

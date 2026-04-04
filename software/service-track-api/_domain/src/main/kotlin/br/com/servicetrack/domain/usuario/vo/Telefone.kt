@@ -5,8 +5,16 @@ import br.com.servicetrack.domain.shared.exception.DomainException
 @JvmInline
 value class Telefone(val valor: String) {
     init {
-        if(valor.length < 8) {
-            throw DomainException("Telefone não pode ser vazio e deve conter ao menos 8 dígitos")
+        if (valor.isBlank()) {
+            throw DomainException("Telefone não pode ser vazio")
+        }
+
+        if (!valor.all { it.isDigit() }) {
+            throw DomainException("Telefone deve conter apenas números")
+        }
+
+        if (valor.length < 10 || valor.length > 11) {
+            throw DomainException("Telefone deve conter entre 10 e 11 dígitos")
         }
     }
 }

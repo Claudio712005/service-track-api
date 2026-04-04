@@ -25,16 +25,17 @@ class Usuario private constructor(
 
     companion object {
 
-        fun criarCliente(
+        fun criar(
             nome: String,
             email: Email,
             senha: Senha,
             dataNascimento: LocalDate,
             telefone: Telefone,
             cpf: Cpf,
+            roles: Set<Role>
         ): Usuario {
-
             require(nome.isNotBlank()) { "Nome não pode ser vazio" }
+            require(roles.isNotEmpty()) { "Usuário deve possuir pelo menos um perfil" }
 
             val agora = LocalDateTime.now()
 
@@ -49,9 +50,26 @@ class Usuario private constructor(
                 telefone = telefone,
                 cpf = cpf,
                 ativo = true,
-                roles = mutableSetOf(Role.CLIENTE)
+                roles = roles.toMutableSet()
             )
         }
+
+        fun criarCliente(
+            nome: String,
+            email: Email,
+            senha: Senha,
+            dataNascimento: LocalDate,
+            telefone: Telefone,
+            cpf: Cpf,
+        ): Usuario = criar(
+            nome = nome,
+            email = email,
+            senha = senha,
+            dataNascimento = dataNascimento,
+            telefone = telefone,
+            cpf = cpf,
+            roles = setOf(Role.CLIENTE)
+        )
     }
 
     fun desativar() {
