@@ -1,24 +1,16 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("com.fasterxml.jackson.core:jackson-core:2.16.1")
-        classpath("com.fasterxml.jackson.core:jackson-databind:2.16.1")
-        classpath("com.fasterxml.jackson.core:jackson-annotations:2.16.1")
-    }
-}
-
 plugins {
-    kotlin("jvm") version "1.9.22" apply false
-    kotlin("plugin.spring") version "1.9.22" apply false
-    id("org.springframework.boot") version "3.2.4" apply false
-    id("io.spring.dependency-management") version "1.1.5" apply false
+    kotlin("jvm") version "2.0.21"
+    id("io.quarkus") version "3.15.1" apply false
     id("org.openapi.generator") version "7.4.0" apply false
 }
+
+val quarkusPlatformGroupId by extra("io.quarkus.platform")
+val quarkusPlatformArtifactId by extra("quarkus-bom")
+val quarkusPlatformVersion by extra("3.15.1")
 
 allprojects {
     repositories {
         mavenCentral()
+        mavenLocal()
     }
 }
