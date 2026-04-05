@@ -1,0 +1,38 @@
+post:
+  summary: Realiza o cadastro de um novo cliente. Não requer autenticação.
+  operationId: criarCliente
+  tags:
+    - Clientes
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/cliente/CadastrarClienteRequest.yaml'
+  responses:
+    '201':
+      description: Cliente cadastrado com sucesso
+      headers:
+        Location:
+          description: URI do recurso criado
+          schema:
+            type: string
+            example: "/clientes/550e8400-e29b-41d4-a716-446655440000"
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/cliente/ClienteResponse.yaml'
+    '400':
+      description: Dados de entrada inválidos (falha de validação ou política de senha)
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '409':
+      description: Email ou CPF já cadastrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '500':
+      description: Erro interno do servidor

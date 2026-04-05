@@ -1,0 +1,8 @@
+type: object
+properties:
+  mensagem:
+    type: string
+    example: "Email ou CPF já cadastrado"
+  detalhe:
+    type: string
+    example: "Usuário com email 'claudio@email.com' e CPF '54927170063' já cadastrado"

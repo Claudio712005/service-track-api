@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    kotlin("plugin.allopen")
     id("io.quarkus")
     id("org.openapi.generator")
 }
@@ -9,60 +10,67 @@ val qArtifactId = rootProject.extra["quarkusPlatformArtifactId"] as String
 val qVersion = rootProject.extra["quarkusPlatformVersion"] as String
 
 dependencies {
+    implementation(project(":_domain"))
     implementation(project(":_application"))
 
     implementation(enforcedPlatform("$qGroupId:$qArtifactId:$qVersion"))
 
     implementation("io.quarkus:quarkus-rest")
     implementation("io.quarkus:quarkus-rest-jackson")
-    implementation("io.quarkus:quarkus-rest-client-jackson")
-    implementation("io.quarkus:quarkus-hibernate-orm-panache")
+    implementation("io.quarkus:quarkus-hibernate-orm-panache-kotlin")
     implementation("io.quarkus:quarkus-jdbc-postgresql")
     implementation("io.quarkus:quarkus-arc")
-    implementation("io.quarkus:quarkus-micrometer")
     implementation("io.quarkus:quarkus-hibernate-validator")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("io.quarkus:quarkus-smallrye-openapi")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    implementation("org.mindrot:jbcrypt:0.4")
+    implementation("io.quarkus:quarkus-jdbc-h2")
     testImplementation("io.quarkus:quarkus-junit5")
     testImplementation("io.rest-assured:rest-assured")
 }
 
+allOpen {
+    annotation("jakarta.ws.rs.Path")
+    annotation("jakarta.enterprise.context.ApplicationScoped")
+    annotation("jakarta.persistence.Entity")
+    annotation("jakarta.persistence.MappedSuperclass")
+    annotation("jakarta.persistence.Embeddable")
+}
+
 openApiGenerate {
-    generatorName.set("kotlin")
-
     inputSpec.set(rootProject.file("openapi.yaml").absolutePath)
-
     outputDir.set(layout.buildDirectory.dir("generated/openapi").get().asFile.absolutePath)
-
     apiPackage.set("br.com.servicetrack.infrastructure.api")
     modelPackage.set("br.com.servicetrack.infrastructure.api.dto")
-
+    generatorName.set("jaxrs-spec")
     configOptions.set(
         mapOf(
-            "serializationLibrary" to "jackson",
             "interfaceOnly" to "true",
             "useJakartaEe" to "true",
-            "skipDefaultInterface" to "true"
+            "dateLibrary" to "java8",
+            "returnResponse" to "true",
+            "useSwaggerAnnotations" to "false"
         )
     )
 }
 
 sourceSets {
     main {
-        kotlin {
-            srcDir(layout.buildDirectory.dir("generated/openapi/src/main/kotlin"))
+        java {
+            srcDir(layout.buildDirectory.dir("generated/openapi/src/gen/java"))
         }
     }
 }
 
 tasks.named("compileKotlin") {
     dependsOn("openApiGenerate")
+    inputs.dir(layout.buildDirectory.dir("generated/openapi"))
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "21"
-        freeCompilerArgs = listOf("-java-parameters")
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+        freeCompilerArgs.add("-java-parameters")
     }
 }

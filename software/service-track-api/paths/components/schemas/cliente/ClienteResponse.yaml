@@ -1,0 +1,26 @@
+type: object
+properties:
+  id:
+    type: string
+    format: uuid
+    example: "550e8400-e29b-41d4-a716-446655440000"
+  nome:
+    type: string
+    example: "Cláudio da Silva Araújo"
+  email:
+    type: string
+    example: "claudio@email.com"
+  cpf:
+    type: string
+    example: "54927170063"
+  telefone:
+    type: string
+    example: "11987654321"
+  roles:
+    type: array
+    items:
+      type: string
+    example: ["CLIENTE"]
+  ativo:
+    type: boolean
+    example: true

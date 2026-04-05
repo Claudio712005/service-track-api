@@ -97,6 +97,8 @@ class Usuario private constructor(
 
     fun ehMecanico() = roles.contains(Role.MECANICO)
 
+    fun obterSenhaHash(): Senha = senha
+
     fun obterDados(): DadosUsuario {
         return DadosUsuario(
             id = id,

@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: Service Track API
+  title: ServiceTrack API
   version: 1.0.0
-  description: API para gerenciamento do Service Track
+  description: API para gerenciamento do sistema de atendimento da oficina mecânica
 
 paths:
-  /usuarios:
-    $ref: './paths/usuarios/usuarios.yaml'
+  /clientes:
+    $ref: './paths/clientes/clientes.yaml'
