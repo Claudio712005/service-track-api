@@ -1,0 +1,30 @@
+type: object
+required:
+  - nome
+  - email
+  - senha
+  - dataNascimento
+  - telefone
+  - cpf
+properties:
+  nome:
+    type: string
+    example: "Cláudio da Silva Araújo Filho"
+  email:
+    type: string
+    format: email
+    example: "clausilvaaraujo11@gmail.com"
+  senha:
+    type: string
+    format: password
+    example: "SenhaForte123!"
+  dataNascimento:
+    type: string
+    format: date
+    example: "2005-01-07"
+  telefone:
+    type: string
+    example: "11111111111"
+  cpf:
+    type: string
+    example: "12345678900"

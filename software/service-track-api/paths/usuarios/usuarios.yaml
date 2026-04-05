@@ -1,0 +1,26 @@
+post:
+  summary: Realizar o cadastro de um cliente, o end-point não precisa de autenticação.
+  operationId: criarUsuario
+  tags:
+    - Clientes
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/CriarUsuarioRequestDTO.yaml'
+  responses:
+    '201':
+      description: Usuário criado com sucesso
+      headers:
+        Location:
+          description: URL do recurso criado
+          schema:
+            type: string
+            example: "/usuarios/1"
+    '400':
+      description: Dados inválidos enviados pelo cliente
+    '409':
+      description: Conflito - Email ou CPF já cadastrado
+    '500':
+      description: Erro interno do servidor

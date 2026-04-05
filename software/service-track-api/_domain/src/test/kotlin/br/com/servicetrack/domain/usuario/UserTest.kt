@@ -13,7 +13,7 @@ class UsuarioTest {
         return Usuario.criar(
             nome = "Cláudio",
             email = Email("teste@email.com"),
-            senha = Senha("Forte@123"),
+            senha = Senha.criar("Forte@123"),
             dataNascimento = LocalDate.of(2000, 1, 1),
             telefone = Telefone("11999999999"),
             cpf = Cpf("12345678909"),
@@ -35,7 +35,7 @@ class UsuarioTest {
             Usuario.criar(
                 nome = "",
                 email = Email("teste@email.com"),
-                senha = Senha("Forte@123"),
+                senha = Senha.criar("Forte@123"),
                 dataNascimento = LocalDate.of(2000, 1, 1),
                 telefone = Telefone("11999999999"),
                 cpf = Cpf("12345678909"),
@@ -52,7 +52,7 @@ class UsuarioTest {
             Usuario.criar(
                 nome = "Cláudio",
                 email = Email("teste@email.com"),
-                senha = Senha("Forte@123"),
+                senha = Senha.criar("Forte@123"),
                 dataNascimento = LocalDate.of(2000, 1, 1),
                 telefone = Telefone("11999999999"),
                 cpf = Cpf("12345678909"),
@@ -108,7 +108,7 @@ class UsuarioTest {
     @Test
     fun `deve alterar senha`() {
         val usuario = buildUsuario()
-        val novaSenha = Senha("Nova@123")
+        val novaSenha = Senha.deHash("\$2a\$10\$xyzAbcDef1234567890ABCDE")
 
         usuario.alterarSenha(novaSenha)
 
@@ -138,5 +138,17 @@ class UsuarioTest {
         usuario.adicionarRole(Role.MECANICO)
 
         assertTrue(usuario.ehMecanico())
+    }
+
+    @Test
+    fun `deve expor dados do usuario via obterDados`() {
+        val usuario = buildUsuario()
+
+        val dados = usuario.obterDados()
+
+        assertEquals("Cláudio", dados.nome)
+        assertEquals("teste@email.com", dados.email.valor)
+        assertTrue(dados.roles.contains(Role.CLIENTE))
+        assertTrue(dados.ativo)
     }
 }

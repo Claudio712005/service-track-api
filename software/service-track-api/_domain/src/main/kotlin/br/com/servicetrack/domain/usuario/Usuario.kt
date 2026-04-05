@@ -97,6 +97,19 @@ class Usuario private constructor(
 
     fun ehMecanico() = roles.contains(Role.MECANICO)
 
+    fun obterDados(): DadosUsuario {
+        return DadosUsuario(
+            id = id,
+            nome = nome,
+            email = email,
+            cpf = cpf,
+            telefone = telefone,
+            dataNascimento = dataNascimento,
+            roles = roles.toSet(),
+            ativo = ativo
+        )
+    }
+
     private fun atualizarData() {
         dataAtualizacao = LocalDateTime.now()
     }
