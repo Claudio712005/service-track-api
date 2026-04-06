@@ -1,7 +1,7 @@
 package br.com.servicetrack.infrastructure.veiculo
 
 import br.com.servicetrack.application.veiculo.ports.`in`.CadastrarVeiculoUseCase
-import br.com.servicetrack.infrastructure.api.VeiculoApi
+import br.com.servicetrack.infrastructure.api.VeiculosApi
 import br.com.servicetrack.infrastructure.api.dto.CadastrarVeiculoRequest
 import jakarta.annotation.security.RolesAllowed
 import jakarta.enterprise.context.ApplicationScoped
@@ -16,7 +16,7 @@ import java.net.URI
 class VeiculoResourceImpl(
     private val cadastrarVeiculoUseCase: CadastrarVeiculoUseCase,
     private val jwt: JsonWebToken
-) : VeiculoApi {
+) : VeiculosApi {
 
     @Transactional
     @RolesAllowed("CLIENTE", "MECANICO")

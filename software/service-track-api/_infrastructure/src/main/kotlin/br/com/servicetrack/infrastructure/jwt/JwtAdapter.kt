@@ -15,7 +15,7 @@ class JwtAdapter(
     @ConfigProperty(name = "servicetrack.jwt.expiracao-horas", defaultValue = "8")
     private val expiracaoHoras: Long,
     private val jwtParser: JWTParser
-) : JwtPort {
+) : JwtPort{
 
     override fun gerarToken(usuarioId: String, email: String, roles: Set<Role>): String =
         Jwt.upn(email)

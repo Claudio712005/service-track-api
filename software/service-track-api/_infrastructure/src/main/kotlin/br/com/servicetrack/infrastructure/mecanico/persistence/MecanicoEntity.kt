@@ -2,6 +2,9 @@ package br.com.servicetrack.infrastructure.mecanico.persistence
 
 import br.com.servicetrack.domain.mecanico.Mecanico
 import br.com.servicetrack.domain.mecanico.NivelMecanicoEnum
+import br.com.servicetrack.domain.mecanico.vo.NivelMecanico
+import br.com.servicetrack.domain.mecanico.vo.ValorHora
+import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import io.quarkus.hibernate.orm.panache.kotlin.PanacheCompanion
 import io.quarkus.hibernate.orm.panache.kotlin.PanacheEntityBase
 import jakarta.persistence.Column
@@ -35,5 +38,13 @@ class MecanicoEntity : PanacheEntityBase {
             valorHora = mecanico.obterValorHora().valor
             nivel = mecanico.obterNivel().valor
         }
+    }
+
+    fun toDomain(): Mecanico {
+        return Mecanico.criar(
+            usuarioId = UsuarioId(usuarioId.toString()),
+            valorHora = ValorHora(valorHora),
+            nivel = NivelMecanico.criar(nivel)
+        )
     }
 }

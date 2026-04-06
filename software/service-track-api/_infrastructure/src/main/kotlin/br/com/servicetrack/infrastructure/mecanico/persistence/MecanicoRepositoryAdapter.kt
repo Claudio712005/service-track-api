@@ -10,4 +10,9 @@ class MecanicoRepositoryAdapter : MecanicoRepositoryPort {
     override fun salvar(mecanico: Mecanico) {
         MecanicoEntity.de(mecanico).persist()
     }
+
+    override fun buscarPorId(usuarioId: String): Mecanico? {
+        val entity = MecanicoEntity.find("usuarioId", usuarioId).firstResult() ?: return null
+        return entity.toDomain()
+    }
 }
