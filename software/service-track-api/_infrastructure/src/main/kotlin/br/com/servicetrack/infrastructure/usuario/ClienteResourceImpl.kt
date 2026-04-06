@@ -16,8 +16,8 @@ class ClienteResourceImpl @Inject constructor(
 
     @Transactional
     override fun criarCliente(cadastrarClienteRequest: CadastrarClienteRequest): Response {
-        val command = cadastrarClienteRequest.toCommand()
-        val usuarioResponse = criarUsuarioUseCase.criarUsuario(command)
+        val dto = cadastrarClienteRequest.toApplicationDTO()
+        val usuarioResponse = criarUsuarioUseCase.criarUsuario(dto)
         val clienteResponse = usuarioResponse.toClienteResponse()
         val location = URI.create("/clientes/${usuarioResponse.id}")
         return Response.created(location)

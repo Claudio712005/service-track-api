@@ -3,7 +3,7 @@ package br.com.servicetrack.application.usuario.dto.response
 import br.com.servicetrack.domain.shared.enums.Role
 import br.com.servicetrack.domain.usuario.Usuario
 
-data class UsuarioResponse(
+data class ClienteResDTO(
     val id: String,
     val nome: String,
     val email: String,
@@ -13,9 +13,9 @@ data class UsuarioResponse(
     val ativo: Boolean
 ) {
     companion object {
-        fun de(usuario: Usuario): UsuarioResponse {
+        fun de(usuario: Usuario): ClienteResDTO {
             val dados = usuario.obterDados()
-            return UsuarioResponse(
+            return ClienteResDTO(
                 id = dados.id.valor,
                 nome = dados.nome,
                 email = dados.email.valor,

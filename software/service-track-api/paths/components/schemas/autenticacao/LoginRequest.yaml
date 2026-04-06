@@ -1,0 +1,14 @@
+type: object
+required:
+  - email
+  - senha
+properties:
+  email:
+    type: string
+    format: email
+    example: "clausilvaaraujo11@gmail.com"
+  senha:
+    type: string
+    format: password
+    minLength: 6
+    example: "Senha@123"

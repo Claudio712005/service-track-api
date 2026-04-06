@@ -7,3 +7,7 @@ info:
 paths:
   /clientes:
     $ref: './paths/clientes/clientes.yaml'
+  /mecanicos:
+    $ref: './paths/mecanicos/mecanicos.yaml'
+  /autenticacao:
+    $ref: './paths/autenticacao/login.yaml'

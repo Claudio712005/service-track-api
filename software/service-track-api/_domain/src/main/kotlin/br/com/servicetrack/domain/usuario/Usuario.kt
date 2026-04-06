@@ -70,6 +70,49 @@ class Usuario private constructor(
             cpf = cpf,
             roles = setOf(Role.CLIENTE)
         )
+
+        fun criarMecanico(
+            nome: String,
+            email: Email,
+            senha: Senha,
+            dataNascimento: LocalDate,
+            telefone: Telefone,
+            cpf: Cpf,
+        ): Usuario = criar(
+            nome = nome,
+            email = email,
+            senha = senha,
+            dataNascimento = dataNascimento,
+            telefone = telefone,
+            cpf = cpf,
+            roles = setOf(Role.MECANICO)
+        )
+
+        fun reconstituir(
+            id: UsuarioId,
+            nome: String,
+            email: Email,
+            senhaHash: Senha,
+            dataNascimento: LocalDate,
+            telefone: Telefone,
+            cpf: Cpf,
+            ativo: Boolean,
+            roles: Set<Role>,
+            dataCriacao: LocalDateTime,
+            dataAtualizacao: LocalDateTime
+        ): Usuario = Usuario(
+            id = id,
+            nome = nome,
+            email = email,
+            senha = senhaHash,
+            dataCriacao = dataCriacao,
+            dataAtualizacao = dataAtualizacao,
+            dataNascimento = dataNascimento,
+            telefone = telefone,
+            cpf = cpf,
+            ativo = ativo,
+            roles = roles.toMutableSet()
+        )
     }
 
     fun desativar() {

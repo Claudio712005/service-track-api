@@ -1,0 +1,24 @@
+type: object
+properties:
+  token:
+    type: string
+    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NDkyNzE3MDA2MyIsImlhdCI6MTY4ODQyODg0OSwiZXhwIjoxNjg4NDMyNDQ5fQ.7s8n9m"
+  refreshToken:
+    type: string
+    example: "d1f2e3c4b5a6978877665544332211aabbccddeeff00112233445566778899"
+  usuarioId:
+    type: string
+    format: uuid
+    example: "550e8400-e29b-41d4-a716-446655440000"
+  nome:
+    type: string
+    example: "Cláudio da Silva Araújo"
+  email:
+    type: string
+    format: email
+    example: "clausilvaaraujo11@gmail.com"
+  roles:
+    type: array
+    items:
+      type: string
+    example: ["CLIENTE"]

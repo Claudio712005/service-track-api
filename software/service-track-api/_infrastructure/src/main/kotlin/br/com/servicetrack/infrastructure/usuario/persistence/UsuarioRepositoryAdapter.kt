@@ -13,4 +13,7 @@ class UsuarioRepositoryAdapter : UsuarioRepositoryPort {
 
     override fun existePorEmailOuCpf(email: String, cpf: String): Boolean =
         UsuarioEntity.count("email = ?1 or cpf = ?2", email, cpf) > 0
+
+    override fun buscarPorEmail(email: String): Usuario? =
+        UsuarioEntity.find("email", email).firstResult()?.toDomain()
 }

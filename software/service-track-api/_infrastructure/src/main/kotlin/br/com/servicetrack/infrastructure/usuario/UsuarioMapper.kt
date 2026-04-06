@@ -1,23 +1,21 @@
 package br.com.servicetrack.infrastructure.usuario
 
-import br.com.servicetrack.application.usuario.dto.request.CriarUsuarioCommand
-import br.com.servicetrack.application.usuario.dto.response.UsuarioResponse
-import br.com.servicetrack.domain.shared.enums.Role
+import br.com.servicetrack.application.usuario.dto.request.CadastrarClienteReqDTO
+import br.com.servicetrack.application.usuario.dto.response.ClienteResDTO
 import br.com.servicetrack.infrastructure.api.dto.CadastrarClienteRequest
 import br.com.servicetrack.infrastructure.api.dto.ClienteResponse
 import java.util.UUID
 
-internal fun CadastrarClienteRequest.toCommand() = CriarUsuarioCommand(
+internal fun CadastrarClienteRequest.toApplicationDTO() = CadastrarClienteReqDTO(
     nome = nome,
     email = email,
     senha = senha,
     telefone = telefone,
     cpf = cpf,
-    dataNascimento = dataNascimento,
-    roles = setOf(Role.CLIENTE)
+    dataNascimento = dataNascimento
 )
 
-internal fun UsuarioResponse.toClienteResponse(): ClienteResponse = ClienteResponse()
+internal fun ClienteResDTO.toClienteResponse(): ClienteResponse = ClienteResponse()
     .id(UUID.fromString(id))
     .nome(nome)
     .email(email)

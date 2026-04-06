@@ -1,0 +1,50 @@
+type: object
+required:
+  - nome
+  - email
+  - senha
+  - dataNascimento
+  - telefone
+  - cpf
+  - nivel
+  - valorHora
+properties:
+  nome:
+    type: string
+    minLength: 2
+    example: "João da Silva"
+  email:
+    type: string
+    format: email
+    example: "joao@mecanica.com"
+  senha:
+    type: string
+    format: password
+    minLength: 6
+    example: "Senha@123"
+  dataNascimento:
+    type: string
+    format: date
+    example: "1985-03-20"
+  telefone:
+    type: string
+    minLength: 10
+    maxLength: 11
+    example: "11987654321"
+  cpf:
+    type: string
+    minLength: 11
+    maxLength: 14
+    example: "54927170063"
+  nivel:
+    type: string
+    enum:
+      - JUNIOR
+      - PLENO
+      - SENIOR
+    example: "JUNIOR"
+  valorHora:
+    type: number
+    format: double
+    minimum: 0.01
+    example: 50.00

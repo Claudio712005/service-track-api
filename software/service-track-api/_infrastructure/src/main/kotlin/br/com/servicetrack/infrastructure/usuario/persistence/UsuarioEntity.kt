@@ -2,6 +2,11 @@ package br.com.servicetrack.infrastructure.usuario.persistence
 
 import br.com.servicetrack.domain.shared.enums.Role
 import br.com.servicetrack.domain.usuario.Usuario
+import br.com.servicetrack.domain.usuario.vo.Cpf
+import br.com.servicetrack.domain.usuario.vo.Email
+import br.com.servicetrack.domain.usuario.vo.Senha
+import br.com.servicetrack.domain.usuario.vo.Telefone
+import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import io.quarkus.hibernate.orm.panache.kotlin.PanacheCompanion
 import io.quarkus.hibernate.orm.panache.kotlin.PanacheEntityBase
 import jakarta.persistence.CollectionTable
@@ -32,7 +37,7 @@ class UsuarioEntity : PanacheEntityBase {
     @Column(name = "email", nullable = false, unique = true)
     lateinit var email: String
 
-    @Column(name = "senha_hash", nullable = false)
+    @Column(name = "senha_hash", nullable = false, length = 100)
     lateinit var senhaHash: String
 
     @Column(name = "data_criacao", nullable = false, updatable = false)
@@ -60,6 +65,7 @@ class UsuarioEntity : PanacheEntityBase {
     var roles: MutableSet<Role> = mutableSetOf()
 
     companion object : PanacheCompanion<UsuarioEntity> {
+
         fun de(usuario: Usuario): UsuarioEntity {
             val dados = usuario.obterDados()
             return UsuarioEntity().apply {
@@ -76,6 +82,19 @@ class UsuarioEntity : PanacheEntityBase {
                 roles = dados.roles.toMutableSet()
             }
         }
-
     }
+
+    fun toDomain(): Usuario = Usuario.reconstituir(
+        id = UsuarioId(id.toString()),
+        nome = nome,
+        email = Email(email),
+        senhaHash = Senha.deHash(senhaHash),
+        dataNascimento = dataNascimento,
+        telefone = Telefone(telefone),
+        cpf = Cpf(cpf),
+        ativo = ativo,
+        roles = roles.toSet(),
+        dataCriacao = dataCriacao,
+        dataAtualizacao = dataAtualizacao
+    )
 }
