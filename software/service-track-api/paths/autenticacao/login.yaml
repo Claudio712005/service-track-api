@@ -3,6 +3,9 @@ post:
   operationId: login
   tags:
     - Login
+
+  security: []
+
   requestBody:
     required: true
     content:

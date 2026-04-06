@@ -10,6 +10,9 @@ import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
 import br.com.servicetrack.application.usuario.service.CriarUsuarioService
 import br.com.servicetrack.application.usuario.service.LoginService
+import br.com.servicetrack.application.veiculo.ports.`in`.CadastrarVeiculoUseCase
+import br.com.servicetrack.application.veiculo.ports.out.VeiculoRepositoryPort
+import br.com.servicetrack.application.veiculo.service.CadastrarVeiculoService
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Produces
 
@@ -38,4 +41,12 @@ class ApplicationServiceConfig {
         criptografia: CriptografiaPort,
         jwt: JwtPort
     ): LoginUsuarioUseCase = LoginService(usuarioRepository, criptografia, jwt)
+
+    @Produces
+    @ApplicationScoped
+    fun cadastrarVeiculoUseCase(
+        usuarioRepository: UsuarioRepositoryPort,
+        veiculoRepository: VeiculoRepositoryPort,
+        jwt: JwtPort
+    ): CadastrarVeiculoUseCase = CadastrarVeiculoService(veiculoRepository, usuarioRepository, jwt)
 }

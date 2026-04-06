@@ -3,6 +3,9 @@ post:
   operationId: criarCliente
   tags:
     - Clientes
+
+  security: []
+
   requestBody:
     required: true
     content:

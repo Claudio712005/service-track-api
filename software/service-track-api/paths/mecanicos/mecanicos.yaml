@@ -3,6 +3,9 @@ post:
   operationId: criarMecanico
   tags:
     - Mecânicos
+
+  security: []
+
   requestBody:
     required: true
     content:

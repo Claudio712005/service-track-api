@@ -1,0 +1,48 @@
+package br.com.servicetrack.application.veiculo.service
+
+import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
+import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.exception.VeiculoJaExisteException
+import br.com.servicetrack.application.usuario.ports.out.JwtPort
+import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
+import br.com.servicetrack.application.veiculo.dto.request.CadastrarVeiculoReqDTO
+import br.com.servicetrack.application.veiculo.dto.response.DadosveiculoResDTO
+import br.com.servicetrack.application.veiculo.mapper.toDomain
+import br.com.servicetrack.application.veiculo.ports.`in`.CadastrarVeiculoUseCase
+import br.com.servicetrack.application.veiculo.ports.out.VeiculoRepositoryPort
+import br.com.servicetrack.domain.usuario.Usuario
+
+class CadastrarVeiculoService(
+    private val repository: VeiculoRepositoryPort,
+    private val usuarioRepository: UsuarioRepositoryPort,
+    private val jwt: JwtPort
+): CadastrarVeiculoUseCase {
+
+    override fun cadastrarVeiculo(req: CadastrarVeiculoReqDTO, token: String): DadosveiculoResDTO {
+
+        if(repository.existeVeiculoPorPlaca(req.placa)){
+            throw VeiculoJaExisteException(req.placa)
+        }
+
+        val proprietario = usuarioRepository.buscarPorId(req.proprietarioId)
+            ?: throw EntidadeNaoEncontradaException(Usuario.Companion::class.java.toString(), arrayOf(req.proprietarioId))
+
+        val usuarioIdToken = jwt.getUsuarioId(token) ?: throw IllegalStateException("Usuario token invalido")
+
+        val usuarioToken = usuarioRepository.buscarPorId(usuarioIdToken)
+            ?: throw EntidadeNaoEncontradaException(Usuario.Companion::class.java.toString(), arrayOf(usuarioIdToken))
+
+        if(usuarioToken.id != proprietario.id){
+            if(!usuarioToken.ehMecanico()){
+                throw OperacaoNegadaException("cadastro de veículo", "Um cliente não pode cadastrar um veículo para outro cliente, apenas um mecânico pode realizar esse tipo de operação")
+            }
+        }
+
+        val veiculo = req.toDomain()
+
+        repository.salvar(veiculo)
+
+        return DadosveiculoResDTO.de(veiculo)
+    }
+
+}

@@ -3,6 +3,7 @@ package br.com.servicetrack.infrastructure.usuario
 import br.com.servicetrack.application.usuario.ports.`in`.CriarUsuarioUseCase
 import br.com.servicetrack.infrastructure.api.ClientesApi
 import br.com.servicetrack.infrastructure.api.dto.CadastrarClienteRequest
+import jakarta.annotation.security.PermitAll
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import jakarta.transaction.Transactional
@@ -14,6 +15,7 @@ class ClienteResourceImpl @Inject constructor(
     private val criarUsuarioUseCase: CriarUsuarioUseCase
 ) : ClientesApi {
 
+    @PermitAll
     @Transactional
     override fun criarCliente(cadastrarClienteRequest: CadastrarClienteRequest): Response {
         val dto = cadastrarClienteRequest.toApplicationDTO()

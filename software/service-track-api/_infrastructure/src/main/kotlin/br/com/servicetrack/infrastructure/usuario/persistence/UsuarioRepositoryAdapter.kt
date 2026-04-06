@@ -16,4 +16,8 @@ class UsuarioRepositoryAdapter : UsuarioRepositoryPort {
 
     override fun buscarPorEmail(email: String): Usuario? =
         UsuarioEntity.find("email", email).firstResult()?.toDomain()
+
+    override fun buscarPorId(id: String): Usuario? =
+        UsuarioEntity.find("id", id).firstResult()?.toDomain()
+
 }

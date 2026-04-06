@@ -24,6 +24,9 @@ logs/
 # Arquivos de configuração sensíveis (Opcional - caso não queira subir senhas)
 # application-local.properties
 # .env
+**/.env
+**/.env.*
+**/privateKey.pem
 
 ### Java / JVM ###
 *.class
@@ -44,3 +47,4 @@ Thumbs.db
 ### Mobile / Temp ###
 .mtj.tmp/
 *.ctxt
+

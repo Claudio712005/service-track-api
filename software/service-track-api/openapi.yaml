@@ -4,6 +4,13 @@ info:
   version: 1.0.0
   description: API para gerenciamento do sistema de atendimento da oficina mecânica
 
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
 paths:
   /clientes:
     $ref: './paths/clientes/clientes.yaml'
@@ -11,3 +18,5 @@ paths:
     $ref: './paths/mecanicos/mecanicos.yaml'
   /autenticacao:
     $ref: './paths/autenticacao/login.yaml'
+  /veiculos:
+    $ref: './paths/veiculo/veiculo.yaml'

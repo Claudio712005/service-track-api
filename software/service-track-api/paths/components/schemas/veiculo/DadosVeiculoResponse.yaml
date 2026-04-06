@@ -1,0 +1,20 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  placa:
+    type: string
+    example: "ABC-1234"
+  modelo:
+    type: string
+    example: "Civic"
+  marca:
+    type: string
+    example: "Honda"
+  ano:
+    type: integer
+    example: 2020
+  proprietarioId:
+    type: integer
+    example: 1

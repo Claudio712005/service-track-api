@@ -1,0 +1,40 @@
+post:
+  summary: Realizar o cadastro de um novo veículo. Requer autenticação do cliente.
+  operationId: criarVeiculo
+  tags:
+    - Veículos
+
+  security:
+    - bearerAuth: []
+
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/veiculo/CadastrarVeiculoRequest.yaml'
+  responses:
+    '201':
+      description: Veículo criado com sucesso
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/veiculo/DadosVeiculoResponse.yaml'
+    '400':
+      description: Requisição inválida (dados ausentes ou formato incorreto)
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado (token de autenticação ausente ou inválido)
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Cliente não encontrado (proprietário do veículo)
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
