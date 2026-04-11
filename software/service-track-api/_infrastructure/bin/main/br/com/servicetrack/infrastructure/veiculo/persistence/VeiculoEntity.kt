@@ -17,6 +17,8 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -26,7 +28,7 @@ class VeiculoEntity: PanacheEntityBase {
 
     @Id
     @Column(name = "veiculo_id", nullable = false, updatable = false)
-    lateinit var veiculoId: UUID
+    lateinit var id: UUID
 
     @Column(name = "placa", nullable = false, unique = true, updatable = false)
     lateinit var placa: String
@@ -44,9 +46,11 @@ class VeiculoEntity: PanacheEntityBase {
     @Enumerated(EnumType.STRING)
     var ativo: IndicativoSimNao = IndicativoSimNao.S
 
+    @CreationTimestamp
     @Column(nullable = false, name = "data_criacao")
     lateinit var dataCriacao: LocalDateTime
 
+    @UpdateTimestamp
     @Column(nullable = false, name = "data_atualizacao")
     lateinit var dataAtualizacao: LocalDateTime
 
@@ -60,7 +64,7 @@ class VeiculoEntity: PanacheEntityBase {
             val dados = veiculo.obterDados()
 
             return VeiculoEntity().apply {
-                veiculoId = UUID.fromString(dados.id.valor)
+                id = UUID.fromString(dados.id.valor)
                 placa = dados.placa.valor
                 modelo = dados.modelo
                 marca = dados.marca
@@ -73,7 +77,7 @@ class VeiculoEntity: PanacheEntityBase {
     }
     
     fun toDomain(): Veiculo = Veiculo.reconstituir(
-        id = VeiculoId(veiculoId.toString()),
+        id = VeiculoId(id.toString()),
         proprietarioId = UsuarioId(proprietario.id.toString()),
         placa = Placa(placa),
         modelo = modelo,

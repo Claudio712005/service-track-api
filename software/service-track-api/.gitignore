@@ -7,6 +7,9 @@ out/
 
 ### Gradle ###
 .gradle/
+
+bin/
+/bin/
 build/
 /build/
 gradle-app.setting

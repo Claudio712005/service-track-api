@@ -15,7 +15,8 @@ class RemoverVeiculoService(
     private val usuarioRepository: UsuarioRepositoryPort,
 ): RemoverVeiculoUseCase {
 
-    override fun removerVeiculo(veiculo: VeiculoId) {
+
+    override fun  removerVeiculo(veiculo: VeiculoId) {
         val usuarioId = jwt.getUsuarioId()
         val usuario = usuarioRepository.buscarPorId(usuarioId) ?: throw OperacaoNegadaException("remoção de veículo", "Usuário não encontrado para o token fornecido")
 
@@ -25,7 +26,7 @@ class RemoverVeiculoService(
             throw OperacaoNegadaException("remoção de veículo", "Usuário não é o proprietário do veículo e nem mecânico, portanto não possui permissão para realizar a operação")
         }
 
-        repository.excluir(veiculo)
+        repository.desativar(veiculo)
     }
 
 }

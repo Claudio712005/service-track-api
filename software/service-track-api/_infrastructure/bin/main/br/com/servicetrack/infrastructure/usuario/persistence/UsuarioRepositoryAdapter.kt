@@ -4,6 +4,7 @@ import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
 import br.com.servicetrack.domain.usuario.Usuario
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import jakarta.enterprise.context.ApplicationScoped
+import java.util.UUID
 
 @ApplicationScoped
 class UsuarioRepositoryAdapter : UsuarioRepositoryPort {
@@ -19,6 +20,6 @@ class UsuarioRepositoryAdapter : UsuarioRepositoryPort {
         UsuarioEntity.find("email", email).firstResult()?.toDomain()
 
     override fun buscarPorId(id: UsuarioId): Usuario? =
-        UsuarioEntity.find("id", id.valor).firstResult()?.toDomain()
+        UsuarioEntity.find("id", UUID.fromString(id.valor)).firstResult()?.toDomain()
 
 }

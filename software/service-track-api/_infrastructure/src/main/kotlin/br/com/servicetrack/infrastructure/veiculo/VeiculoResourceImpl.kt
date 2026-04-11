@@ -10,8 +10,8 @@ import jakarta.enterprise.context.ApplicationScoped
 import jakarta.transaction.Transactional
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
+import jakarta.ws.rs.PathParam
 import jakarta.ws.rs.core.Response
-import org.eclipse.microprofile.jwt.JsonWebToken
 import java.net.URI
 
 @ApplicationScoped
@@ -33,7 +33,7 @@ class VeiculoResourceImpl(
 
     @Transactional
     @RolesAllowed("CLIENTE", "MECANICO")
-    override fun excluirVeiculo(id: String): Response? {
+    override fun excluirVeiculo(@PathParam("id") id: String): Response? {
         removerVeiculoUseCase.removerVeiculo(VeiculoId(id))
         return Response.noContent().build()
     }

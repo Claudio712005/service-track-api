@@ -7,12 +7,14 @@ import br.com.servicetrack.domain.shared.enums.IndicativoSimNao
 import br.com.servicetrack.domain.veiculo.Veiculo
 import br.com.servicetrack.domain.veiculo.vo.VeiculoId
 import jakarta.enterprise.context.ApplicationScoped
+import java.util.UUID
 
 @ApplicationScoped
 class VeiculoRepositoryAdapter : VeiculoRepositoryPort {
+
     override fun salvar(veiculo: Veiculo) {
-        val veiculoEntity = VeiculoEntity.de(veiculo)
-        veiculoEntity.persist()
+        val entity = VeiculoEntity.de(veiculo)
+        entity.persist()
     }
 
     override fun existeVeiculoPorPlaca(placa: String): Boolean {
@@ -20,28 +22,21 @@ class VeiculoRepositoryAdapter : VeiculoRepositoryPort {
     }
 
     override fun buscarPorId(id: VeiculoId): Veiculo? {
-        return VeiculoEntity.find("id", id.valor).firstResult()?.toDomain()
+        return VeiculoEntity
+            .find("id", UUID.fromString(id.valor))
+            .firstResult()
+            ?.toDomain()
     }
 
-    override fun patchVeiculo(
-        id: VeiculoId,
-        patchDTO: VeiculoPatchDTO
-    ): Veiculo {
-        val veiculo = buscarPorId(id) ?: throw EntidadeNaoEncontradaException(
-            Veiculo::class.java.name,
-            parametros = arrayOf(id.valor)
-        )
+    override fun desativar(id: VeiculoId) {
+        val entity = VeiculoEntity
+            .find("id", UUID.fromString(id.valor))
+            .firstResult()
+            ?: throw EntidadeNaoEncontradaException(
+                Veiculo::class.java.name,
+                parametros = arrayOf(id.valor)
+            )
 
-        patchDTO.placa?.let { veiculo.alterarPlaca(it) }
-        patchDTO.ativo?.let { if (it == IndicativoSimNao.N) veiculo.desativarVeiculo() }
-        patchDTO.proprietarioId?.let { veiculo.atualizarProprietario(it) }
-
-        salvar(veiculo)
-
-        return veiculo
-    }
-
-    override fun excluir(id: VeiculoId) {
-        patchVeiculo(id, VeiculoPatchDTO(null, null, IndicativoSimNao.N))
+        entity.ativo = IndicativoSimNao.N
     }
 }

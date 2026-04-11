@@ -1,7 +1,10 @@
 package br.com.servicetrack.infrastructure.exception
 
 import br.com.servicetrack.application.exception.CredenciaisInvalidasException
+import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
+import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.exception.UsuarioJaExisteException
+import br.com.servicetrack.application.exception.VeiculoJaExisteException
 import br.com.servicetrack.domain.shared.exception.DomainException
 import jakarta.validation.ConstraintViolationException
 import jakarta.ws.rs.core.MediaType
@@ -19,11 +22,38 @@ class UsuarioJaExisteExceptionMapper : ExceptionMapper<UsuarioJaExisteException>
 }
 
 @Provider
+class VeiculoJaExisteExceptionMapper : ExceptionMapper<VeiculoJaExisteException> {
+    override fun toResponse(exception: VeiculoJaExisteException): Response =
+        Response.status(Response.Status.CONFLICT)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(ErroResponse(mensagem = "Conflito de cadastro", detalhe = exception.message))
+            .build()
+}
+
+@Provider
 class CredenciaisInvalidasExceptionMapper : ExceptionMapper<CredenciaisInvalidasException> {
     override fun toResponse(exception: CredenciaisInvalidasException): Response =
         Response.status(Response.Status.UNAUTHORIZED)
             .type(MediaType.APPLICATION_JSON)
             .entity(ErroResponse(mensagem = "Não autorizado", detalhe = exception.message))
+            .build()
+}
+
+@Provider
+class OperacaoNegadaExceptionMapper : ExceptionMapper<OperacaoNegadaException> {
+    override fun toResponse(exception: OperacaoNegadaException): Response =
+        Response.status(Response.Status.FORBIDDEN)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(ErroResponse(mensagem = "Operação não permitida", detalhe = exception.message))
+            .build()
+}
+
+@Provider
+class EntidadeNaoEncontradaExceptionMapper : ExceptionMapper<EntidadeNaoEncontradaException> {
+    override fun toResponse(exception: EntidadeNaoEncontradaException): Response =
+        Response.status(Response.Status.NOT_FOUND)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(ErroResponse(mensagem = "Recurso não encontrado", detalhe = exception.message))
             .build()
 }
 

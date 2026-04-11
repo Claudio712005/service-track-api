@@ -11,6 +11,7 @@ import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
 import br.com.servicetrack.application.usuario.service.CriarUsuarioService
 import br.com.servicetrack.application.usuario.service.LoginService
 import br.com.servicetrack.application.veiculo.ports.`in`.CadastrarVeiculoUseCase
+import br.com.servicetrack.application.veiculo.ports.`in`.RemoverVeiculoUseCase
 import br.com.servicetrack.application.veiculo.ports.out.VeiculoRepositoryPort
 import br.com.servicetrack.application.veiculo.service.CadastrarVeiculoService
 import br.com.servicetrack.application.veiculo.service.RemoverVeiculoService
@@ -57,5 +58,5 @@ class ApplicationServiceConfig {
         jwt: JwtPort,
         repository: VeiculoRepositoryPort,
         usuarioRepository: UsuarioRepositoryPort
-    ) = RemoverVeiculoService(jwt, repository, usuarioRepository)
+    ): RemoverVeiculoUseCase = RemoverVeiculoService(jwt, repository, usuarioRepository)
 }

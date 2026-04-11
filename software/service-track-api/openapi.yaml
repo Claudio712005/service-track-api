@@ -20,3 +20,5 @@ paths:
     $ref: './paths/autenticacao/login.yaml'
   /veiculos:
     $ref: './paths/veiculo/veiculo.yaml'
+  /veiculos/{id}:
+    $ref: './paths/veiculo/veiculo_id.yaml'

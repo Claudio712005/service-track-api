@@ -101,7 +101,7 @@ class OrdemServicoEntity : PanacheEntityBase {
                 this.id = UUID.fromString(os.obterMecanicoId().valor)
             }
             veiculo = VeiculoEntity().apply {
-                this.veiculoId = UUID.fromString(os.veiculoId.valor)
+                this.id = UUID.fromString(os.veiculoId.valor)
             }
 
             status = os.obterStatus()
@@ -116,7 +116,7 @@ class OrdemServicoEntity : PanacheEntityBase {
         observacao = observacao,
         clienteId = UsuarioId(cliente.id.toString()),
         mecanicoId = UsuarioId(mecanico.id.toString()),
-        veiculoId = VeiculoId(veiculo.veiculoId.toString()),
+        veiculoId = VeiculoId(veiculo.id.toString()),
         dataCriacao = dataCriacao,
         dataAtualizacao = dataAtualizacao,
         status = StatusOrdemServico.deEnum(status),
