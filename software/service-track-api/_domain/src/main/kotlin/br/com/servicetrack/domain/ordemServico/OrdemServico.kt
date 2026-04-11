@@ -5,6 +5,7 @@ import br.com.servicetrack.domain.orcamento.Orcamento
 import br.com.servicetrack.domain.ordemServico.vo.OrdemServicoId
 import br.com.servicetrack.domain.ordemServico.vo.PrazoConclusao
 import br.com.servicetrack.domain.ordemServico.vo.StatusOrdemServico
+import br.com.servicetrack.domain.servico.vo.ServicoId
 import br.com.servicetrack.domain.shared.exception.DomainException
 import br.com.servicetrack.domain.shared.vo.ValorMonetario
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
@@ -23,7 +24,8 @@ class OrdemServico private constructor(
     private var status: StatusOrdemServico,
     private var prazoConclusao: PrazoConclusao?,
     private var orcamento: Orcamento?,
-    private val insumos: MutableList<InsumoId>
+    private val insumos: MutableList<InsumoId>,
+    private val itensServico: MutableList<ItemOrdemServico>,
 ) {
 
     companion object {
@@ -51,10 +53,42 @@ class OrdemServico private constructor(
                 status = StatusOrdemServico.deEnum(StatusOrdemServicoEnum.RECEBIDA),
                 prazoConclusao = null,
                 orcamento = null,
-                insumos = mutableListOf()
+                insumos = mutableListOf(),
+                itensServico = mutableListOf(),
             )
         }
+
+        fun reconstituir(
+            id: OrdemServicoId,
+            motivo: String,
+            observacao: String,
+            clienteId: UsuarioId,
+            mecanicoId: UsuarioId,
+            veiculoId: VeiculoId,
+            dataCriacao: LocalDateTime,
+            dataAtualizacao: LocalDateTime,
+            status: StatusOrdemServico,
+            prazoConclusao: PrazoConclusao?,
+            orcamento: Orcamento?,
+            insumos: MutableList<InsumoId>,
+            itensServico: MutableList<ItemOrdemServico>,
+        ): OrdemServico = OrdemServico(
+            id = id,
+            motivo = motivo,
+            observacao = observacao,
+            clienteId = clienteId,
+            mecanicoId = mecanicoId,
+            veiculoId = veiculoId,
+            dataCriacao = dataCriacao,
+            dataAtualizacao = dataAtualizacao,
+            status = status,
+            prazoConclusao = prazoConclusao,
+            orcamento = orcamento,
+            insumos = insumos,
+            itensServico = itensServico,
+        )
     }
+
 
     fun obterStatus(): StatusOrdemServicoEnum = status.valor
 
@@ -63,6 +97,8 @@ class OrdemServico private constructor(
     fun listarInsumos(): List<InsumoId> = insumos.toList()
 
     fun obterMecanicoId(): UsuarioId = mecanicoId
+
+    fun listarServicos(): List<ItemOrdemServico> = itensServico.toList()
 
     fun iniciarDiagnostico() {
         alterarStatus(StatusOrdemServicoEnum.EM_DIAGNOSTICO)
@@ -137,6 +173,35 @@ class OrdemServico private constructor(
     fun reassinarMecanico(novoMecanicoId: UsuarioId) {
         check(mecanicoId != novoMecanicoId) { "O mecânico já está atribuído a esta OS" }
         mecanicoId = novoMecanicoId
+        dataAtualizacao = LocalDateTime.now()
+    }
+
+    fun adicionarServico(servicoId: ServicoId, valor: ValorMonetario): ItemOrdemServico {
+        check(status.valor == StatusOrdemServicoEnum.EM_DIAGNOSTICO) {
+            "Serviços só podem ser adicionados durante o diagnóstico"
+        }
+        check(itensServico.none { it.servicoId == servicoId }) {
+            "Serviço já adicionado à OS"
+        }
+
+        val item = ItemOrdemServico.criar(
+            servicoId = servicoId,
+            ordemServicoId = id,
+            valor = valor,
+        )
+        itensServico.add(item)
+        dataAtualizacao = LocalDateTime.now()
+        return item
+    }
+
+    fun removerServico(servicoId: ServicoId) {
+        check(status.valor == StatusOrdemServicoEnum.EM_DIAGNOSTICO) {
+            "Serviços só podem ser removidos durante o diagnóstico"
+        }
+        val item = itensServico.find { it.servicoId == servicoId }
+            ?: throw DomainException("Serviço não encontrado nesta OS")
+        check(!item.feito) { "Não é possível remover um serviço já concluído da OS" }
+        itensServico.remove(item)
         dataAtualizacao = LocalDateTime.now()
     }
 

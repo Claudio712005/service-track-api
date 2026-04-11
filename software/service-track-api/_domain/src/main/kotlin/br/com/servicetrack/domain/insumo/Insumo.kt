@@ -42,7 +42,28 @@ class Insumo private constructor(
                 qtdEstoque = qtdEstoqueInicial
             )
         }
+
+        fun reconstituir(
+            id: InsumoId,
+            nome: String,
+            descricao: String,
+            custo: ValorMonetario,
+            estoqueMinimo: Int,
+            qtdEstoque: Int,
+            dataCriacao: LocalDateTime,
+            dataAtualizacao: LocalDateTime,
+        ): Insumo = Insumo(
+            id = id,
+            nome = nome,
+            descricao = descricao,
+            custo = custo,
+            estoqueMinimo = estoqueMinimo,
+            dataCriacao = dataCriacao,
+            dataAtualizacao = dataAtualizacao,
+            qtdEstoque = qtdEstoque,
+        )
     }
+
 
     fun obterQtdEstoque(): Int = qtdEstoque
 

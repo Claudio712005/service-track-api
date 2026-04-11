@@ -285,4 +285,113 @@ class OrdemServicoTest {
         }
         assertEquals("O mecânico já está atribuído a esta OS", exception.message)
     }
+
+    @Test
+    fun `deve abrir OS sem itens de serviço`() {
+        val os = buildOS()
+        assertTrue(os.listarServicos().isEmpty())
+    }
+
+    @Test
+    fun `deve adicionar serviço durante diagnóstico`() {
+        val os = buildOS()
+        os.iniciarDiagnostico()
+        val servicoId = br.com.servicetrack.domain.servico.vo.ServicoId.gerar()
+
+        val item = os.adicionarServico(servicoId, ValorMonetario(BigDecimal("80.00")))
+
+        assertEquals(1, os.listarServicos().size)
+        assertEquals(servicoId, item.servicoId)
+        assertEquals(BigDecimal("80.00"), item.valor.valor)
+        assertFalse(item.feito)
+    }
+
+    @Test
+    fun `deve adicionar múltiplos serviços distintos durante diagnóstico`() {
+        val os = buildOS()
+        os.iniciarDiagnostico()
+
+        os.adicionarServico(br.com.servicetrack.domain.servico.vo.ServicoId.gerar(), ValorMonetario(BigDecimal("80.00")))
+        os.adicionarServico(br.com.servicetrack.domain.servico.vo.ServicoId.gerar(), ValorMonetario(BigDecimal("120.00")))
+
+        assertEquals(2, os.listarServicos().size)
+    }
+
+    @Test
+    fun `deve lançar exceção ao adicionar serviço fora do diagnóstico`() {
+        val os = buildOS()
+        val exception = assertThrows<IllegalStateException> {
+            os.adicionarServico(br.com.servicetrack.domain.servico.vo.ServicoId.gerar(), ValorMonetario(BigDecimal("80.00")))
+        }
+        assertTrue(exception.message!!.contains("diagnóstico"))
+    }
+
+    @Test
+    fun `deve lançar exceção ao adicionar mesmo serviço duas vezes na mesma OS`() {
+        val os = buildOS()
+        os.iniciarDiagnostico()
+        val servicoId = br.com.servicetrack.domain.servico.vo.ServicoId.gerar()
+        os.adicionarServico(servicoId, ValorMonetario(BigDecimal("80.00")))
+
+        val exception = assertThrows<IllegalStateException> {
+            os.adicionarServico(servicoId, ValorMonetario(BigDecimal("80.00")))
+        }
+        assertTrue(exception.message!!.contains("já adicionado"))
+    }
+
+    @Test
+    fun `deve remover serviço durante diagnóstico`() {
+        val os = buildOS()
+        os.iniciarDiagnostico()
+        val servicoId = br.com.servicetrack.domain.servico.vo.ServicoId.gerar()
+        os.adicionarServico(servicoId, ValorMonetario(BigDecimal("80.00")))
+
+        os.removerServico(servicoId)
+
+        assertTrue(os.listarServicos().isEmpty())
+    }
+
+    @Test
+    fun `deve lançar exceção ao remover serviço inexistente`() {
+        val os = buildOS()
+        os.iniciarDiagnostico()
+        val exception = assertThrows<br.com.servicetrack.domain.shared.exception.DomainException> {
+            os.removerServico(br.com.servicetrack.domain.servico.vo.ServicoId.gerar())
+        }
+        assertTrue(exception.message!!.contains("não encontrado"))
+    }
+
+    @Test
+    fun `deve lançar exceção ao remover serviço fora do diagnóstico`() {
+        val os = buildOS()
+        val exception = assertThrows<IllegalStateException> {
+            os.removerServico(br.com.servicetrack.domain.servico.vo.ServicoId.gerar())
+        }
+        assertTrue(exception.message!!.contains("diagnóstico"))
+    }
+
+    @Test
+    fun `listarServicos deve retornar cópia defensiva`() {
+        val os = buildOS()
+        os.iniciarDiagnostico()
+        os.adicionarServico(br.com.servicetrack.domain.servico.vo.ServicoId.gerar(), ValorMonetario(BigDecimal("80.00")))
+
+        val snapshot = os.listarServicos()
+        os.adicionarServico(br.com.servicetrack.domain.servico.vo.ServicoId.gerar(), ValorMonetario(BigDecimal("50.00")))
+
+        assertEquals(1, snapshot.size)
+        assertEquals(2, os.listarServicos().size)
+    }
+
+    @Test
+    fun `item adicionado deve referenciar o id da OS corretamente`() {
+        val os = buildOS()
+        os.iniciarDiagnostico()
+        val servicoId = br.com.servicetrack.domain.servico.vo.ServicoId.gerar()
+
+        val item = os.adicionarServico(servicoId, ValorMonetario(BigDecimal("80.00")))
+
+        assertEquals(os.id, item.ordemServicoId)
+    }
 }
+

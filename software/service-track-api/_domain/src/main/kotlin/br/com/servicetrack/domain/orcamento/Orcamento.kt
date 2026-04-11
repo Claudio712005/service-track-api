@@ -32,7 +32,26 @@ class Orcamento private constructor(
                 observacao = ""
             )
         }
+
+        fun reconstituir(
+            id: OrcamentoId,
+            dataCriacao: LocalDateTime,
+            dataAtualizacao: LocalDateTime,
+            custoMaoDeObra: ValorMonetario,
+            custoInsumos: ValorMonetario,
+            aprovado: Boolean,
+            observacao: String,
+        ): Orcamento = Orcamento(
+            id = id,
+            dataCriacao = dataCriacao,
+            dataAtualizacao = dataAtualizacao,
+            custoMaoDeObra = custoMaoDeObra,
+            custoInsumos = custoInsumos,
+            aprovado = aprovado,
+            observacao = observacao,
+        )
     }
+
 
     val valorTotal: ValorMonetario
         get() = custoMaoDeObra.somar(custoInsumos)
