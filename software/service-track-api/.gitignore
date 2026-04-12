@@ -13,7 +13,6 @@ bin/
 build/
 /build/
 gradle-app.setting
-!gradle-wrapper.jar
 
 ### Kotlin ###
 .kotlin/
@@ -34,6 +33,7 @@ logs/
 ### Java / JVM ###
 *.class
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 *.war
 *.nar
 *.ear
