@@ -68,7 +68,7 @@ class ItemOrdemServicoEntity : PanacheEntityBase {
             id = UUID.fromString(item.id.valor)
             ordemServico = ordemServicoRef
             servico = ServicoEntity().apply {
-                this.id = UUID.fromString(item.servicoId.value)
+                this.id = UUID.fromString(item.servicoId.valor)
             }
             valor = item.valor.valor
             feito = item.feito

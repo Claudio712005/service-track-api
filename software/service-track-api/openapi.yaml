@@ -13,12 +13,12 @@ components:
 
 paths:
   /clientes:
-    $ref: './paths/clientes/clientes.yaml'
+    $ref: './openApi/clientes/clientes.yaml'
   /mecanicos:
-    $ref: './paths/mecanicos/mecanicos.yaml'
+    $ref: './openApi/mecanicos/mecanicos.yaml'
   /autenticacao:
-    $ref: './paths/autenticacao/login.yaml'
+    $ref: './openApi/autenticacao/login.yaml'
   /veiculos:
-    $ref: './paths/veiculo/veiculo.yaml'
+    $ref: './openApi/veiculo/veiculo.yaml'
   /veiculos/{id}:
-    $ref: './paths/veiculo/veiculo_id.yaml'
+    $ref: './openApi/veiculo/veiculo_id.yaml'

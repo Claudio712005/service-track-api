@@ -205,4 +205,26 @@ class InsumoTest {
         insumo.adicionarAoEstoque(10)
         assertFalse(insumo.estaAbaixoDoEstoqueMinimo())
     }
+
+    @Test
+    fun `deve reconstituir insumo a partir de dados de persistencia`() {
+        val id = br.com.servicetrack.domain.insumo.vo.InsumoId.gerar()
+        val agora = java.time.LocalDateTime.now()
+
+        val insumo = Insumo.reconstituir(
+            id = id,
+            nome = "Filtro de Combustível",
+            descricao = "Filtro para motores flex",
+            custo = ValorMonetario(BigDecimal("35.00")),
+            estoqueMinimo = 2,
+            qtdEstoque = 10,
+            dataCriacao = agora,
+            dataAtualizacao = agora
+        )
+
+        assertEquals(id, insumo.id)
+        assertEquals("Filtro de Combustível", insumo.nome)
+        assertEquals(10, insumo.obterQtdEstoque())
+        assertEquals(2, insumo.estoqueMinimo)
+    }
 }

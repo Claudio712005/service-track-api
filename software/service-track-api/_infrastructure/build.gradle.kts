@@ -28,9 +28,10 @@ dependencies {
     implementation("io.quarkus:quarkus-jdbc-h2")
     implementation("io.quarkus:quarkus-smallrye-jwt")
     implementation("io.quarkus:quarkus-smallrye-jwt-build")
+
     testImplementation("io.quarkus:quarkus-junit5")
     testImplementation("io.rest-assured:rest-assured")
-    implementation("io.quarkus:quarkus-smallrye-jwt")
+    testImplementation("io.quarkus:quarkus-jacoco")
 }
 
 allOpen {

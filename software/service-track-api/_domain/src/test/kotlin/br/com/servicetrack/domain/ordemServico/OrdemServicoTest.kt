@@ -393,5 +393,65 @@ class OrdemServicoTest {
 
         assertEquals(os.id, item.ordemServicoId)
     }
+
+    @Test
+    fun `deve cancelar OS sem motivo sem alterar observacao`() {
+        val os = buildOS()
+        os.cancelar()
+        assertEquals(StatusOrdemServicoEnum.CANCELADA, os.obterStatus())
+    }
+
+    @Test
+    fun `deve lançar exceção ao reprovar orçamento quando OS não possui orçamento`() {
+        val os = buildOS()
+        os.iniciarDiagnostico()
+
+        val exception = assertThrows<br.com.servicetrack.domain.shared.exception.DomainException> {
+            os.reprovarOrcamento("Valor alto")
+        }
+        assertEquals("OS não possui orçamento gerado", exception.message)
+    }
+
+    @Test
+    fun `deve lançar exceção ao remover serviço já concluído`() {
+        val os = buildOS()
+        os.iniciarDiagnostico()
+        val servicoId = br.com.servicetrack.domain.servico.vo.ServicoId.gerar()
+        val item = os.adicionarServico(servicoId, ValorMonetario(BigDecimal("80.00")))
+        item.vincularMecanico(UsuarioId.gerar())
+        item.concluir("Serviço executado")
+
+        val exception = assertThrows<IllegalStateException> {
+            os.removerServico(servicoId)
+        }
+        assertTrue(exception.message!!.contains("já concluído"))
+    }
+
+    @Test
+    fun `deve reconstituir OS a partir de dados de persistencia`() {
+        val id = br.com.servicetrack.domain.ordemServico.vo.OrdemServicoId.gerar()
+        val agora = LocalDateTime.now()
+        val status = br.com.servicetrack.domain.ordemServico.vo.StatusOrdemServico.deEnum(StatusOrdemServicoEnum.RECEBIDA)
+
+        val os = OrdemServico.reconstituir(
+            id = id,
+            motivo = "Revisão geral",
+            observacao = "",
+            clienteId = UsuarioId.gerar(),
+            mecanicoId = UsuarioId.gerar(),
+            veiculoId = VeiculoId.gerar(),
+            dataCriacao = agora,
+            dataAtualizacao = agora,
+            status = status,
+            prazoConclusao = null,
+            orcamento = null,
+            insumos = mutableListOf(),
+            itensServico = mutableListOf()
+        )
+
+        assertEquals(id, os.id)
+        assertEquals("Revisão geral", os.motivo)
+        assertEquals(StatusOrdemServicoEnum.RECEBIDA, os.obterStatus())
+    }
 }
 

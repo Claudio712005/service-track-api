@@ -199,4 +199,75 @@ class VeiculoTest {
 
         assertEquals("O veículo já pertence a este usuário", exception.message)
     }
+
+    @Test
+    fun `deve desativar veiculo ativo`() {
+        val veiculo = buildVeiculo()
+
+        veiculo.desativarVeiculo()
+
+        val exception = assertThrows<DomainException> {
+            veiculo.desativarVeiculo()
+        }
+        assertEquals("O veículo já está desativado", exception.message)
+    }
+
+    @Test
+    fun `deve lançar exceção ao alterar placa de veiculo desativado`() {
+        val veiculo = buildVeiculo()
+        veiculo.desativarVeiculo()
+
+        val exception = assertThrows<DomainException> {
+            veiculo.alterarPlaca(Placa("XYZ1A23"))
+        }
+        assertEquals("Veículo desativado não pode ter a placa alterada", exception.message)
+    }
+
+    @Test
+    fun `deve lançar exceção ao alterar dados de veiculo desativado`() {
+        val veiculo = buildVeiculo()
+        veiculo.desativarVeiculo()
+
+        val exception = assertThrows<DomainException> {
+            veiculo.alterarDados("Corolla", "Toyota", 2022)
+        }
+        assertEquals("Veículo desativado não pode ter os dados alterados", exception.message)
+    }
+
+    @Test
+    fun `deve lançar exceção ao atualizar proprietario de veiculo desativado`() {
+        val veiculo = buildVeiculo()
+        veiculo.desativarVeiculo()
+
+        val exception = assertThrows<DomainException> {
+            veiculo.atualizarProprietario(UsuarioId.gerar())
+        }
+        assertTrue(exception.message!!.contains("desative o veículo"))
+    }
+
+    @Test
+    fun `deve reconstituir veiculo a partir de dados de persistencia`() {
+        val id = br.com.servicetrack.domain.veiculo.vo.VeiculoId.gerar()
+        val proprietarioId = UsuarioId.gerar()
+        val agora = java.time.LocalDateTime.now()
+
+        val veiculo = Veiculo.reconstituir(
+            id = id,
+            marca = "Honda",
+            placa = Placa("ABC1D23"),
+            ano = 2020,
+            proprietarioId = proprietarioId,
+            modelo = "Civic",
+            dataCriacao = agora,
+            dataAtualizacao = agora,
+            ativo = br.com.servicetrack.domain.shared.enums.IndicativoSimNao.S
+        )
+
+        assertEquals(id, veiculo.id)
+        val dados = veiculo.obterDados()
+        assertEquals("Honda", dados.marca)
+        assertEquals("Civic", dados.modelo)
+        assertEquals(2020, dados.ano)
+        assertEquals(proprietarioId, dados.proprietarioId)
+    }
 }

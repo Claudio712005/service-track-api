@@ -38,7 +38,7 @@ class ServicoEntity : PanacheEntityBase {
     companion object : PanacheCompanion<ServicoEntity> {
 
         fun de(servico: Servico): ServicoEntity = ServicoEntity().apply {
-            id = UUID.fromString(servico.id.value)
+            id = UUID.fromString(servico.id.valor)
             nomeServico = servico.nomeServico
             descricaoServico = servico.descricaoServico
             valorReferencia = servico.valorReferencia?.valor

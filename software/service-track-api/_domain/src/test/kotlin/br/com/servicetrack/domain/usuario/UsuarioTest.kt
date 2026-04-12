@@ -151,4 +151,70 @@ class UsuarioTest {
         assertTrue(dados.roles.contains(Role.CLIENTE))
         assertTrue(dados.ativo)
     }
+
+    @Test
+    fun `deve criar cliente com role CLIENTE via factory criarCliente`() {
+        val usuario = Usuario.criarCliente(
+            nome = "Maria",
+            email = Email("maria@email.com"),
+            senha = Senha.criar("Forte@123"),
+            dataNascimento = LocalDate.of(1995, 6, 15),
+            telefone = Telefone("11988887777"),
+            cpf = Cpf("98765432100")
+        )
+
+        assertTrue(usuario.ehCliente())
+        assertFalse(usuario.ehMecanico())
+    }
+
+    @Test
+    fun `deve criar mecanico com role MECANICO via factory criarMecanico`() {
+        val usuario = Usuario.criarMecanico(
+            nome = "Carlos",
+            email = Email("carlos@oficina.com"),
+            senha = Senha.criar("Forte@123"),
+            dataNascimento = LocalDate.of(1988, 4, 10),
+            telefone = Telefone("11977776666"),
+            cpf = Cpf("11144477735")
+        )
+
+        assertTrue(usuario.ehMecanico())
+        assertFalse(usuario.ehCliente())
+    }
+
+    @Test
+    fun `deve reconstituir usuario a partir de dados de persistencia`() {
+        val id = UsuarioId.gerar()
+        val agora = java.time.LocalDateTime.now()
+
+        val usuario = Usuario.reconstituir(
+            id = id,
+            nome = "Reconstituído",
+            email = Email("rec@email.com"),
+            senhaHash = Senha.deHash("\$2a\$10\$xyzAbcDef1234567890ABCDE"),
+            dataNascimento = LocalDate.of(1990, 1, 1),
+            telefone = Telefone("11911112222"),
+            cpf = Cpf("52998224725"),
+            ativo = true,
+            roles = setOf(Role.CLIENTE),
+            dataCriacao = agora,
+            dataAtualizacao = agora
+        )
+
+        assertEquals(id, usuario.id)
+        val dados = usuario.obterDados()
+        assertEquals("Reconstituído", dados.nome)
+        assertTrue(dados.ativo)
+        assertTrue(dados.roles.contains(Role.CLIENTE))
+    }
+
+    @Test
+    fun `deve retornar senha hash via obterSenhaHash`() {
+        val usuario = buildUsuario()
+
+        val senha = usuario.obterSenhaHash()
+
+        assertNotNull(senha)
+        assertEquals("Forte@123", senha.valor)
+    }
 }
