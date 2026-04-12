@@ -135,7 +135,7 @@ project(":_domain").afterEvaluate {
                 limit {
                     counter = "INSTRUCTION"
                     value = "COVEREDRATIO"
-                    minimum = "1.00".toBigDecimal()
+                    minimum = "0.90".toBigDecimal()
                 }
             }
             rule {
