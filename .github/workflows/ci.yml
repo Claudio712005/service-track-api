@@ -152,8 +152,12 @@ jobs:
   coverage-gate:
     name: "Coverage Gate"
     runs-on: ubuntu-latest
-    needs: [domain, application, infrastructure]
+    needs: [ domain, application, infrastructure ]
     if: always()
+
+    defaults:
+      run:
+        working-directory: .
 
     steps:
       - name: All coverage checks passed
