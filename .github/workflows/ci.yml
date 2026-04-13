@@ -123,6 +123,15 @@ jobs:
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x gradlew
 
+      - name: Generate JWT keys for tests
+        run: |
+          mkdir -p _infrastructure/src/test/resources/keys
+
+          openssl genrsa -out _infrastructure/src/test/resources/keys/privateKey.pem 2048
+
+          openssl rsa -in _infrastructure/src/test/resources/keys/privateKey.pem \
+            -pubout -out _infrastructure/src/test/resources/keys/publicKey.pem
+
       - name: Run integration tests
         run: ./gradlew :_infrastructure:test
 
