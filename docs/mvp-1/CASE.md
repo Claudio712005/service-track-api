@@ -7,7 +7,7 @@ Tech Challenge é o projeto da fase que englobará os conhecimentos obtidos em t
 Uma oficina mecânica de médio porte, especializada em manutenção de veículos, tem enfrentado desafios para expandir seus serviços com qualidade e eficiência.
 
 Atualmente, o processo de atendimento, diagnóstico, execução de serviços e entrega dos veículos é feito de forma desorganizada, utilizando anotações manuais e planilhas, o que gera alguns problemas, como:
-
+ 
 * Erros na priorização dos atendimentos;
 * Falhas no controle de peças e insumos;
 * Dificuldade em acompanhar o status dos serviços;
