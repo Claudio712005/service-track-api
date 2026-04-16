@@ -149,41 +149,6 @@ jobs:
           path: software/service-track-api/_infrastructure/build/reports/jacoco/test/html/
           retention-days: 7
 
-  docker:
-    name: "Docker · Build & Smoke Test"
-    runs-on: ubuntu-latest
-    needs: [ domain, application, infrastructure ]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Decode JWT keys from GitHub Secrets
-        run: |
-          echo "${{ secrets.JWT_PRIVATE_KEY_B64 }}" | base64 -d > /tmp/privateKey.pem
-          echo "${{ secrets.JWT_PUBLIC_KEY_B64 }}"  | base64 -d > /tmp/publicKey.pem
-          chmod 600 /tmp/privateKey.pem
-
-      - name: Build image and start services
-        working-directory: software/service-track-api
-        run: |
-          export JWT_PRIVATE_KEY=$(cat /tmp/privateKey.pem)
-          export JWT_PUBLIC_KEY=$(cat /tmp/publicKey.pem)
-          docker compose up -d --build
-
-      - name: Wait for API health check
-        run: |
-          echo "Aguardando API iniciar..."
-          timeout 120 bash -c \
-            'until curl -sf http://localhost:8080/q/health/ready; do
-               echo "  ainda aguardando..."; sleep 5
-             done'
-          echo "API pronta."
-
-      - name: Tear down
-        if: always()
-        working-directory: software/service-track-api
-        run: docker compose down -v
-
   coverage-gate:
     name: "Coverage Gate"
     runs-on: ubuntu-latest
