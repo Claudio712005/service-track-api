@@ -190,8 +190,6 @@ project(":_infrastructure").afterEvaluate {
     val infraExcludes = listOf(
         "br/com/servicetrack/infrastructure/api/**",
 
-        "br/com/servicetrack/infrastructure/servico/**",
-        "br/com/servicetrack/infrastructure/insumo/**",
         "br/com/servicetrack/infrastructure/ordemServico/**",
 
         "**/*Entity\$Companion*",

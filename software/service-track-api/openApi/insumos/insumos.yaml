@@ -1,0 +1,67 @@
+get:
+  summary: Listar todos os insumos. Exclusivo para mecânicos.
+  operationId: listarInsumos
+  tags:
+    - Insumos
+  security:
+    - bearerAuth: []
+  responses:
+    '200':
+      description: Lista de insumos
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '../components/schemas/insumo/InsumoResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Acesso restrito a mecânicos
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+
+post:
+  summary: Criar um novo insumo. Exclusivo para mecânicos.
+  operationId: criarInsumo
+  tags:
+    - Insumos
+  security:
+    - bearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/insumo/CriarInsumoRequest.yaml'
+  responses:
+    '201':
+      description: Insumo criado com sucesso
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/insumo/InsumoResponse.yaml'
+    '400':
+      description: Dados inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Acesso restrito a mecânicos
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

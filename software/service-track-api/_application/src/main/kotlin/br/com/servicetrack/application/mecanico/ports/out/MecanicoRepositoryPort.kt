@@ -6,4 +6,5 @@ interface MecanicoRepositoryPort {
 
     fun salvar(mecanico: Mecanico)
     fun buscarPorId(usuarioId: String): Mecanico?
+    fun listarTodos(): List<Mecanico>
 }

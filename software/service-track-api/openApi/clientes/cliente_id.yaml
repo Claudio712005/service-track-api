@@ -1,0 +1,38 @@
+get:
+  summary: Buscar cliente por ID. O próprio cliente ou um mecânico podem consultar.
+  operationId: buscarCliente
+  tags:
+    - Clientes
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Cliente encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/cliente/ClienteResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Acesso não permitido
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Cliente não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

@@ -30,7 +30,7 @@ class VeiculoEntity: PanacheEntityBase {
     @Column(name = "veiculo_id", nullable = false, updatable = false)
     lateinit var id: UUID
 
-    @Column(name = "placa", nullable = false, unique = true, updatable = false)
+    @Column(name = "placa", nullable = false, unique = true)
     lateinit var placa: String
 
     @Column(name = "modelo", nullable = false)

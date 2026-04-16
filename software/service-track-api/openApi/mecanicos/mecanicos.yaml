@@ -1,11 +1,32 @@
+get:
+  summary: Listar todos os mecânicos. Requer autenticação.
+  operationId: listarMecanicos
+  tags:
+    - Mecânicos
+  security:
+    - bearerAuth: []
+  responses:
+    '200':
+      description: Lista de mecânicos
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '../components/schemas/mecanico/MecanicoResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+
 post:
   summary: Realiza o cadastro de um novo mecânico. Não requer autenticação.
   operationId: criarMecanico
   tags:
     - Mecânicos
-
   security: []
-
   requestBody:
     required: true
     content:
@@ -26,7 +47,7 @@ post:
           schema:
             $ref: '../components/schemas/mecanico/MecanicoResponse.yaml'
     '400':
-      description: Dados de entrada inválidos (falha de validação ou política de senha)
+      description: Dados de entrada inválidos
       content:
         application/json:
           schema:

@@ -1,18 +1,23 @@
 package br.com.servicetrack.infrastructure.usuario
 
+import br.com.servicetrack.application.usuario.ports.`in`.BuscarClienteUseCase
 import br.com.servicetrack.application.usuario.ports.`in`.CriarUsuarioUseCase
+import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import br.com.servicetrack.infrastructure.api.ClientesApi
 import br.com.servicetrack.infrastructure.api.dto.CadastrarClienteRequest
 import jakarta.annotation.security.PermitAll
+import jakarta.annotation.security.RolesAllowed
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import jakarta.transaction.Transactional
+import jakarta.ws.rs.PathParam
 import jakarta.ws.rs.core.Response
 import java.net.URI
 
 @ApplicationScoped
 class ClienteResourceImpl @Inject constructor(
-    private val criarUsuarioUseCase: CriarUsuarioUseCase
+    private val criarUsuarioUseCase: CriarUsuarioUseCase,
+    private val buscarClienteUseCase: BuscarClienteUseCase
 ) : ClientesApi {
 
     @PermitAll
@@ -25,5 +30,11 @@ class ClienteResourceImpl @Inject constructor(
         return Response.created(location)
             .entity(clienteResponse)
             .build()
+    }
+
+    @RolesAllowed("CLIENTE", "MECANICO")
+    override fun buscarCliente(@PathParam("id") id: String): Response {
+        val cliente = buscarClienteUseCase.buscarCliente(UsuarioId(id))
+        return Response.ok(cliente.toClienteResponse()).build()
     }
 }

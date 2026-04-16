@@ -385,4 +385,309 @@ class VeiculoIT {
         .then()
             .statusCode(401)
     }
+
+    @Test
+    fun `deve buscar veiculo por id e retornar 200`() {
+        val veiculoId = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenCliente")
+            .body(
+                """
+                {
+                  "placa": "BSC1A11",
+                  "modelo": "Fit",
+                  "marca": "Honda",
+                  "ano": 2019,
+                  "proprietarioId": "$clienteId"
+                }
+                """.trimIndent()
+            )
+            .post("/veiculos")
+            .then()
+            .statusCode(201)
+            .extract()
+            .jsonPath()
+            .getString("id")
+
+        given()
+            .header("Authorization", "Bearer $tokenCliente")
+        .`when`()
+            .get("/veiculos/$veiculoId")
+        .then()
+            .statusCode(200)
+            .body("id", equalTo(veiculoId))
+            .body("placa", equalTo("BSC1A11"))
+            .body("modelo", equalTo("Fit"))
+            .body("marca", equalTo("Honda"))
+            .body("ano", equalTo(2019))
+    }
+
+    @Test
+    fun `deve buscar veiculo por id como mecanico e retornar 200`() {
+        val veiculoId = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenMecanico")
+            .body(
+                """
+                {
+                  "placa": "BSC2B22",
+                  "modelo": "Clio",
+                  "marca": "Renault",
+                  "ano": 2017,
+                  "proprietarioId": "$clienteId"
+                }
+                """.trimIndent()
+            )
+            .post("/veiculos")
+            .then()
+            .statusCode(201)
+            .extract()
+            .jsonPath()
+            .getString("id")
+
+        given()
+            .header("Authorization", "Bearer $tokenMecanico")
+        .`when`()
+            .get("/veiculos/$veiculoId")
+        .then()
+            .statusCode(200)
+            .body("id", equalTo(veiculoId))
+            .body("placa", equalTo("BSC2B22"))
+    }
+
+    @Test
+    fun `deve retornar 404 ao buscar veiculo inexistente`() {
+        given()
+            .header("Authorization", "Bearer $tokenCliente")
+        .`when`()
+            .get("/veiculos/00000000-0000-0000-0000-000000000000")
+        .then()
+            .statusCode(404)
+    }
+
+    @Test
+    fun `deve retornar 401 quando nao autenticado ao buscar veiculo`() {
+        given()
+        .`when`()
+            .get("/veiculos/00000000-0000-0000-0000-000000000000")
+        .then()
+            .statusCode(401)
+    }
+
+    @Test
+    fun `deve listar veiculos como mecanico e retornar 200`() {
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenMecanico")
+            .body(
+                """
+                {
+                  "placa": "LST3C33",
+                  "modelo": "Uno",
+                  "marca": "Fiat",
+                  "ano": 2015,
+                  "proprietarioId": "$clienteId"
+                }
+                """.trimIndent()
+            )
+            .post("/veiculos")
+            .then()
+            .statusCode(201)
+
+        given()
+            .header("Authorization", "Bearer $tokenMecanico")
+        .`when`()
+            .get("/veiculos")
+        .then()
+            .statusCode(200)
+    }
+
+    @Test
+    fun `deve listar veiculos como cliente e retornar 200`() {
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenCliente")
+            .body(
+                """
+                {
+                  "placa": "LST4D44",
+                  "modelo": "March",
+                  "marca": "Nissan",
+                  "ano": 2018,
+                  "proprietarioId": "$clienteId"
+                }
+                """.trimIndent()
+            )
+            .post("/veiculos")
+            .then()
+            .statusCode(201)
+
+        given()
+            .header("Authorization", "Bearer $tokenCliente")
+        .`when`()
+            .get("/veiculos")
+        .then()
+            .statusCode(200)
+    }
+
+    @Test
+    fun `deve retornar 401 quando nao autenticado ao listar veiculos`() {
+        given()
+        .`when`()
+            .get("/veiculos")
+        .then()
+            .statusCode(401)
+    }
+
+    @Test
+    fun `deve atualizar veiculo como proprietario e retornar 200`() {
+        val veiculoId = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenCliente")
+            .body(
+                """
+                {
+                  "placa": "ATU5E55",
+                  "modelo": "Palio",
+                  "marca": "Fiat",
+                  "ano": 2014,
+                  "proprietarioId": "$clienteId"
+                }
+                """.trimIndent()
+            )
+            .post("/veiculos")
+            .then()
+            .statusCode(201)
+            .extract()
+            .jsonPath()
+            .getString("id")
+
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenCliente")
+            .body("""{"placa": "ATU5X55", "modelo": "Palio Sporting", "marca": "Fiat", "ano": 2015}""")
+        .`when`()
+            .put("/veiculos/$veiculoId")
+        .then()
+            .statusCode(200)
+            .body("id", equalTo(veiculoId))
+            .body("modelo", equalTo("Palio Sporting"))
+            .body("ano", equalTo(2015))
+    }
+
+    @Test
+    fun `deve atualizar veiculo como mecanico e retornar 200`() {
+        val veiculoId = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenCliente")
+            .body(
+                """
+                {
+                  "placa": "ATU6F66",
+                  "modelo": "Fox",
+                  "marca": "Volkswagen",
+                  "ano": 2016,
+                  "proprietarioId": "$clienteId"
+                }
+                """.trimIndent()
+            )
+            .post("/veiculos")
+            .then()
+            .statusCode(201)
+            .extract()
+            .jsonPath()
+            .getString("id")
+
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenMecanico")
+            .body("""{"placa": "ATU6Y66", "modelo": "Fox Trend", "marca": "Volkswagen", "ano": 2016}""")
+        .`when`()
+            .put("/veiculos/$veiculoId")
+        .then()
+            .statusCode(200)
+            .body("modelo", equalTo("Fox Trend"))
+    }
+
+    @Test
+    fun `deve retornar 404 ao atualizar veiculo inexistente`() {
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenMecanico")
+            .body("""{"placa": "ATU0X00", "modelo": "Modelo X", "marca": "Marca X", "ano": 2020}""")
+        .`when`()
+            .put("/veiculos/00000000-0000-0000-0000-000000000000")
+        .then()
+            .statusCode(404)
+    }
+
+    @Test
+    fun `deve retornar 401 quando nao autenticado ao atualizar veiculo`() {
+        given()
+            .contentType(ContentType.JSON)
+            .body("""{"modelo": "Modelo X"}""")
+        .`when`()
+            .put("/veiculos/00000000-0000-0000-0000-000000000000")
+        .then()
+            .statusCode(401)
+    }
+
+    @Test
+    fun `deve retornar 403 quando cliente tenta atualizar veiculo de outro cliente`() {
+        given()
+            .contentType(ContentType.JSON)
+            .body(
+                """
+                {
+                  "nome": "Outro Dono IT",
+                  "email": "outro.dono.it@email.com",
+                  "senha": "#Tiee123456",
+                  "telefone": "11900001111",
+                  "cpf": "58723401923",
+                  "dataNascimento": "1991-06-25"
+                }
+                """.trimIndent()
+            )
+            .post("/clientes")
+
+        val tokenOutroDono = given()
+            .contentType(ContentType.JSON)
+            .body("""{"email": "outro.dono.it@email.com", "senha": "#Tiee123456"}""")
+            .post("/autenticacao")
+            .then()
+            .statusCode(200)
+            .extract()
+            .jsonPath()
+            .getString("token")
+
+        val veiculoId = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenCliente")
+            .body(
+                """
+                {
+                  "placa": "ATU7G77",
+                  "modelo": "Sandero",
+                  "marca": "Renault",
+                  "ano": 2020,
+                  "proprietarioId": "$clienteId"
+                }
+                """.trimIndent()
+            )
+            .post("/veiculos")
+            .then()
+            .statusCode(201)
+            .extract()
+            .jsonPath()
+            .getString("id")
+
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenOutroDono")
+            .body("""{"placa": "ATU7G77", "modelo": "Sandero Stepway", "marca": "Renault", "ano": 2020}""")
+        .`when`()
+            .put("/veiculos/$veiculoId")
+        .then()
+            .statusCode(403)
+    }
 }

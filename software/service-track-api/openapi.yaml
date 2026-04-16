@@ -14,11 +14,27 @@ components:
 paths:
   /clientes:
     $ref: './openApi/clientes/clientes.yaml'
+  /clientes/{id}:
+    $ref: './openApi/clientes/cliente_id.yaml'
   /mecanicos:
     $ref: './openApi/mecanicos/mecanicos.yaml'
+  /mecanicos/{id}:
+    $ref: './openApi/mecanicos/mecanico_id.yaml'
   /autenticacao:
     $ref: './openApi/autenticacao/login.yaml'
   /veiculos:
     $ref: './openApi/veiculo/veiculo.yaml'
   /veiculos/{id}:
     $ref: './openApi/veiculo/veiculo_id.yaml'
+  /servicos:
+    $ref: './openApi/servicos/servicos.yaml'
+  /servicos/{id}:
+    $ref: './openApi/servicos/servico_id.yaml'
+  /insumos:
+    $ref: './openApi/insumos/insumos.yaml'
+  /insumos/{id}:
+    $ref: './openApi/insumos/insumo_id.yaml'
+  /catalogo/servicos:
+    $ref: './openApi/catalogo/catalogo_servicos.yaml'
+  /catalogo/insumos:
+    $ref: './openApi/catalogo/catalogo_insumos.yaml'

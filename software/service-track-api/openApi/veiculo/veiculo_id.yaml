@@ -1,37 +1,117 @@
-delete:
-  summary: Excluir um veículo existente. Requer autenticação do cliente.
-  operationId: excluirVeiculo
+get:
+  summary: Buscar veículo por ID. Requer autenticação.
+  operationId: buscarVeiculo
   tags:
     - Veículos
-
   security:
     - bearerAuth: []
-
   parameters:
     - name: id
       in: path
       required: true
-      description: ID do veículo a ser excluído
       schema:
         type: string
-
   responses:
-    '204':
-      description: Veículo excluído com sucesso (sem conteúdo)
-    '400':
-      description: Requisição inválida (ID ausente ou formato incorreto)
+    '200':
+      description: Veículo encontrado
       content:
         application/json:
           schema:
-            $ref: '../components/schemas/ErroResponse.yaml'
+            $ref: '../components/schemas/veiculo/DadosVeiculoResponse.yaml'
     '401':
-      description: Não autorizado (token de autenticação ausente ou inválido)
+      description: Não autorizado
       content:
         application/json:
           schema:
             $ref: '../components/schemas/ErroResponse.yaml'
     '404':
-      description: Veículo não encontrado (ID inexistente ou pertencente a outro cliente)
+      description: Veículo não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+
+put:
+  summary: Atualizar as informações de um veículo existente. Requer autenticação.
+  operationId: atualizarVeiculo
+  tags:
+    - Veículos
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/veiculo/AtualizarVeiculoRequest.yaml'
+  responses:
+    '200':
+      description: Veículo atualizado com sucesso
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/veiculo/DadosVeiculoResponse.yaml'
+    '400':
+      description: Dados inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Operação não permitida
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Veículo não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+
+delete:
+  summary: Excluir um veículo existente. Requer autenticação.
+  operationId: excluirVeiculo
+  tags:
+    - Veículos
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '204':
+      description: Veículo excluído com sucesso
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Operação não permitida
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Veículo não encontrado
       content:
         application/json:
           schema:

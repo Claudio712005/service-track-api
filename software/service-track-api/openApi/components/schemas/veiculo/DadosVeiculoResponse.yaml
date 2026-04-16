@@ -1,8 +1,9 @@
 type: object
 properties:
   id:
-    type: integer
-    example: 1
+    type: string
+    format: uuid
+    example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
   placa:
     type: string
     example: "ABC-1234"
@@ -16,5 +17,6 @@ properties:
     type: integer
     example: 2020
   proprietarioId:
-    type: integer
-    example: 1
+    type: string
+    format: uuid
+    example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
