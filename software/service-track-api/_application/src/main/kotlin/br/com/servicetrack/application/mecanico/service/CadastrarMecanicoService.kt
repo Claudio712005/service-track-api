@@ -6,9 +6,9 @@ import br.com.servicetrack.application.mecanico.dto.request.CadastrarMecanicoReq
 import br.com.servicetrack.application.mecanico.dto.response.MecanicoResDTO
 import br.com.servicetrack.application.mecanico.mapper.toDomain
 import br.com.servicetrack.application.mecanico.ports.`in`.CadastrarMecanicoUseCase
-import br.com.servicetrack.application.mecanico.ports.out.MecanicoRepositoryPort
-import br.com.servicetrack.application.usuario.ports.out.CriptografiaPort
-import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
+import br.com.servicetrack.application.mecanico.ports.`out`.MecanicoRepositoryPort
+import br.com.servicetrack.application.usuario.ports.`out`.CriptografiaPort
+import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
 import br.com.servicetrack.domain.mecanico.Mecanico
 import br.com.servicetrack.domain.mecanico.vo.NivelMecanico
 import br.com.servicetrack.domain.mecanico.vo.ValorHora

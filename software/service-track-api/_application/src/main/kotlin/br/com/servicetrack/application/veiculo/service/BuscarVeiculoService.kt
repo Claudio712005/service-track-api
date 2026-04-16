@@ -3,7 +3,7 @@ package br.com.servicetrack.application.veiculo.service
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.veiculo.dto.response.DadosveiculoResDTO
 import br.com.servicetrack.application.veiculo.ports.`in`.BuscarVeiculoUseCase
-import br.com.servicetrack.application.veiculo.ports.out.VeiculoRepositoryPort
+import br.com.servicetrack.application.veiculo.ports.`out`.VeiculoRepositoryPort
 import br.com.servicetrack.domain.veiculo.Veiculo
 import br.com.servicetrack.domain.veiculo.vo.VeiculoId
 

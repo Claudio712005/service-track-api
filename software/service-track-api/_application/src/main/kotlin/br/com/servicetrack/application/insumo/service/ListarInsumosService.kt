@@ -3,7 +3,7 @@ package br.com.servicetrack.application.insumo.service
 import br.com.servicetrack.application.insumo.dto.InsumoResDTO
 import br.com.servicetrack.application.insumo.dto.InsumoResumoResDTO
 import br.com.servicetrack.application.insumo.ports.`in`.ListarInsumosUseCase
-import br.com.servicetrack.application.insumo.ports.out.InsumoRepositoryPort
+import br.com.servicetrack.application.insumo.ports.`out`.InsumoRepositoryPort
 
 class ListarInsumosService(
     private val repository: InsumoRepositoryPort

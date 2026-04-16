@@ -3,7 +3,7 @@ package br.com.servicetrack.application.servico.service
 import br.com.servicetrack.application.servico.dto.ServicoResDTO
 import br.com.servicetrack.application.servico.dto.ServicoResumoResDTO
 import br.com.servicetrack.application.servico.ports.`in`.ListarServicosUseCase
-import br.com.servicetrack.application.servico.ports.out.ServicoRepositoryPort
+import br.com.servicetrack.application.servico.ports.`out`.ServicoRepositoryPort
 
 class ListarServicosService(
     private val repository: ServicoRepositoryPort

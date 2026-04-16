@@ -4,7 +4,7 @@ import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.insumo.dto.AtualizarInsumoReqDTO
 import br.com.servicetrack.application.insumo.dto.InsumoResDTO
 import br.com.servicetrack.application.insumo.ports.`in`.AtualizarInsumoUseCase
-import br.com.servicetrack.application.insumo.ports.out.InsumoRepositoryPort
+import br.com.servicetrack.application.insumo.ports.`out`.InsumoRepositoryPort
 import br.com.servicetrack.domain.insumo.Insumo
 import br.com.servicetrack.domain.insumo.vo.InsumoId
 import br.com.servicetrack.domain.shared.vo.ValorMonetario

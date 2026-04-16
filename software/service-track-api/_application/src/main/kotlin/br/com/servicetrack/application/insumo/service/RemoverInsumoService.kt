@@ -2,7 +2,7 @@ package br.com.servicetrack.application.insumo.service
 
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.insumo.ports.`in`.RemoverInsumoUseCase
-import br.com.servicetrack.application.insumo.ports.out.InsumoRepositoryPort
+import br.com.servicetrack.application.insumo.ports.`out`.InsumoRepositoryPort
 import br.com.servicetrack.domain.insumo.Insumo
 import br.com.servicetrack.domain.insumo.vo.InsumoId
 

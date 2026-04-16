@@ -3,8 +3,8 @@ package br.com.servicetrack.application.mecanico.service
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.mecanico.dto.response.MecanicoResDTO
 import br.com.servicetrack.application.mecanico.ports.`in`.BuscarMecanicoUseCase
-import br.com.servicetrack.application.mecanico.ports.out.MecanicoRepositoryPort
-import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
+import br.com.servicetrack.application.mecanico.ports.`out`.MecanicoRepositoryPort
+import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
 import br.com.servicetrack.domain.usuario.Usuario
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
 

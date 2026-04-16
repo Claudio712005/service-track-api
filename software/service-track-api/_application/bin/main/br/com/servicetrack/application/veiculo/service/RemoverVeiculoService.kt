@@ -2,10 +2,10 @@ package br.com.servicetrack.application.veiculo.service
 
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
-import br.com.servicetrack.application.usuario.ports.out.JwtPort
-import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
+import br.com.servicetrack.application.usuario.ports.`out`.JwtPort
+import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
 import br.com.servicetrack.application.veiculo.ports.`in`.RemoverVeiculoUseCase
-import br.com.servicetrack.application.veiculo.ports.out.VeiculoRepositoryPort
+import br.com.servicetrack.application.veiculo.ports.`out`.VeiculoRepositoryPort
 import br.com.servicetrack.domain.veiculo.Veiculo
 import br.com.servicetrack.domain.veiculo.vo.VeiculoId
 

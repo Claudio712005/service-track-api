@@ -3,13 +3,13 @@ package br.com.servicetrack.application.veiculo.service
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.exception.VeiculoJaExisteException
-import br.com.servicetrack.application.usuario.ports.out.JwtPort
-import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
+import br.com.servicetrack.application.usuario.ports.`out`.JwtPort
+import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
 import br.com.servicetrack.application.veiculo.dto.request.CadastrarVeiculoReqDTO
 import br.com.servicetrack.application.veiculo.dto.response.DadosveiculoResDTO
 import br.com.servicetrack.application.veiculo.mapper.toDomain
 import br.com.servicetrack.application.veiculo.ports.`in`.CadastrarVeiculoUseCase
-import br.com.servicetrack.application.veiculo.ports.out.VeiculoRepositoryPort
+import br.com.servicetrack.application.veiculo.ports.`out`.VeiculoRepositoryPort
 import br.com.servicetrack.domain.usuario.Usuario
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
 

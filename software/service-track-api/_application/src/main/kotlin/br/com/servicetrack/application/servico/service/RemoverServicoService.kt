@@ -2,7 +2,7 @@ package br.com.servicetrack.application.servico.service
 
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.servico.ports.`in`.RemoverServicoUseCase
-import br.com.servicetrack.application.servico.ports.out.ServicoRepositoryPort
+import br.com.servicetrack.application.servico.ports.`out`.ServicoRepositoryPort
 import br.com.servicetrack.domain.servico.Servico
 import br.com.servicetrack.domain.servico.vo.ServicoId
 

@@ -4,8 +4,8 @@ import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.usuario.dto.response.ClienteResDTO
 import br.com.servicetrack.application.usuario.ports.`in`.BuscarClienteUseCase
-import br.com.servicetrack.application.usuario.ports.out.JwtPort
-import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
+import br.com.servicetrack.application.usuario.ports.`out`.JwtPort
+import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
 import br.com.servicetrack.domain.usuario.Usuario
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
 

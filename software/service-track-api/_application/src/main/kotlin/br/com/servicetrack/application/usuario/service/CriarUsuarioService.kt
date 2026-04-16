@@ -6,8 +6,8 @@ import br.com.servicetrack.application.usuario.dto.request.CadastrarClienteReqDT
 import br.com.servicetrack.application.usuario.dto.response.ClienteResDTO
 import br.com.servicetrack.application.usuario.mapper.toDomain
 import br.com.servicetrack.application.usuario.ports.`in`.CriarUsuarioUseCase
-import br.com.servicetrack.application.usuario.ports.out.CriptografiaPort
-import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
+import br.com.servicetrack.application.usuario.ports.`out`.CriptografiaPort
+import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
 import br.com.servicetrack.domain.usuario.vo.Senha
 
 @ApplicationService

@@ -4,7 +4,7 @@ import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.servico.dto.AtualizarServicoReqDTO
 import br.com.servicetrack.application.servico.dto.ServicoResDTO
 import br.com.servicetrack.application.servico.ports.`in`.AtualizarServicoUseCase
-import br.com.servicetrack.application.servico.ports.out.ServicoRepositoryPort
+import br.com.servicetrack.application.servico.ports.`out`.ServicoRepositoryPort
 import br.com.servicetrack.domain.servico.Servico
 import br.com.servicetrack.domain.servico.vo.ServicoId
 import br.com.servicetrack.domain.shared.vo.ValorMonetario

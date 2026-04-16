@@ -3,7 +3,7 @@ package br.com.servicetrack.application.insumo.service
 import br.com.servicetrack.application.insumo.dto.CriarInsumoReqDTO
 import br.com.servicetrack.application.insumo.dto.InsumoResDTO
 import br.com.servicetrack.application.insumo.ports.`in`.CriarInsumoUseCase
-import br.com.servicetrack.application.insumo.ports.out.InsumoRepositoryPort
+import br.com.servicetrack.application.insumo.ports.`out`.InsumoRepositoryPort
 import br.com.servicetrack.domain.insumo.Insumo
 import br.com.servicetrack.domain.shared.vo.ValorMonetario
 
