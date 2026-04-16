@@ -2,13 +2,14 @@
 .idea/
 *.iml
 *.iws
-out/
 
 ### Gradle ###
 .gradle/
 build/
 bin/
 *.bin
+**/build/
+**/bin/
 gradle-app.setting
 
 ### Kotlin ###
