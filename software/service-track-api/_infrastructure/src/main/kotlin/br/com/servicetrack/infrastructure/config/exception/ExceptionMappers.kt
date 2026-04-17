@@ -1,4 +1,4 @@
-package br.com.servicetrack.infrastructure.exception
+package br.com.servicetrack.infrastructure.config.exception
 
 import br.com.servicetrack.application.exception.CredenciaisInvalidasException
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException

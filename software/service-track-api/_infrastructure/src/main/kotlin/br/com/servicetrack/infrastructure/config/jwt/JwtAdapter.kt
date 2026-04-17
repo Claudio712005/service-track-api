@@ -1,4 +1,4 @@
-package br.com.servicetrack.infrastructure.jwt
+package br.com.servicetrack.infrastructure.config.jwt
 
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.domain.shared.enums.Role

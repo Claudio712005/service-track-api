@@ -1,4 +1,4 @@
-package br.com.servicetrack.infrastructure.exception
+package br.com.servicetrack.infrastructure.config.exception
 
 data class ErroResponse(
     val mensagem: String,

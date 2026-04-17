@@ -1,4 +1,4 @@
-package br.com.servicetrack.infrastructure.criptografia
+package br.com.servicetrack.infrastructure.config.criptografia
 
 import br.com.servicetrack.application.usuario.ports.out.CriptografiaPort
 import jakarta.enterprise.context.ApplicationScoped
