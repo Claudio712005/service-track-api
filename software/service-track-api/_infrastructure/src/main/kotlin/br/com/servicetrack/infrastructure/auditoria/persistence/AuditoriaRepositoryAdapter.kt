@@ -11,7 +11,7 @@ class AuditoriaRepositoryAdapter(
     private val objectMapper: ObjectMapper,
 ) : AuditoriaRepositoryPort {
 
-    @Transactional
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
     override fun salvar(auditoria: Auditoria): Auditoria {
         val dadosJson = serializarDados(auditoria)
         AuditoriaEntity.de(auditoria, dadosJson).persist()
@@ -19,7 +19,7 @@ class AuditoriaRepositoryAdapter(
     }
 
     private fun serializarDados(auditoria: Auditoria): String {
-        val lista = auditoria.dados.alteracoes.map { campo ->
+        val lista = auditoria.dados.alteracoes?.map { campo ->
             mapOf(
                 "campo" to campo.campo,
                 "valorAntes" to campo.valorAntes?.toString(),

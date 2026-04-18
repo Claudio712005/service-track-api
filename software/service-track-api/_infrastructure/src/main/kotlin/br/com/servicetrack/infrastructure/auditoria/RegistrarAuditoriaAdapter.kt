@@ -9,6 +9,7 @@ import br.com.servicetrack.domain.auditoria.enums.TipoEventoAuditoria
 import br.com.servicetrack.domain.auditoria.vo.EnderecoIp
 import br.com.servicetrack.domain.auditoria.vo.ReferenciaId
 import br.com.servicetrack.domain.shared.exception.DomainException
+import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import br.com.servicetrack.infrastructure.auditoria.factory.AuditoriaStrategyFactory
 import io.vertx.ext.web.RoutingContext
 
@@ -33,12 +34,15 @@ class RegistrarAuditoriaAdapter(
             antes = antes,
             depois = depois,
             enderecoIp = obterIp(),
-            responsavelAcao = jwtPort.getUsuarioId(),
+            responsavelAcao = obterResponsavel(referenciaId),
         )
         val strategy = strategyFactory.obter(evento)
         val auditoria = strategy.executar(ctx)
         repository.salvar(auditoria)
     }
+
+    private fun obterResponsavel(referenciaId: String): UsuarioId =
+        runCatching { jwtPort.getUsuarioId() }.getOrElse { UsuarioId(referenciaId) }
 
     private fun obterIp(): EnderecoIp {
         return try {

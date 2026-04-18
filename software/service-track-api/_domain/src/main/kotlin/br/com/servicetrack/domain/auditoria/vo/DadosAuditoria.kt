@@ -2,11 +2,12 @@ package br.com.servicetrack.domain.auditoria.vo
 
 import br.com.servicetrack.domain.auditoria.CampoAlterado
 import br.com.servicetrack.domain.auditoria.enums.TipoDadoAuditoria
+import java.lang.reflect.Modifier
 import java.math.BigDecimal
 import java.time.temporal.Temporal
 
 class DadosAuditoria(
-    val alteracoes: List<CampoAlterado<*>>,
+    val alteracoes: List<CampoAlterado<*>>?,
 ) {
     companion object {
 
@@ -34,31 +35,37 @@ class DadosAuditoria(
             listOf(CampoAlterado(campo = "estado", valorAntes = "ATIVO", valorDepois = "REMOVIDO", tipo = TipoDadoAuditoria.STRING))
         )
 
+        fun evento(): DadosAuditoria = DadosAuditoria(null)
+
         private fun extrairCampos(fonte: Any, incluirAntes: Boolean): List<CampoAlterado<*>> {
-            return fonte.javaClass.declaredFields.map { field ->
-                field.isAccessible = true
-                val valor = runCatching { field.get(fonte) }.getOrNull()
-                val tipo = resolverTipo(valor)
-                if (incluirAntes)
-                    CampoAlterado(campo = field.name, valorAntes = valor, valorDepois = null, tipo = tipo)
-                else
-                    CampoAlterado(campo = field.name, valorAntes = null, valorDepois = valor, tipo = tipo)
-            }
+            return fonte.javaClass.declaredFields
+                .filter { !Modifier.isStatic(it.modifiers) }
+                .map { field ->
+                    field.isAccessible = true
+                    val valor = runCatching { field.get(fonte) }.getOrNull()
+                    val tipo = resolverTipo(valor)
+                    if (incluirAntes)
+                        CampoAlterado(campo = field.name, valorAntes = valor, valorDepois = null, tipo = tipo)
+                    else
+                        CampoAlterado(campo = field.name, valorAntes = null, valorDepois = valor, tipo = tipo)
+                }
         }
 
         private fun extrairDiferencas(antes: Any, depois: Any): List<CampoAlterado<*>> {
-            return antes.javaClass.declaredFields.mapNotNull { field ->
-                field.isAccessible = true
-                val valorAntes = runCatching { field.get(antes) }.getOrNull()
-                val valorDepois = runCatching { field.get(depois) }.getOrNull()
-                if (valorAntes == valorDepois) null
-                else CampoAlterado(
-                    campo = field.name,
-                    valorAntes = valorAntes,
-                    valorDepois = valorDepois,
-                    tipo = resolverTipo(valorAntes ?: valorDepois),
-                )
-            }
+            return antes.javaClass.declaredFields
+                .filter { !Modifier.isStatic(it.modifiers) }
+                .mapNotNull { field ->
+                    field.isAccessible = true
+                    val valorAntes = runCatching { field.get(antes) }.getOrNull()
+                    val valorDepois = runCatching { field.get(depois) }.getOrNull()
+                    if (valorAntes == valorDepois) null
+                    else CampoAlterado(
+                        campo = field.name,
+                        valorAntes = valorAntes,
+                        valorDepois = valorDepois,
+                        tipo = resolverTipo(valorAntes ?: valorDepois),
+                    )
+                }
         }
 
         private fun resolverTipo(valor: Any?): TipoDadoAuditoria = when (valor) {
@@ -74,7 +81,5 @@ class DadosAuditoria(
         }
     }
 
-    fun temAlteracoes(): Boolean {
-        return this.alteracoes.isNotEmpty()
-    }
+    fun temAlteracoes(): Boolean = alteracoes == null || alteracoes.isNotEmpty()
 }

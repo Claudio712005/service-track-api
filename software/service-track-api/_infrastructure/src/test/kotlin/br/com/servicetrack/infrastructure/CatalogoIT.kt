@@ -68,7 +68,6 @@ class CatalogoIT {
             .jsonPath()
             .getString("token")
 
-        // Garante que existem dados no catálogo
         given()
             .contentType(ContentType.JSON)
             .header("Authorization", "Bearer $tokenMecanico")

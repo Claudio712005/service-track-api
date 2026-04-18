@@ -16,7 +16,15 @@ object AuditoriaProxy {
         contrato.classLoader,
         arrayOf(contrato),
     ) { _, metodo, args ->
-        val resultado = metodo.invoke(instancia, *(args ?: emptyArray()))
+        val resultado = try {
+            metodo.invoke(instancia, *(args ?: emptyArray()))
+        } catch (e: java.lang.reflect.InvocationTargetException) {
+            AuditoriaContextoHolder.limpar()
+            throw e.cause ?: e
+        } catch (e: Exception) {
+            AuditoriaContextoHolder.limpar()
+            throw e
+        }
 
         runCatching {
             val metodoImpl = instancia.javaClass.getMethod(metodo.name, *metodo.parameterTypes)
