@@ -9,5 +9,6 @@ enum class TipoEntidade(
     ORCAMENTO("Orçamento"),
     VEICULO("Veículo"),
     INSUMO("Insumo"),
-    SERVICO("Serviço")
+    SERVICO("Serviço"),
+    USUARIO("Usuário"),
 }

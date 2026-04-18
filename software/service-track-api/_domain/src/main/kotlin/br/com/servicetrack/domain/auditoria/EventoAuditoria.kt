@@ -12,7 +12,7 @@ class EventoAuditoria(
 
     companion object {
         private fun ehUsuario(entidade: TipoEntidade) {
-            if(entidade != TipoEntidade.CLIENTE && entidade != TipoEntidade.MECANICO){
+            if(entidade != TipoEntidade.CLIENTE && entidade != TipoEntidade.MECANICO && entidade != TipoEntidade.USUARIO){
                 throw DomainException("Evento de login só pode ser criado para Cliente ou Mecânico")
             }
         }

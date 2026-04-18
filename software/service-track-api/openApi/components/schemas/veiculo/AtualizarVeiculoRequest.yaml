@@ -1,9 +1,4 @@
 type: object
-required:
-    - placa
-    - modelo
-    - marca
-    - ano
 properties:
     placa:
         type: string

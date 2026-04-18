@@ -1,5 +1,6 @@
 package br.com.servicetrack.application.veiculo.service
 
+import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.exception.VeiculoJaExisteException
@@ -10,6 +11,8 @@ import br.com.servicetrack.application.veiculo.dto.response.DadosveiculoResDTO
 import br.com.servicetrack.application.veiculo.mapper.toDomain
 import br.com.servicetrack.application.veiculo.ports.`in`.CadastrarVeiculoUseCase
 import br.com.servicetrack.application.veiculo.ports.`out`.VeiculoRepositoryPort
+import br.com.servicetrack.domain.auditoria.enums.TipoEntidade
+import br.com.servicetrack.domain.auditoria.enums.TipoEventoAuditoria
 import br.com.servicetrack.domain.usuario.Usuario
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
 
@@ -19,6 +22,7 @@ class CadastrarVeiculoService(
     private val jwt: JwtPort
 ): CadastrarVeiculoUseCase {
 
+    @Auditavel(entidade = TipoEntidade.VEICULO, evento = TipoEventoAuditoria.CRIADO)
     override fun cadastrarVeiculo(req: CadastrarVeiculoReqDTO): DadosveiculoResDTO {
 
         if(repository.existeVeiculoPorPlaca(req.placa)){

@@ -1,5 +1,6 @@
 package br.com.servicetrack.application.veiculo.service
 
+import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.usuario.ports.`out`.JwtPort
@@ -8,6 +9,8 @@ import br.com.servicetrack.application.veiculo.dto.request.AtualizarVeiculoReqDT
 import br.com.servicetrack.application.veiculo.dto.response.DadosveiculoResDTO
 import br.com.servicetrack.application.veiculo.ports.`in`.AtualizarVeiculoUseCase
 import br.com.servicetrack.application.veiculo.ports.`out`.VeiculoRepositoryPort
+import br.com.servicetrack.domain.auditoria.enums.TipoEntidade
+import br.com.servicetrack.domain.auditoria.enums.TipoEventoAuditoria
 import br.com.servicetrack.domain.usuario.Usuario
 import br.com.servicetrack.domain.veiculo.Veiculo
 import br.com.servicetrack.domain.veiculo.vo.Placa
@@ -19,6 +22,7 @@ class AtualizarVeiculoService(
     private val jwt: JwtPort
 ) : AtualizarVeiculoUseCase {
 
+    @Auditavel(entidade = TipoEntidade.VEICULO, evento = TipoEventoAuditoria.ATUALIZADO)
     override fun atualizarVeiculo(id: VeiculoId, req: AtualizarVeiculoReqDTO): DadosveiculoResDTO {
         val usuarioId = jwt.getUsuarioId()
         val usuario = usuarioRepository.buscarPorId(usuarioId)

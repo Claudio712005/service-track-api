@@ -1,10 +1,13 @@
 package br.com.servicetrack.application.servico.service
 
+import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.servico.dto.AtualizarServicoReqDTO
 import br.com.servicetrack.application.servico.dto.ServicoResDTO
 import br.com.servicetrack.application.servico.ports.`in`.AtualizarServicoUseCase
 import br.com.servicetrack.application.servico.ports.`out`.ServicoRepositoryPort
+import br.com.servicetrack.domain.auditoria.enums.TipoEntidade
+import br.com.servicetrack.domain.auditoria.enums.TipoEventoAuditoria
 import br.com.servicetrack.domain.servico.Servico
 import br.com.servicetrack.domain.servico.vo.ServicoId
 import br.com.servicetrack.domain.shared.vo.ValorMonetario
@@ -13,6 +16,7 @@ class AtualizarServicoService(
     private val repository: ServicoRepositoryPort
 ) : AtualizarServicoUseCase {
 
+    @Auditavel(entidade = TipoEntidade.SERVICO, evento = TipoEventoAuditoria.ATUALIZADO)
     override fun atualizarServico(id: ServicoId, req: AtualizarServicoReqDTO): ServicoResDTO {
         val existente = repository.buscarPorId(id)
             ?: throw EntidadeNaoEncontradaException(Servico::class.java.name, arrayOf(id.valor))

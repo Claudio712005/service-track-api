@@ -7,5 +7,5 @@ import br.com.servicetrack.domain.auditoria.enums.TipoEventoAuditoria
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Auditavel(
     val entidade: TipoEntidade,
-    val evento: TipoEventoAuditoria
+    val evento: TipoEventoAuditoria,
 )

@@ -9,13 +9,13 @@ import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import java.time.LocalDateTime
 
 class Auditoria(
-    private val id: AuditoriaId,
-    private val enderecoIp: EnderecoIp,
-    private val referenciaId: ReferenciaId,
-    private val dataCriacao: LocalDateTime,
-    private val eventoAuditoria: EventoAuditoria,
-    private val dados: DadosAuditoria,
-    private val responsavelAcao: UsuarioId,
+    val id: AuditoriaId,
+    val enderecoIp: EnderecoIp,
+    val referenciaId: ReferenciaId,
+    val dataCriacao: LocalDateTime,
+    val eventoAuditoria: EventoAuditoria,
+    val dados: DadosAuditoria,
+    val responsavelAcao: UsuarioId,
 ) {
 
     init {

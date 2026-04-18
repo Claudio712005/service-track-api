@@ -1,33 +1,31 @@
-package br.com.servicetrack.infrastructure.config.interceptor
+package br.com.servicetrack.infrastructure.auditoria
 
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.auditoria.context.AuditoriaContextoHolder
 import br.com.servicetrack.application.auditoria.ports.out.RegistrarAuditoriaPort
-import br.com.servicetrack.infrastructure.auditoria.annotation.AuditavelInterceptorBinding
-import jakarta.inject.Inject
-import jakarta.interceptor.AroundInvoke
-import jakarta.interceptor.Interceptor
-import jakarta.interceptor.InvocationContext
+import java.lang.reflect.Proxy
 
-@AuditavelInterceptorBinding
-@Interceptor
-class AuditoriaInterceptor {
+object AuditoriaProxy {
 
-    @Inject
-    lateinit var auditoriaPort: RegistrarAuditoriaPort
-
-    @AroundInvoke
-    fun interceptar(ctx: InvocationContext): Any? {
-        val auditavel = ctx.method.getAnnotation(Auditavel::class.java)
-            ?: return ctx.proceed()
-
-        val resultado = ctx.proceed()
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any> envolver(
+        instancia: T,
+        contrato: Class<T>,
+        auditoriaPort: RegistrarAuditoriaPort,
+    ): T = Proxy.newProxyInstance(
+        contrato.classLoader,
+        arrayOf(contrato),
+    ) { _, metodo, args ->
+        val resultado = metodo.invoke(instancia, *(args ?: emptyArray()))
 
         runCatching {
+            val metodoImpl = instancia.javaClass.getMethod(metodo.name, *metodo.parameterTypes)
+            val auditavel = metodoImpl.getAnnotation(Auditavel::class.java) ?: return@runCatching
             val antes = AuditoriaContextoHolder.obterAntes()
             val referenciaId = extrairId(resultado)
-                ?: extrairId(ctx.parameters?.firstOrNull())
+                ?: extrairId(args?.firstOrNull())
                 ?: return@runCatching
+
             auditoriaPort.registrar(
                 entidade = auditavel.entidade,
                 evento = auditavel.evento,
@@ -37,8 +35,8 @@ class AuditoriaInterceptor {
             )
         }.also { AuditoriaContextoHolder.limpar() }
 
-        return resultado
-    }
+        resultado
+    } as T
 
     private fun extrairId(obj: Any?): String? {
         if (obj == null) return null
