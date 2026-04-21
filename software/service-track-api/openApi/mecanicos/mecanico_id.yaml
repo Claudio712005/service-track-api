@@ -30,3 +30,54 @@ get:
         application/json:
           schema:
             $ref: '../components/schemas/ErroResponse.yaml'
+
+put:
+  summary: Atualizar nível e valor/hora de um mecânico. Apenas mecânicos Sênior podem atualizar outros. Requer autenticação.
+  operationId: atualizarMecanico
+  tags:
+    - Mecânicos
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/mecanico/AtualizarMecanicoRequest.yaml'
+  responses:
+    '200':
+      description: Mecânico atualizado com sucesso
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/mecanico/MecanicoResponse.yaml'
+    '400':
+      description: Dados inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Operação não permitida
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Mecânico não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

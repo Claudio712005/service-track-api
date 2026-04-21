@@ -1,219 +1,63 @@
-# ADR-004: Escolha do Framework Backend - Quarkus
+# ADR – 004: Framework Backend — Quarkus
+
+## Data
+18/04/2026
+
+---
 
 ## Status
 
-Aprovada
+- Aceita
 
 ---
 
-## Context
+## Contexto
 
-O sistema de gestão de ordens de serviço será desenvolvido como um back-end monolítico, com arquitetura baseada em Domain-Driven Design (DDD), seguindo princípios de:
-
-* Arquitetura em camadas
-* Clean Architecture
-* Arquitetura hexagonal
-* APIs REST
-
-O sistema será inicialmente um MVP, com possibilidade de evolução futura para:
-
-* Escalabilidade horizontal
-* Integração com outros sistemas
-* Possível decomposição em microserviços
-
-O framework escolhido precisa:
-
-* Ter alta performance
-* Baixo tempo de inicialização
-* Baixo consumo de memória
-* Boa integração com containers (Docker)
-* Facilidade de desenvolvimento
-* Integração com o ecossistema Java/Kotlin
-
-Foram consideradas as seguintes opções:
-
-* Quarkus
-* Spring Boot
+O sistema é um monolito modular containerizado, baseado em DDD e Arquitetura Hexagonal. O framework precisa oferecer alta performance, baixo consumo de recursos, suporte a Kotlin, dev experience produtiva e integração com o ecossistema JVM moderno, mantendo controle explícito sobre as camadas arquiteturais.
 
 ---
 
-## Decision
+## Decisão
 
-Será utilizado o Quarkus como framework principal para o desenvolvimento do back-end.
+Adotar **Quarkus** como framework principal do back-end.
 
----
-
-## Justificativa
-
-A escolha do Quarkus foi baseada nos seguintes fatores comparativos e aderência ao contexto do projeto:
-
----
-
-### 1. Tempo de inicialização e consumo de recursos
-
-**Quarkus vs Spring Boot:**
-
-* Quarkus possui startup significativamente mais rápido
-* Menor consumo de memória
-* Otimizado para execução em containers
-
-**Impacto no projeto:**
-
-* Melhor desempenho em ambientes containerizados (Docker)
-* Ideal para execução local leve (MVP)
-* Redução de custo em ambientes cloud
+Fatores determinantes:
+- Startup rápido e baixo consumo de memória, otimizado para containers Docker
+- Projetado para cloud-native desde sua concepção (Kubernetes, GraalVM native image)
+- Dev mode com hot reload para ciclos de feedback curtos no desenvolvimento
+- CDI e Panache ORM com suporte explícito a Kotlin
+- Menor abstração implícita que Spring Boot, favorecendo controle arquitetural (DDD + Hexagonal)
 
 ---
 
-### 2. Arquitetura cloud-native
-
-**Quarkus vs Spring Boot:**
-
-* Quarkus foi projetado com foco em cloud-native desde sua origem
-* Melhor integração com Kubernetes e ambientes distribuídos
-* Suporte a build otimizado (inclusive native image)
-
-**Impacto no projeto:**
-
-* Facilita evolução futura para microserviços
-* Maior aderência a arquiteturas modernas
-
----
-
-### 3. Produtividade no desenvolvimento
-
-**Quarkus vs Spring Boot:**
-
-* Quarkus possui:
-
-    * Dev mode com hot reload
-    * Configuração simplificada
-* Spring Boot possui maior maturidade, porém maior complexidade em algumas configurações
-
-**Impacto:**
-
-* Desenvolvimento mais rápido no MVP
-* Menor tempo de feedback durante desenvolvimento
-
----
-
-### 4. Integração com Kotlin e DDD
-
-**Quarkus vs Spring Boot:**
-
-* Ambos suportam Kotlin
-* Quarkus possui suporte moderno a:
-
-    * CDI (injeção de dependência)
-    * Panache (ORM simplificado)
-* Menos "magia" que Spring → mais controle arquitetural
-
-**Impacto:**
-
-* Melhor controle sobre camadas (DDD + Hexagonal)
-* Menor acoplamento a framework
-
----
-
-### 5. Overhead e complexidade
-
-**Quarkus vs Spring Boot:**
-
-* Spring Boot possui:
-
-    * Maior abstração
-    * Maior quantidade de auto-configurações
-* Quarkus é mais enxuto e explícito
-
-**Impacto:**
-
-* Melhor previsibilidade do comportamento
-* Menor risco de efeitos colaterais ocultos
-
----
-
-### 6. Aderência ao contexto do MVP
-
-O projeto possui características:
-
-* Escopo controlado (MVP)
-* Necessidade de rápida entrega
-* Execução em ambiente containerizado
-* Evolução futura planejada
-
-**Escolha:**
-
-* Quarkus atende melhor ao equilíbrio entre:
-
-    * Performance
-    * Simplicidade
-    * Evolução futura
-
----
-
-## Alternatives Considered
-
-### Spring Boot
-
-**Prós:**
-
-* Extremamente popular e consolidado
-* Grande comunidade
-* Ecossistema amplo (Spring Security, Spring Data, etc.)
-* Facilidade de encontrar suporte
-
-**Contras:**
-
-* Maior consumo de memória
-* Startup mais lento
-* Maior complexidade interna
-* Alto nível de abstração (menos controle explícito)
-* Overkill para MVP de médio porte
-
----
-
-## Consequences
+## Consequências
 
 ### Positivas
-
-* Alta performance e baixo consumo
-* Startup rápido
-* Melhor experiência em containers
-* Código mais controlado e explícito
-* Aderência a arquiteturas modernas (cloud-native)
-
----
+- Alta performance e baixo footprint em ambientes containerizados
+- Startup rápido reduz tempo de deploy e ciclos de desenvolvimento
+- Código mais explícito e controlado, com menor acoplamento ao framework
+- Aderência nativa a padrões cloud-native e preparação para escala
 
 ### Negativas
-
-* Comunidade menor comparada ao Spring
-* Menor quantidade de material e exemplos
-* Curva de aprendizado inicial
-* Menor maturidade em alguns módulos
-
----
-
-## Scope
-
-Esta decisão se aplica a:
-
-* Todo o backend do sistema
-* Estrutura de APIs REST
-* Camadas de aplicação e infraestrutura
+- Ecossistema e comunidade menores que Spring Boot
+- Menor volume de material de referência, exemplos e Stack Overflow
+- Curva de aprendizado inicial, especialmente em configurações avançadas
+- Alguns módulos com menor maturidade comparados aos equivalentes Spring
 
 ---
 
-## Future Considerations
+## Alternativas Consideradas
 
-* Avaliar uso de native image para otimização extrema
-* Monitorar performance em produção
-* Possível integração com mensageria
-* Evolução para arquitetura distribuída
+### Opção 1: Spring Boot
+- Framework mais popular e consolidado do ecossistema Java/Kotlin
+- Prós: comunidade enorme, ecossistema completo (Security, Data, Cloud), ampla documentação e suporte
+- Contras: maior consumo de memória, startup mais lento, alto nível de abstração implícita; overhead excessivo para MVP de médio porte com equipe reduzida
 
 ---
 
-## References
+## Referências
 
-* Documentação oficial do Quarkus
-* Documentação oficial do Spring Boot
-* Práticas de arquitetura cloud-native
+- [RFC-004 – Adoção do Quarkus como Framework Backend](../rfc/RFC-004-quarkus.md)
+- Documentação oficial do Quarkus — quarkus.io
+- Documentação oficial do Spring Boot — spring.io
+- Práticas de arquitetura cloud-native

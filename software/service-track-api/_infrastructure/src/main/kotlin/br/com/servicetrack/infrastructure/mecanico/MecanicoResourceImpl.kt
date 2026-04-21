@@ -1,9 +1,11 @@
 package br.com.servicetrack.infrastructure.mecanico
 
+import br.com.servicetrack.application.mecanico.ports.`in`.AtualizarMecanicoUseCase
 import br.com.servicetrack.application.mecanico.ports.`in`.BuscarMecanicoUseCase
 import br.com.servicetrack.application.mecanico.ports.`in`.CadastrarMecanicoUseCase
 import br.com.servicetrack.application.mecanico.ports.`in`.ListarMecanicosUseCase
 import br.com.servicetrack.infrastructure.api.MecanicosApi
+import br.com.servicetrack.infrastructure.api.dto.AtualizarMecanicoRequest
 import br.com.servicetrack.infrastructure.api.dto.CadastrarMecanicoRequest
 import jakarta.annotation.security.PermitAll
 import jakarta.annotation.security.RolesAllowed
@@ -18,7 +20,8 @@ import java.net.URI
 class MecanicoResourceImpl @Inject constructor(
     private val cadastrarMecanicoUseCase: CadastrarMecanicoUseCase,
     private val buscarMecanicoUseCase: BuscarMecanicoUseCase,
-    private val listarMecanicosUseCase: ListarMecanicosUseCase
+    private val listarMecanicosUseCase: ListarMecanicosUseCase,
+    private val atualizarMecanicoUseCase: AtualizarMecanicoUseCase
 ) : MecanicosApi {
 
     @PermitAll
@@ -44,5 +47,13 @@ class MecanicoResourceImpl @Inject constructor(
         val mecanicos = listarMecanicosUseCase.listarMecanicos()
             .map { it.toMecanicoResponse() }
         return Response.ok(mecanicos).build()
+    }
+
+    @RolesAllowed("MECANICO")
+    @Transactional
+    override fun atualizarMecanico(@PathParam("id") id: String, atualizarMecanicoRequest: AtualizarMecanicoRequest): Response {
+        val dto = atualizarMecanicoRequest.toApplicationDTO()
+        val mecanicoResDTO = atualizarMecanicoUseCase.atualizarMecanico(id, dto)
+        return Response.ok(mecanicoResDTO.toMecanicoResponse()).build()
     }
 }

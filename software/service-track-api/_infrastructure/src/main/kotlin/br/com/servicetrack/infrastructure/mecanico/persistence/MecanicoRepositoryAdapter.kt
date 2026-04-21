@@ -20,4 +20,15 @@ class MecanicoRepositoryAdapter : MecanicoRepositoryPort {
     override fun listarTodos(): List<Mecanico> {
         return MecanicoEntity.listAll().map { it.toDomain() }
     }
+
+    override fun atualizar(mecanico: Mecanico): Mecanico? {
+        val entity = MecanicoEntity
+            .find("usuarioId", UUID.fromString(mecanico.usuarioId.valor))
+            .firstResult() ?: return null
+
+        entity.nivel = mecanico.obterNivel().valor
+        entity.valorHora = mecanico.obterValorHora().valor
+
+        return entity.toDomain()
+    }
 }

@@ -1,0 +1,17 @@
+type: object
+required:
+  - nivel
+  - valorHora
+properties:
+  nivel:
+    type: string
+    enum:
+      - JUNIOR
+      - PLENO
+      - SENIOR
+    example: "PLENO"
+  valorHora:
+    type: number
+    format: double
+    minimum: 0.01
+    example: 80.00
