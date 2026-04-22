@@ -14,6 +14,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import br.com.servicetrack.domain.ordemServico.vo.ItemOrdemServicoId
 
 class OrdemServicoTest {
 
@@ -453,5 +454,47 @@ class OrdemServicoTest {
         assertEquals("Revisão geral", os.motivo)
         assertEquals(StatusOrdemServicoEnum.RECEBIDA, os.obterStatus())
     }
-}
 
+    @Test
+    fun `deve concluir item de servico e vincular mecanico automaticamente`() {
+        val os = buildOS()
+        os.iniciarDiagnostico()
+        val servicoId = br.com.servicetrack.domain.servico.vo.ServicoId.gerar()
+        val item = os.adicionarServico(servicoId, ValorMonetario(BigDecimal("80.00")))
+        os.gerarOrcamento(custoMaoDeObra, custoInsumos)
+        os.aprovarOrcamento()
+
+        val mecanicoId = UsuarioId.gerar()
+        os.concluirItemServico(item.id, mecanicoId, "Servico executado")
+
+        assertTrue(item.feito)
+        assertEquals(mecanicoId, item.mecanicoResponsavelId)
+        assertEquals("Servico executado", item.observacao)
+        assertNotNull(item.dataRealizacao)
+    }
+
+    @Test
+    fun `deve lançar exceção ao concluir item fora de execução`() {
+        val os = buildOS()
+        os.iniciarDiagnostico()
+        val item = os.adicionarServico(br.com.servicetrack.domain.servico.vo.ServicoId.gerar(), ValorMonetario(BigDecimal("80.00")))
+
+        val exception = assertThrows<IllegalStateException> {
+            os.concluirItemServico(item.id, UsuarioId.gerar(), "Servico executado")
+        }
+        assertTrue(exception.message!!.contains("execução"))
+    }
+
+    @Test
+    fun `deve lançar exceção ao concluir item inexistente`() {
+        val os = buildOS()
+        os.iniciarDiagnostico()
+        os.gerarOrcamento(custoMaoDeObra, custoInsumos)
+        os.aprovarOrcamento()
+
+        val exception = assertThrows<DomainException> {
+            os.concluirItemServico(ItemOrdemServicoId.gerar(), UsuarioId.gerar(), "Servico executado")
+        }
+        assertTrue(exception.message!!.contains("não encontrado"))
+    }
+}

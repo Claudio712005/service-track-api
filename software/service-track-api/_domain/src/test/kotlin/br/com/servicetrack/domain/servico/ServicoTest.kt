@@ -41,6 +41,17 @@ class ServicoTest {
         assertEquals(BigDecimal("80.00"), servico.valorReferencia!!.valor)
     }
 
+
+    @Test
+    fun `deve gerar serviço com valor de referência padrão`() {
+        val servico = Servico.gerar(
+            nomeServico = "Alinhamento",
+            descricaoServico = "Alinhamento computadorizado",
+        )
+
+        assertNull(servico.valorReferencia)
+    }
+
     @Test
     fun `deve gerar ids únicos a cada criação`() {
         val a = buildServico()

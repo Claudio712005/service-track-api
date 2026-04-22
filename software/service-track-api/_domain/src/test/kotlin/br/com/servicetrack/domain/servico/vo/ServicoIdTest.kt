@@ -15,4 +15,12 @@ class ServicoIdTest {
             UUID.fromString(id.valor)
         }
     }
+
+    @Test
+    fun `deve instânciar ServicoId com UUID valido`(){
+
+        assertDoesNotThrow {
+            ServicoId(UUID.randomUUID().toString())
+        }
+    }
 }

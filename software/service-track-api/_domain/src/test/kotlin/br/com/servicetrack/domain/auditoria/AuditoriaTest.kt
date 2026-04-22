@@ -9,8 +9,8 @@ import br.com.servicetrack.domain.shared.exception.DomainException
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import kotlin.test.assertNotNull
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class AuditoriaTest {
 
@@ -71,5 +71,30 @@ class AuditoriaTest {
 
         val auditoria = buildAuditoria(dados)
         assertNotNull(auditoria)
+    }
+
+    @Test
+    fun `deve expor dados registrados`() {
+        val enderecoIp = EnderecoIp.criar("10.0.0.2")
+        val referenciaId = ReferenciaId.gerar()
+        val evento = EventoAuditoria.criacao(TipoEntidade.CLIENTE)
+        val dados = buildDadosComAlteracoes()
+        val responsavel = UsuarioId.gerar()
+
+        val auditoria = Auditoria.registrar(
+            enderecoIp = enderecoIp,
+            referenciaId = referenciaId,
+            eventoAuditoria = evento,
+            dados = dados,
+            responsavelAcao = responsavel
+        )
+
+        assertNotNull(auditoria.id)
+        assertNotNull(auditoria.dataCriacao)
+        assertEquals(enderecoIp, auditoria.enderecoIp)
+        assertEquals(referenciaId, auditoria.referenciaId)
+        assertEquals(evento, auditoria.eventoAuditoria)
+        assertEquals(dados, auditoria.dados)
+        assertEquals(responsavel, auditoria.responsavelAcao)
     }
 }
