@@ -60,6 +60,14 @@ class OrcamentoEntity : PanacheEntityBase {
         }
     }
 
+    fun atualizarCom(orcamento: Orcamento) {
+        this.dataAtualizacao = orcamento.obterDataAtualizacao()
+        this.custoMaoDeObra = orcamento.custoMaoDeObra.valor
+        this.custoInsumos = orcamento.custoInsumos.valor
+        this.aprovado = orcamento.estaAprovado()
+        this.observacao = orcamento.obterObservacao()
+    }
+
     fun toDomain(): Orcamento = Orcamento.reconstituir(
         id = OrcamentoId.de(id.toString()),
         dataCriacao = dataCriacao,

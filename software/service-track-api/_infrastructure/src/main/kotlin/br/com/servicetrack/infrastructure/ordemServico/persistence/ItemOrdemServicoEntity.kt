@@ -9,6 +9,7 @@ import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import br.com.servicetrack.infrastructure.servico.persistence.ServicoEntity
 import br.com.servicetrack.infrastructure.usuario.persistence.UsuarioEntity
 import io.quarkus.hibernate.orm.panache.kotlin.PanacheCompanion
+import jakarta.persistence.EntityManager
 import io.quarkus.hibernate.orm.panache.kotlin.PanacheEntityBase
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -94,4 +95,15 @@ class ItemOrdemServicoEntity : PanacheEntityBase {
         dataCriacao = dataCriacao,
         dataAtualizacao = dataAtualizacao,
     )
+
+    fun atualizarCom(dto: ItemOrdemServico, em: EntityManager) {
+        this.valor = dto.valor.valor
+        this.feito = dto.feito
+        this.observacao = dto.observacao
+        this.dataRealizacao = dto.dataRealizacao
+        this.dataAtualizacao = dto.dataAtualizacao
+        this.mecanicoResponsavel = dto.mecanicoResponsavelId?.let { uid ->
+            em.getReference(UsuarioEntity::class.java, UUID.fromString(uid.valor))
+        }
+    }
 }

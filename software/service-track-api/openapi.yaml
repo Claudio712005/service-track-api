@@ -40,3 +40,25 @@ paths:
     $ref: './openApi/catalogo/catalogo_insumos.yaml'
   /ordem-servico:
     $ref: './openApi/ordemServico/ordemServico.yaml'
+  /ordem-servico/lista:
+    $ref: './openApi/ordemServico/ordemServico_lista.yaml'
+  /ordem-servico/{id}:
+    $ref: './openApi/ordemServico/ordemServico_id.yaml'
+  /ordem-servico/{id}/diagnostico:
+    $ref: './openApi/ordemServico/ordemServico_diagnostico.yaml'
+  /ordem-servico/{id}/diagnostico/itens:
+    $ref: './openApi/ordemServico/ordemServico_diagnostico_itens.yaml'
+  /ordem-servico/{id}/orcamento:
+    $ref: './openApi/ordemServico/ordemServico_orcamento.yaml'
+  /ordem-servico/{id}/orcamento/aprovacao:
+    $ref: './openApi/ordemServico/ordemServico_orcamento_aprovacao.yaml'
+  /ordem-servico/{id}/orcamento/reprovacao:
+    $ref: './openApi/ordemServico/ordemServico_orcamento_reprovacao.yaml'
+  /ordem-servico/{id}/cancelamento:
+    $ref: './openApi/ordemServico/ordemServico_cancelamento.yaml'
+  /ordem-servico/{id}/finalizacao:
+    $ref: './openApi/ordemServico/ordemServico_finalizacao.yaml'
+  /ordem-servico/{id}/entrega:
+    $ref: './openApi/ordemServico/ordemServico_entrega.yaml'
+  /ordem-servico/{id}/itens/{itemId}/concluir:
+    $ref: './openApi/ordemServico/ordemServico_item_concluir.yaml'

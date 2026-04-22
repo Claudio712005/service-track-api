@@ -1,0 +1,54 @@
+put:
+  summary: |
+    Associar serviços e insumos à OS durante o diagnóstico.
+    Endpoint único (serviços + insumos atomicamente): substitui todos os itens existentes.
+    Requer mínimo de 1 serviço e 1 insumo. Apenas mecânico vinculado.
+  operationId: associarItensOrdemServico
+  tags:
+    - OrdemServico
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/ordemServico/AssociarItensRequest.yaml'
+  responses:
+    '200':
+      description: Itens associados com sucesso
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ordemServico/OrdemServicoResponse.yaml'
+    '400':
+      description: Dados inválidos, estoque insuficiente ou OS em status incorreto
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Apenas o mecânico vinculado pode associar itens
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: OS, serviço ou insumo não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

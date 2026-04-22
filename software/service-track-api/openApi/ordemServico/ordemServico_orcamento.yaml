@@ -1,0 +1,48 @@
+post:
+  summary: |
+    Gerar orçamento da OS. Apenas mecânico vinculado.
+    Pré-condições: status = EM_DIAGNOSTICO, ≥1 serviço e ≥1 insumo associados.
+    Efeitos: reserva insumos no estoque, transição EM_DIAGNOSTICO → AGUARDANDO_APROVACAO.
+  operationId: gerarOrcamento
+  tags:
+    - OrdemServico
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    '200':
+      description: Orçamento gerado com sucesso
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ordemServico/OrdemServicoResponse.yaml'
+    '400':
+      description: Pré-condições não satisfeitas
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Apenas o mecânico vinculado pode gerar o orçamento
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: OS não encontrada
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

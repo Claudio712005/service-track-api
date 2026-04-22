@@ -21,7 +21,7 @@ class AuditoriaEntity : PanacheEntityBase {
     @Column(name = "endereco_ip", nullable = false, length = 45)
     lateinit var enderecoIp: String
 
-    @Column(name = "referencia_id", nullable = false, length = 36)
+    @Column(name = "referencia_id", nullable = false, length = 60)
     lateinit var referenciaId: String
 
     @Column(name = "data_criacao", nullable = false, updatable = false)

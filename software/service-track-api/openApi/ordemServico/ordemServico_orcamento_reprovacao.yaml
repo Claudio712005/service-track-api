@@ -1,0 +1,53 @@
+post:
+  summary: |
+    Reprovar orçamento. Apenas o cliente titular da OS.
+    Efeitos: devolve insumos reservados ao estoque. Transição AGUARDANDO_APROVACAO → CANCELADA.
+  operationId: reprovarOrcamento
+  tags:
+    - OrdemServico
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/ordemServico/ReprovarOrcamentoRequest.yaml'
+  responses:
+    '200':
+      description: Orçamento reprovado. OS cancelada e insumos devolvidos ao estoque.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ordemServico/ResumoOrdemServicoResponse.yaml'
+    '400':
+      description: Status inválido para reprovação ou motivo ausente
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Apenas o cliente titular pode reprovar o orçamento
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: OS não encontrada
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

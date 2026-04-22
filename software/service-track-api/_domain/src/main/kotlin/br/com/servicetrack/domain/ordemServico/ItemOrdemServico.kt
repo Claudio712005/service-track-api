@@ -18,7 +18,7 @@ class ItemOrdemServico private constructor(
     var dataRealizacao: LocalDateTime?,
     var observacao: String?,
     val dataCriacao: LocalDateTime,
-    private var dataAtualizacao: LocalDateTime,
+    var dataAtualizacao: LocalDateTime,
 ) {
 
     companion object {

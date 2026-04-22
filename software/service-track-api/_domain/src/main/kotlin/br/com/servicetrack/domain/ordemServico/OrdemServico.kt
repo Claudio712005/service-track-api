@@ -2,6 +2,7 @@ package br.com.servicetrack.domain.ordemServico
 
 import br.com.servicetrack.domain.insumo.vo.InsumoId
 import br.com.servicetrack.domain.orcamento.Orcamento
+import br.com.servicetrack.domain.ordemServico.vo.ItemOrdemServicoId
 import br.com.servicetrack.domain.ordemServico.vo.OrdemServicoId
 import br.com.servicetrack.domain.ordemServico.vo.PrazoConclusao
 import br.com.servicetrack.domain.ordemServico.vo.StatusOrdemServico
@@ -202,6 +203,19 @@ class OrdemServico private constructor(
             ?: throw DomainException("Serviço não encontrado nesta OS")
         check(!item.feito) { "Não é possível remover um serviço já concluído da OS" }
         itensServico.remove(item)
+        dataAtualizacao = LocalDateTime.now()
+    }
+
+    fun concluirItemServico(itemId: ItemOrdemServicoId, mecanicoId: UsuarioId, observacao: String) {
+        check(status.valor == StatusOrdemServicoEnum.EM_EXECUCAO) {
+            "Itens de serviço só podem ser concluídos quando a OS está em execução"
+        }
+        val item = itensServico.find { it.id == itemId }
+            ?: throw DomainException("Item de serviço não encontrado nesta OS")
+        if (item.mecanicoResponsavelId == null) {
+            item.vincularMecanico(mecanicoId)
+        }
+        item.concluir(observacao)
         dataAtualizacao = LocalDateTime.now()
     }
 

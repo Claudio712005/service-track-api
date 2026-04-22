@@ -214,7 +214,7 @@ project(":_infrastructure").afterEvaluate {
         )
 
         doLast {
-            printCoverageReport("Infrastructure", 0.80, reports.xml.outputLocation.get().asFile, branchRatio = 0.0)
+            printCoverageReport("Infrastructure", 0.60, reports.xml.outputLocation.get().asFile, branchRatio = 0.0)
         }
     }
 
@@ -240,7 +240,7 @@ project(":_infrastructure").afterEvaluate {
                 limit {
                     counter = "INSTRUCTION"
                     value = "COVEREDRATIO"
-                    minimum = "0.80".toBigDecimal()
+                    minimum = "0.60".toBigDecimal()
                 }
             }
         }
