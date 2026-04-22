@@ -60,6 +60,8 @@ class Orcamento private constructor(
 
     fun obterObservacao(): String = observacao
 
+    fun obterDataAtualizacao(): LocalDateTime = dataAtualizacao
+
     fun aprovar() {
         check(!aprovado) { "Orçamento já foi aprovado" }
         aprovado = true

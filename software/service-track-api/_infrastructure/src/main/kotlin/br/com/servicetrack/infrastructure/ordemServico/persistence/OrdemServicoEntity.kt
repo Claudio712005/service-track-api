@@ -16,7 +16,6 @@ import jakarta.persistence.CascadeType
 import jakarta.persistence.CollectionTable
 import jakarta.persistence.Column
 import jakarta.persistence.ElementCollection
-import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -25,6 +24,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import java.time.LocalDateTime
 import java.util.UUID
@@ -68,8 +68,8 @@ class OrdemServicoEntity : PanacheEntityBase {
     @Column(name = "prazo_conclusao")
     var prazoConclusao: LocalDateTime? = null
 
-    @Embedded
-    var orcamento: OrcamentoEmbeddable? = null
+    @OneToOne(mappedBy = "ordemServico", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
+    var orcamento: OrcamentoEntity? = null
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
@@ -93,6 +93,7 @@ class OrdemServicoEntity : PanacheEntityBase {
             id = UUID.fromString(os.id.valor)
             motivo = os.motivo
             dataCriacao = os.dataCriacao
+            dataAtualizacao = os.dataAtualizacao
 
             cliente = UsuarioEntity().apply {
                 this.id = UUID.fromString(os.clienteId.valor)
@@ -104,8 +105,10 @@ class OrdemServicoEntity : PanacheEntityBase {
                 this.id = UUID.fromString(os.veiculoId.valor)
             }
 
+            observacao = os.observacao
+
             status = os.obterStatus()
-            orcamento = os.obterOrcamento()?.let { OrcamentoEmbeddable.de(it) }
+            orcamento = os.obterOrcamento()?.let { OrcamentoEntity.de(it, this) }
             insumos = os.listarInsumos().map { it.valor }.toMutableList()
         }
     }
@@ -118,10 +121,10 @@ class OrdemServicoEntity : PanacheEntityBase {
         mecanicoId = UsuarioId(mecanico.id.toString()),
         veiculoId = VeiculoId(veiculo.id.toString()),
         dataCriacao = dataCriacao,
-        dataAtualizacao = dataAtualizacao,
+        dataAtualizacao =  dataAtualizacao,
         status = StatusOrdemServico.deEnum(status),
         prazoConclusao = prazoConclusao?.let { PrazoConclusao(it) },
-        orcamento = orcamento?.toDomainOrNull(),
+        orcamento = orcamento?.toDomain(),
         insumos = insumos.map { InsumoId.de(it) }.toMutableList(),
         itensServico = itensServico.map { it.toDomain() }.toMutableList(),
     )

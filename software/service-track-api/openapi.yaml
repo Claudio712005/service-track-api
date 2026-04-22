@@ -38,3 +38,5 @@ paths:
     $ref: './openApi/catalogo/catalogo_servicos.yaml'
   /catalogo/insumos:
     $ref: './openApi/catalogo/catalogo_insumos.yaml'
+  /ordem-servico:
+    $ref: './openApi/ordemServico/ordemServico.yaml'
