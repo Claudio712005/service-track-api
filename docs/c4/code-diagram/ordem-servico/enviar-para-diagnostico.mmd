@@ -1,0 +1,83 @@
+classDiagram
+    direction TB
+
+    namespace Infrastructure_REST {
+        class OrdemServicoResourceImpl {
+            +enviarParaDiagnostico(ordemServicoId) Response
+        }
+    }
+
+    namespace Infrastructure_CrossCutting {
+        class AuditoriaProxy {
+            <<cross-cutting>>
+            +envolver(T, Class~T~, RegistrarAuditoriaPort) T
+            -interceptar(method, args) Any
+        }
+    }
+
+    namespace Application_Ports_In {
+        class EnviarParaDiagnosticoUseCase {
+            <<interface>>
+            +enviarParaDiagnostico(ordemServicoId) ResumoOrdemServicoResDTO
+        }
+    }
+
+    namespace Application_Service {
+        class EnviarParaDiagnosticoService {
+            +enviarParaDiagnostico(ordemServicoId) ResumoOrdemServicoResDTO
+            -validarMecanicoVinculado(os, solicitanteId)
+        }
+    }
+
+    namespace Application_Ports_Out {
+        class JwtPort {
+            <<interface>>
+            +getUsuarioId() UsuarioId
+        }
+        class OrdemServicoRepositoryPort {
+            <<interface>>
+            +buscarPorId(OrdemServicoId) OrdemServico?
+            +atualizar(OrdemServico) OrdemServico
+        }
+        class RegistrarAuditoriaPort {
+            <<interface>>
+            +registrar(TipoEntidade, TipoEventoAuditoria, String, Any?, Any?)
+        }
+    }
+
+    namespace Domain {
+        class OrdemServico {
+            <<aggregate root>>
+            +status StatusOrdemServico
+            +obterMecanicoId() UsuarioId
+            +iniciarDiagnostico()
+        }
+    }
+
+    namespace Infrastructure_Adapters {
+        class JwtAdapter {
+            +getUsuarioId() UsuarioId
+        }
+        class OrdemServicoRepositoryAdapter {
+            +buscarPorId(OrdemServicoId) OrdemServico?
+            +atualizar(OrdemServico) OrdemServico
+        }
+        class AuditoriaRepositoryAdapter {
+            +registrar(TipoEntidade, TipoEventoAuditoria, String, Any?, Any?)
+        }
+    }
+
+    OrdemServicoResourceImpl --> EnviarParaDiagnosticoUseCase : invoca
+
+    AuditoriaProxy ..|> EnviarParaDiagnosticoUseCase : wrap (Java Proxy)
+    AuditoriaProxy --> EnviarParaDiagnosticoService : delega execução
+    AuditoriaProxy --> RegistrarAuditoriaPort : notifica após @Auditavel
+
+    EnviarParaDiagnosticoService ..|> EnviarParaDiagnosticoUseCase : implementa
+    EnviarParaDiagnosticoService --> JwtPort : getUsuarioId()
+    EnviarParaDiagnosticoService --> OrdemServicoRepositoryPort : buscarPorId() atualizar()
+    EnviarParaDiagnosticoService --> OrdemServico : iniciarDiagnostico()
+
+    JwtAdapter ..|> JwtPort : implementa
+    OrdemServicoRepositoryAdapter ..|> OrdemServicoRepositoryPort : implementa
+    AuditoriaRepositoryAdapter ..|> RegistrarAuditoriaPort : implementa

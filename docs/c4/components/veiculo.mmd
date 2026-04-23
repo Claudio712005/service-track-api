@@ -1,0 +1,40 @@
+---
+title: C4 Component - Veiculo
+---
+flowchart TD
+    HTTP(["HTTP Request"])
+
+    subgraph INFRA["Infrastructure"]
+        VR["VeiculoResourceImpl<br/>POST /veiculos<br/>GET /veiculos<br/>GET /veiculos/{id}<br/>PUT /veiculos/{id}<br/>DELETE /veiculos/{id}"]
+        VRA["VeiculoRepositoryAdapter<br/>(JPA + Panache)"]
+        VE["VeiculoEntity"]
+    end
+
+    subgraph APP["Application"]
+        CVC["CadastrarVeiculoUseCase"]
+        BVC["BuscarVeiculoUseCase"]
+        AVC["AtualizarVeiculoUseCase"]
+        LVC["ListarVeiculosUseCase"]
+        RVC["RemoverVeiculoUseCase"]
+        CVS["CadastrarVeiculoService"]
+        BVS["BuscarVeiculoService"]
+        AVS["AtualizarVeiculoService"]
+        LVS["ListarVeiculosService"]
+        RVS["RemoverVeiculoService"]
+        VRP["VeiculoRepositoryPort"]
+    end
+
+    subgraph DOMAIN["Domain"]
+        V["Veiculo<br/>+ DadosVeiculo"]
+        VO["VeiculoId / Placa"]
+    end
+
+    HTTP --> VR
+    VR --> CVC & BVC & AVC & LVC & RVC
+    CVC --> CVS
+    BVC --> BVS
+    AVC --> AVS
+    LVC --> LVS
+    RVC --> RVS
+    CVS & BVS & AVS & LVS & RVS --> VRP --> VRA --> VE
+    CVS & BVS & AVS & LVS & RVS --> V & VO

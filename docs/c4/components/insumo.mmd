@@ -1,0 +1,40 @@
+---
+title: C4 Component - Insumo (Catálogo de Insumos)
+---
+flowchart TD
+    HTTP(["HTTP Request"])
+
+    subgraph INFRA["Infrastructure"]
+        IR["InsumoResourceImpl<br/>POST /insumos<br/>GET /insumos<br/>GET /insumos/{id}<br/>PUT /insumos/{id}<br/>DELETE /insumos/{id}"]
+        IRA["InsumoRepositoryAdapter<br/>(JPA + Panache)"]
+        IE["InsumoEntity"]
+    end
+
+    subgraph APP["Application"]
+        CIC["CriarInsumoUseCase"]
+        BIC["BuscarInsumoUseCase"]
+        AIC["AtualizarInsumoUseCase"]
+        LIC["ListarInsumosUseCase"]
+        RIC["RemoverInsumoUseCase"]
+        CIS["CriarInsumoService"]
+        BIS["BuscarInsumoService"]
+        AIS["AtualizarInsumoService"]
+        LIS["ListarInsumosService"]
+        RIS["RemoverInsumoService"]
+        IRP["InsumoRepositoryPort"]
+    end
+
+    subgraph DOMAIN["Domain"]
+        I["Insumo"]
+        VO["InsumoId / ValorMonetario"]
+    end
+
+    HTTP --> IR
+    IR --> CIC & BIC & AIC & LIC & RIC
+    CIC --> CIS
+    BIC --> BIS
+    AIC --> AIS
+    LIC --> LIS
+    RIC --> RIS
+    CIS & BIS & AIS & LIS & RIS --> IRP --> IRA --> IE
+    CIS & BIS & AIS & LIS & RIS --> I & VO

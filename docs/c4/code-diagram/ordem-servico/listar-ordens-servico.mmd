@@ -1,0 +1,60 @@
+classDiagram
+    direction TB
+
+    namespace Infrastructure_REST {
+        class OrdemServicoResourceImpl {
+            +listarOrdensServico(FiltroOrdemServicoDTO) Response
+        }
+    }
+
+    namespace Application_Ports_In {
+        class ListarOrdensServicoUseCase {
+            <<interface>>
+            +listarOrdensServico(FiltroOrdemServicoDTO) PageResDTO~ResumoOrdemServicoResDTO~
+        }
+    }
+
+    namespace Application_Service {
+        class ListarOrdensServicoService {
+            +listarOrdensServico(FiltroOrdemServicoDTO) PageResDTO~ResumoOrdemServicoResDTO~
+            -aplicarFiltroAutomaticoCliente(solicitante, filtro) FiltroOrdemServicoDTO
+        }
+    }
+
+    namespace Application_Ports_Out {
+        class JwtPort {
+            <<interface>>
+            +getUsuarioId() UsuarioId
+        }
+        class UsuarioRepositoryPort {
+            <<interface>>
+            +buscarPorId(UsuarioId) Usuario?
+        }
+        class OrdemServicoRepositoryPort {
+            <<interface>>
+            +listar(FiltroOrdemServicoDTO) Page~OrdemServico~
+        }
+    }
+
+    namespace Infrastructure_Adapters {
+        class JwtAdapter {
+            +getUsuarioId() UsuarioId
+        }
+        class UsuarioRepositoryAdapter {
+            +buscarPorId(UsuarioId) Usuario?
+        }
+        class OrdemServicoRepositoryAdapter {
+            +listar(FiltroOrdemServicoDTO) Page~OrdemServico~
+        }
+    }
+
+    OrdemServicoResourceImpl --> ListarOrdensServicoUseCase : invoca
+
+    ListarOrdensServicoService ..|> ListarOrdensServicoUseCase : implementa
+    ListarOrdensServicoService --> JwtPort : getUsuarioId()
+    ListarOrdensServicoService --> UsuarioRepositoryPort : buscarPorId()
+    ListarOrdensServicoService --> OrdemServicoRepositoryPort : listar()
+
+    JwtAdapter ..|> JwtPort : implementa
+    UsuarioRepositoryAdapter ..|> UsuarioRepositoryPort : implementa
+    OrdemServicoRepositoryAdapter ..|> OrdemServicoRepositoryPort : implementa
