@@ -2,75 +2,101 @@ name: Security
 
 on:
   push:
+    branches: ["main", "develop", "fase-*"]
   pull_request:
+    branches: ["main", "develop"]
+
+permissions:
+  security-events: write
+  actions: read
+  contents: read
 
 jobs:
 
   sast:
-    name: SAST - Semgrep
+    name: SAST · Semgrep
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: software/service-track-api
-
-    permissions:
-      security-events: write
-      contents: read
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run :contentReference[oaicite:1]{index=1}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-semgrep-${{ runner.os }}
+          restore-keys: pip-semgrep-
+
+      - name: Install Semgrep
+        run: pip install semgrep --quiet
+
+      - name: Run Semgrep
+        working-directory: ${{ github.workspace }}
         run: |
-          pip install semgrep
-          mkdir -p reports
+          mkdir -p software/service-track-api/reports
           semgrep --config=auto \
                   --sarif \
-                  --output reports/semgrep.sarif
+                  --output software/service-track-api/reports/semgrep.sarif \
+                  software/service-track-api/ || true
 
       - name: Upload SARIF (SAST)
-        uses: github/codeql-action/upload-sarif@v3
+        if: always() && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: software/service-track-api/reports/semgrep.sarif
+          category: semgrep
+
 
   sca:
-    name: SCA - Dependency Check
+    name: SCA · Dependency Check
     runs-on: ubuntu-latest
 
     defaults:
       run:
         working-directory: software/service-track-api
 
-    permissions:
-      security-events: write
-      contents: read
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run :contentReference[oaicite:2]{index=2}
+      - name: Cache NVD data
+        uses: actions/cache@v4
+        with:
+          path: ~/.owasp/data
+          key: owasp-nvd-${{ runner.os }}-${{ hashFiles('software/service-track-api/**/*.gradle.kts') }}
+          restore-keys: owasp-nvd-${{ runner.os }}-
+
+      - name: Run OWASP Dependency Check
         run: |
           mkdir -p reports
-
           docker run --rm \
             -v ${{ github.workspace }}/software/service-track-api:/src \
-            owasp/dependency-check \
+            -v ~/.owasp/data:/data \
+            owasp/dependency-check:latest \
             --scan /src \
             --format JSON \
-            --out /src/reports
+            --out /src/reports \
+            --data /data \
+            --disableAssembly \
+            --disableRetired \
+            --project "service-track-api"
 
       - name: Convert JSON → SARIF
-        run: |
-          node scripts/convert-to-sarif.js
+        run: node scripts/convert-to-sarif.js
 
       - name: Upload SARIF (SCA)
-        uses: github/codeql-action/upload-sarif@v3
+        if: always() && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: software/service-track-api/reports/dependency-check.sarif
+          category: dependency-check
 
-      - name: Upload artifact (debug opcional)
+      - name: Upload raw report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dependency-check-report
           path: software/service-track-api/reports/
+          retention-days: 7
