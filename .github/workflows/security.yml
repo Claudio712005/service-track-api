@@ -1,0 +1,76 @@
+name: Security
+
+on:
+  push:
+  pull_request:
+
+jobs:
+
+  sast:
+    name: SAST - Semgrep
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: software/service-track-api
+
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run :contentReference[oaicite:1]{index=1}
+        run: |
+          pip install semgrep
+          mkdir -p reports
+          semgrep --config=auto \
+                  --sarif \
+                  --output reports/semgrep.sarif
+
+      - name: Upload SARIF (SAST)
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: software/service-track-api/reports/semgrep.sarif
+
+  sca:
+    name: SCA - Dependency Check
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: software/service-track-api
+
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run :contentReference[oaicite:2]{index=2}
+        run: |
+          mkdir -p reports
+
+          docker run --rm \
+            -v ${{ github.workspace }}/software/service-track-api:/src \
+            owasp/dependency-check \
+            --scan /src \
+            --format JSON \
+            --out /src/reports
+
+      - name: Convert JSON → SARIF
+        run: |
+          node scripts/convert-to-sarif.js
+
+      - name: Upload SARIF (SCA)
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: software/service-track-api/reports/dependency-check.sarif
+
+      - name: Upload artifact (debug opcional)
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: software/service-track-api/reports/
