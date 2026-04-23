@@ -77,43 +77,32 @@ jobs:
       - name: Cache NVD data
         uses: actions/cache@v4
         with:
-          path: ~/.owasp/data
-          key: owasp-nvd-${{ runner.os }}-${{ hashFiles('software/service-track-api/**/*.gradle.kts') }}
-          restore-keys: owasp-nvd-${{ runner.os }}-
+          path: /home/runner/.owasp/data
+          key: owasp-nvd-${{ runner.os }}
 
       - name: Run OWASP Dependency Check
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
           mkdir -p reports
+
           docker run --rm \
             -v ${{ github.workspace }}/software/service-track-api:/src \
-            -v ~/.owasp/data:/data \
-            owasp/dependency-check:latest \
+            -v /home/runner/.owasp/data:/data \
+            -e NVD_API_KEY=$NVD_API_KEY \
+            owasp/dependency-check:9.0.9 \
             --scan /src \
             --format JSON \
             --out /src/reports \
             --data /data \
-            --failOnCVSS 11 \
+            --nvdApiKey $NVD_API_KEY \
+            --disableAssembly \
             --project "service-track-api"
 
       - name: Convert JSON → SARIF
         run: node scripts/convert-to-sarif.js || true
 
       - name: Upload SARIF (SCA)
-        if: |
-          always() &&
-          github.event_name != 'pull_request' ||
-          github.event.pull_request.head.repo.full_name == github.repository
         uses: github/codeql-action/upload-sarif@v4
-        continue-on-error: true
         with:
           sarif_file: software/service-track-api/reports/dependency-check.sarif
-          category: dependency-check
-
-      - name: Upload raw reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-check-report
-          path: software/service-track-api/reports/
-          if-no-files-found: warn
-          retention-days: 7
