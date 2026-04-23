@@ -74,11 +74,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache NVD data
+      - name: Prepare NVD cache directory
+        run: mkdir -p /home/runner/.owasp/data
+
+      - name: Cache NVD database
         uses: actions/cache@v4
         with:
           path: /home/runner/.owasp/data
-          key: owasp-nvd-${{ runner.os }}
+          key: owasp-nvd-${{ runner.os }}-${{ hashFiles('software/service-track-api/**/*.gradle.kts') }}
+          restore-keys: owasp-nvd-${{ runner.os }}-
 
       - name: Run OWASP Dependency Check
         env:
@@ -86,23 +90,45 @@ jobs:
         run: |
           mkdir -p reports
 
+          # --nvdApiKey must be omitted entirely when empty, not passed as blank arg.
+          # Empty value → "Missing argument for option: nvdApiKey".
+          NVD_ARG=""
+          [ -n "${NVD_API_KEY:-}" ] && NVD_ARG="--nvdApiKey $NVD_API_KEY"
+
           docker run --rm \
             -v ${{ github.workspace }}/software/service-track-api:/src \
             -v /home/runner/.owasp/data:/data \
-            -e NVD_API_KEY=$NVD_API_KEY \
             owasp/dependency-check:9.0.9 \
             --scan /src \
             --format JSON \
             --out /src/reports \
             --data /data \
-            --nvdApiKey $NVD_API_KEY \
-            --disableAssembly \
-            --project "service-track-api"
+            --failOnCVSS 11 \
+            --exclude '**/src/test/**' \
+            --exclude '**/build/tmp/**' \
+            --exclude '**/docs/**' \
+            --project "service-track-api" \
+            $NVD_ARG
 
       - name: Convert JSON → SARIF
         run: node scripts/convert-to-sarif.js || true
 
       - name: Upload SARIF (SCA)
+        if: |
+          always() &&
+          github.event_name != 'pull_request' ||
+          github.event.pull_request.head.repo.full_name == github.repository
         uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
         with:
           sarif_file: software/service-track-api/reports/dependency-check.sarif
+          category: dependency-check
+
+      - name: Upload raw reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: software/service-track-api/reports/
+          if-no-files-found: warn
+          retention-days: 7
