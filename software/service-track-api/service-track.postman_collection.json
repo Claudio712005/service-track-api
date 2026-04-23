@@ -100,7 +100,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "// Mecânico Sr.\n// {\n//     \"email\": \"joao11@mecanica.com\",\n//     \"senha\": \"Senha@123\"\n// }\n\n// Cliente\n{\n    \"email\": \"claudio11@email.com\",\n    \"senha\": \"Senha@123\"\n}",
+              "raw": "// Mecânico Sr.\n// {\n//     \"email\": \"joao11@mecanica.com\",\n//     \"senha\": \"Senha@123\"\n// }\n\n// Mecânico PL\n{\n    \"email\": \"joao@mecanica.com\",\n    \"senha\": \"Senha@123\"\n}\n\n// Cliente\n// {\n//     \"email\": \"claudio11@email.com\",\n//     \"senha\": \"Senha@123\"\n// }",
               "options": {
                 "raw": {
                   "language": "json"
@@ -534,12 +534,12 @@
               "raw": ""
             },
             "url": {
-              "raw": "{{LOCAL_URL}}/servicos",
+              "raw": "{{LOCAL_URL}}/insumos",
               "host": [
                 "{{LOCAL_URL}}"
               ],
               "path": [
-                "servicos"
+                "insumos"
               ]
             }
           },
@@ -673,34 +673,13 @@
               "raw": ""
             },
             "url": {
-              "raw": "{{LOCAL_URL}}/ordem-servico?clienteId&mecanicoId&page&size",
+              "raw": "{{LOCAL_URL}}/ordem-servico/lista",
               "host": [
                 "{{LOCAL_URL}}"
               ],
               "path": [
-                "ordem-servico"
-              ],
-              "query": [
-                {
-                  "key": "clienteId",
-                  "value": null,
-                  "type": "text"
-                },
-                {
-                  "key": "mecanicoId",
-                  "value": null,
-                  "type": "text"
-                },
-                {
-                  "key": "page",
-                  "value": null,
-                  "type": "text"
-                },
-                {
-                  "key": "size",
-                  "value": null,
-                  "type": "text"
-                }
+                "ordem-servico",
+                "lista"
               ]
             }
           },
@@ -729,13 +708,13 @@
               "raw": ""
             },
             "url": {
-              "raw": "{{LOCAL_URL}}/ordem-servico/",
+              "raw": "{{LOCAL_URL}}/ordem-servico/4a89d185-b2f9-4d35-8b12-843b7653f759",
               "host": [
                 "{{LOCAL_URL}}"
               ],
               "path": [
                 "ordem-servico",
-                ""
+                "4a89d185-b2f9-4d35-8b12-843b7653f759"
               ]
             }
           },
@@ -758,16 +737,16 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"clienteId\": \"4d32c6ae-46d1-403d-8e65-d9527126d093\",\n    \"mecanicoId\": \"4d32c6ae-46d1-403d-8e65-d9527126d093\",\n    \"veiculoId\": \"02beb900-34bf-48d2-b9d9-ba76213642fc\",\n    \"motivo\": \"teste motivo\",\n    \"observacao\": null\n}"
+              "raw": ""
             },
             "url": {
-              "raw": "{{LOCAL_URL}}/ordem-servico/4d32c6ae-46d1-403d-8e65-d9527126d093/diagnostico",
+              "raw": "{{LOCAL_URL}}/ordem-servico/4a89d185-b2f9-4d35-8b12-843b7653f759/diagnostico",
               "host": [
                 "{{LOCAL_URL}}"
               ],
               "path": [
                 "ordem-servico",
-                "4d32c6ae-46d1-403d-8e65-d9527126d093",
+                "4a89d185-b2f9-4d35-8b12-843b7653f759",
                 "diagnostico"
               ]
             }
@@ -794,13 +773,13 @@
               "raw": ""
             },
             "url": {
-              "raw": "{{LOCAL_URL}}/ordem-servico/4d32c6ae-46d1-403d-8e65-d9527126d093/orcamento",
+              "raw": "{{LOCAL_URL}}/ordem-servico/4a89d185-b2f9-4d35-8b12-843b7653f759/orcamento",
               "host": [
                 "{{LOCAL_URL}}"
               ],
               "path": [
                 "ordem-servico",
-                "4d32c6ae-46d1-403d-8e65-d9527126d093",
+                "4a89d185-b2f9-4d35-8b12-843b7653f759",
                 "orcamento"
               ]
             }
@@ -827,13 +806,13 @@
               "raw": ""
             },
             "url": {
-              "raw": "{{LOCAL_URL}}/ordem-servico/4d32c6ae-46d1-403d-8e65-d9527126d093/orcamento/aprovacao",
+              "raw": "{{LOCAL_URL}}/ordem-servico/4a89d185-b2f9-4d35-8b12-843b7653f759/orcamento/aprovacao",
               "host": [
                 "{{LOCAL_URL}}"
               ],
               "path": [
                 "ordem-servico",
-                "4d32c6ae-46d1-403d-8e65-d9527126d093",
+                "4a89d185-b2f9-4d35-8b12-843b7653f759",
                 "orcamento",
                 "aprovacao"
               ]
@@ -900,13 +879,13 @@
               }
             },
             "url": {
-              "raw": "{{LOCAL_URL}}/ordem-servico/4d32c6ae-46d1-403d-8e65-d9527126d093/cancelamento",
+              "raw": "{{LOCAL_URL}}/ordem-servico/4a89d185-b2f9-4d35-8b12-843b7653f759/cancelamento",
               "host": [
                 "{{LOCAL_URL}}"
               ],
               "path": [
                 "ordem-servico",
-                "4d32c6ae-46d1-403d-8e65-d9527126d093",
+                "4a89d185-b2f9-4d35-8b12-843b7653f759",
                 "cancelamento"
               ]
             }
@@ -938,13 +917,13 @@
               }
             },
             "url": {
-              "raw": "{{LOCAL_URL}}/ordem-servico/4d32c6ae-46d1-403d-8e65-d9527126d093/finalizacao",
+              "raw": "{{LOCAL_URL}}/ordem-servico/4a89d185-b2f9-4d35-8b12-843b7653f759/finalizacao",
               "host": [
                 "{{LOCAL_URL}}"
               ],
               "path": [
                 "ordem-servico",
-                "4d32c6ae-46d1-403d-8e65-d9527126d093",
+                "4a89d185-b2f9-4d35-8b12-843b7653f759",
                 "finalizacao"
               ]
             }
@@ -976,13 +955,13 @@
               }
             },
             "url": {
-              "raw": "{{LOCAL_URL}}/ordem-servico/4d32c6ae-46d1-403d-8e65-d9527126d093/entrega",
+              "raw": "{{LOCAL_URL}}/ordem-servico/4a89d185-b2f9-4d35-8b12-843b7653f759/entrega",
               "host": [
                 "{{LOCAL_URL}}"
               ],
               "path": [
                 "ordem-servico",
-                "4d32c6ae-46d1-403d-8e65-d9527126d093",
+                "4a89d185-b2f9-4d35-8b12-843b7653f759",
                 "entrega"
               ]
             }
@@ -1006,7 +985,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"servicos\": [\n    {\n      \"servicoId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n      \"valorCobrado\": 0\n    }\n  ],\n  \"insumos\": [\n    {\n      \"insumoId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n      \"quantidade\": 1\n    }\n  ]\n}",
+              "raw": "{\n  \"servicos\": [\n    {\n      \"servicoId\": \"29b77389-db42-403d-bc96-ee4a4596c8e1\",\n      \"valorCobrado\": 300\n    }\n  ],\n  \"insumos\": [\n    {\n      \"insumoId\": \"86a72c40-af95-428e-a583-b4986adc0b11\",\n      \"quantidade\": 1\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1014,15 +993,55 @@
               }
             },
             "url": {
-              "raw": "{{LOCAL_URL}}/ordem-servico/4d32c6ae-46d1-403d-8e65-d9527126d093/diagnostico/itens",
+              "raw": "{{LOCAL_URL}}/ordem-servico/4a89d185-b2f9-4d35-8b12-843b7653f759/diagnostico/itens",
               "host": [
                 "{{LOCAL_URL}}"
               ],
               "path": [
                 "ordem-servico",
-                "4d32c6ae-46d1-403d-8e65-d9527126d093",
+                "4a89d185-b2f9-4d35-8b12-843b7653f759",
                 "diagnostico",
                 "itens"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "concluir item serviço",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observacao\": \"Troca de óleo realizada conforme especificação do fabricante\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/ordem-servico/4a89d185-b2f9-4d35-8b12-843b7653f759/itens/960158a7-d377-493d-9560-7a251f5fde5d/concluir",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "ordem-servico",
+                "4a89d185-b2f9-4d35-8b12-843b7653f759",
+                "itens",
+                "960158a7-d377-493d-9560-7a251f5fde5d",
+                "concluir"
               ]
             }
           },
@@ -1115,7 +1134,7 @@
                 }
               ]
             },
-            "method": "POST",
+            "method": "PUT",
             "header": [],
             "body": {
               "mode": "raw",
@@ -1202,6 +1221,48 @@
               ],
               "path": [
                 "servicos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "tempo médio serviço",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/servicos/29b77389-db42-403d-bc96-ee4a4596c8e1/tempo-medio-conclusao?unidade=HORAS",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "servicos",
+                "29b77389-db42-403d-bc96-ee4a4596c8e1",
+                "tempo-medio-conclusao"
+              ],
+              "query": [
+                {
+                  "key": "unidade",
+                  "value": "HORAS"
+                }
               ]
             }
           },
