@@ -26,15 +26,23 @@ allprojects {
 
 sonarqube {
     properties {
-        property("sonar.projectKey", "service-track-api")
-        property("sonar.projectName", "service-track-api")
-        property("sonar.host.url", System.getenv("SONAR_HOST_URL") ?: "http://localhost:9000")
-        property("sonar.login", System.getenv("SONAR_TOKEN") ?: "")
-        property("sonar.gradle.skipCompile", "true")
-        property("sonar.sourceEncoding", "UTF-8")
-        property(
-            "sonar.exclusions",
-            "**/dto/**,**/entity/**,**/config/**,**/openapi/generated/**"
+        properties["sonar.projectKey"] = "claudio712005_service-track-api"
+        properties["sonar.organization"] = "claudio712005"
+        properties["sonar.host.url"] = "https://sonarcloud.io"
+        properties["sonar.token"] = System.getenv("SONAR_TOKEN")
+
+        properties["sonar.sourceEncoding"] = "UTF-8"
+
+        properties["sonar.coverage.jacoco.xmlReportPaths"] =
+            subprojects.map {
+                "${it.buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+            }
+
+        properties["sonar.exclusions"] = listOf(
+            "**/dto/**",
+            "**/entity/**",
+            "**/config/**",
+            "**/openapi/generated/**"
         )
     }
 }
