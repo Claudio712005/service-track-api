@@ -28,8 +28,7 @@ docker run --rm \
   --format JSON \
   --out /src/reports \
   --data /data \
-  --disableAssembly \
-  --disableRetired \
+  --failOnCVSS 11 \
   --project "service-track-api" &
 DC_PID=$!
 
