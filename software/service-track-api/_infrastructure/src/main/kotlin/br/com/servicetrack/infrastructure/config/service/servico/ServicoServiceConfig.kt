@@ -1,14 +1,17 @@
 package br.com.servicetrack.infrastructure.config.service.servico
 
 import br.com.servicetrack.application.auditoria.ports.out.RegistrarAuditoriaPort
+import br.com.servicetrack.application.ordemServico.ports.out.ItemOrdemServicoRepositoryPort
 import br.com.servicetrack.application.servico.ports.`in`.AtualizarServicoUseCase
 import br.com.servicetrack.application.servico.ports.`in`.BuscarServicoUseCase
+import br.com.servicetrack.application.servico.ports.`in`.BuscarTempoMedioConclusaoUseCase
 import br.com.servicetrack.application.servico.ports.`in`.CriarServicoUseCase
 import br.com.servicetrack.application.servico.ports.`in`.ListarServicosUseCase
 import br.com.servicetrack.application.servico.ports.`in`.RemoverServicoUseCase
 import br.com.servicetrack.application.servico.ports.out.ServicoRepositoryPort
 import br.com.servicetrack.application.servico.service.AtualizarServicoService
 import br.com.servicetrack.application.servico.service.BuscarServicoService
+import br.com.servicetrack.application.servico.service.BuscarTempoMedioConclusaoService
 import br.com.servicetrack.application.servico.service.CriarServicoService
 import br.com.servicetrack.application.servico.service.ListarServicosService
 import br.com.servicetrack.application.servico.service.RemoverServicoService
@@ -63,5 +66,12 @@ class ServicoServiceConfig {
         RemoverServicoUseCase::class.java,
         auditoria
     )
+
+    @Produces
+    @ApplicationScoped
+    fun buscarTempoMedioConclusaoUseCase(
+        servicoRepository: ServicoRepositoryPort,
+        itemOrdemServicoRepository: ItemOrdemServicoRepositoryPort,
+    ): BuscarTempoMedioConclusaoUseCase = BuscarTempoMedioConclusaoService(servicoRepository, itemOrdemServicoRepository)
 
 }

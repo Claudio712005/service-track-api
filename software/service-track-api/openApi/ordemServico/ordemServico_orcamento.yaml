@@ -15,6 +15,20 @@ post:
       schema:
         type: string
         format: uuid
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - prazoEntrega
+          properties:
+            prazoEntrega:
+              type: string
+              format: date
+              example: "2026-04-30"
+              description: Data prevista para entrega da OS. Deve ser ≥ data atual.
   responses:
     '200':
       description: Orçamento gerado com sucesso

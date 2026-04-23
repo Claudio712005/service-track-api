@@ -2,9 +2,11 @@ package br.com.servicetrack.infrastructure.servico
 
 import br.com.servicetrack.application.servico.ports.`in`.AtualizarServicoUseCase
 import br.com.servicetrack.application.servico.ports.`in`.BuscarServicoUseCase
+import br.com.servicetrack.application.servico.ports.`in`.BuscarTempoMedioConclusaoUseCase
 import br.com.servicetrack.application.servico.ports.`in`.CriarServicoUseCase
 import br.com.servicetrack.application.servico.ports.`in`.ListarServicosUseCase
 import br.com.servicetrack.application.servico.ports.`in`.RemoverServicoUseCase
+import br.com.servicetrack.domain.servico.UnidadeTempoEnum
 import br.com.servicetrack.domain.servico.vo.ServicoId
 import br.com.servicetrack.infrastructure.api.ServicosApi
 import br.com.servicetrack.infrastructure.api.dto.AtualizarServicoRequest
@@ -24,7 +26,8 @@ class ServicoResourceImpl(
     private val buscarServicoUseCase: BuscarServicoUseCase,
     private val listarServicosUseCase: ListarServicosUseCase,
     private val atualizarServicoUseCase: AtualizarServicoUseCase,
-    private val removerServicoUseCase: RemoverServicoUseCase
+    private val removerServicoUseCase: RemoverServicoUseCase,
+    private val buscarTempoMedioConclusaoUseCase: BuscarTempoMedioConclusaoUseCase,
 ) : ServicosApi {
 
     @Transactional
@@ -64,5 +67,11 @@ class ServicoResourceImpl(
     override fun removerServico(@PathParam("id") id: String): Response {
         removerServicoUseCase.removerServico(ServicoId(id))
         return Response.noContent().build()
+    }
+
+    @RolesAllowed("MECANICO")
+    override fun buscarTempoMedioConclusao(@PathParam("id") id: String, unidade: String): Response {
+        val unidadeTempo = UnidadeTempoEnum.valueOf(unidade.uppercase())
+        return Response.ok(buscarTempoMedioConclusaoUseCase.buscarTempoMedio(id, unidadeTempo)).build()
     }
 }

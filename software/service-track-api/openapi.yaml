@@ -30,6 +30,8 @@ paths:
     $ref: './openApi/servicos/servicos.yaml'
   /servicos/{id}:
     $ref: './openApi/servicos/servico_id.yaml'
+  /servicos/{id}/tempo-medio-conclusao:
+    $ref: './openApi/servicos/servico_tempo_medio.yaml'
   /insumos:
     $ref: './openApi/insumos/insumos.yaml'
   /insumos/{id}:

@@ -13,8 +13,12 @@ import br.com.servicetrack.domain.auditoria.enums.TipoEntidade
 import br.com.servicetrack.domain.auditoria.enums.TipoEventoAuditoria
 import br.com.servicetrack.domain.ordemServico.StatusOrdemServicoEnum
 import br.com.servicetrack.domain.ordemServico.vo.OrdemServicoId
+import br.com.servicetrack.domain.ordemServico.vo.PrazoConclusao
 import br.com.servicetrack.domain.shared.exception.DomainException
 import br.com.servicetrack.domain.shared.vo.ValorMonetario
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 class GerarOrcamentoService(
     private val osRepository: OrdemServicoRepositoryPort,
@@ -23,7 +27,7 @@ class GerarOrcamentoService(
 ) : GerarOrcamentoUseCase {
 
     @Auditavel(entidade = TipoEntidade.ORCAMENTO, evento = TipoEventoAuditoria.CRIADO)
-    override fun gerarOrcamento(ordemServicoId: String): OrdemServicoResDTO {
+    override fun gerarOrcamento(ordemServicoId: String, prazoConclusao: LocalDate): OrdemServicoResDTO {
         val solicitanteId = jwt.getUsuarioId()
 
         val os = osRepository.buscarPorId(OrdemServicoId(ordemServicoId))
@@ -52,6 +56,12 @@ class GerarOrcamentoService(
         if (os.listarInsumos().isEmpty()) {
             throw DomainException("São necessários pelo menos 1 insumo para gerar o orçamento")
         }
+
+        if (prazoConclusao.isBefore(LocalDate.now())) {
+            throw DomainException("O prazo de conclusão deve ser igual ou posterior à data atual")
+        }
+
+        os.definirPrazoConclusao(LocalDateTime.of(prazoConclusao, LocalTime.MAX))
 
         val custoMaoDeObra = os.listarServicos()
             .fold(ValorMonetario.zero()) { acc, item -> acc.somar(item.valor) }

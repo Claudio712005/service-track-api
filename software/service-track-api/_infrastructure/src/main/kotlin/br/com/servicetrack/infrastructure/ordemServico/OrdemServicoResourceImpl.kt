@@ -16,6 +16,7 @@ import br.com.servicetrack.infrastructure.api.OrdemServicoApi
 import br.com.servicetrack.infrastructure.api.dto.AssociarItensRequest
 import br.com.servicetrack.infrastructure.api.dto.CancelarOsRequest
 import br.com.servicetrack.infrastructure.api.dto.ConcluirItemServicoRequest
+import br.com.servicetrack.infrastructure.api.dto.GerarOrcamentoRequest
 import br.com.servicetrack.infrastructure.api.dto.OrdemServicoRequest
 import br.com.servicetrack.infrastructure.api.dto.ReprovarOrcamentoRequest
 import jakarta.annotation.security.RolesAllowed
@@ -26,6 +27,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
 import jakarta.ws.rs.core.Response
 import java.net.URI
+import java.time.LocalDate
 import java.util.UUID
 
 @ApplicationScoped
@@ -87,8 +89,8 @@ class OrdemServicoResourceImpl @Inject constructor(
 
     @RolesAllowed("MECANICO")
     @Transactional
-    override fun gerarOrcamento(id: UUID): Response {
-        return Response.ok(gerarOrcamentoUseCase.gerarOrcamento(id.toString())).build()
+    override fun gerarOrcamento(id: UUID, req: GerarOrcamentoRequest): Response {
+        return Response.ok(gerarOrcamentoUseCase.gerarOrcamento(id.toString(), req.prazoEntrega)).build()
     }
 
     @RolesAllowed("CLIENTE")

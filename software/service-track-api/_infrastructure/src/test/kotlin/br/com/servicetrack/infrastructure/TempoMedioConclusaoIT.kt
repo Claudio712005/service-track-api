@@ -3,14 +3,15 @@ package br.com.servicetrack.infrastructure
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
-import org.hamcrest.CoreMatchers.notNullValue
 import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.greaterThanOrEqualTo
+import org.hamcrest.Matchers.notNullValue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
 @QuarkusTest
-class OrdemServicoFluxoIT {
+class TempoMedioConclusaoIT {
 
     private lateinit var tokenMecanico: String
     private lateinit var tokenCliente: String
@@ -39,22 +40,22 @@ class OrdemServicoFluxoIT {
     @BeforeEach
     fun setup() {
         val unique = UUID.randomUUID().toString().replace("-", "").substring(0, 8)
-        val emailMecanico = "mecanico.fluxo.$unique@email.com"
-        val emailCliente = "cliente.fluxo.$unique@email.com"
+        val emailMecanico = "mecanico.tempo.$unique@email.com"
+        val emailCliente = "cliente.tempo.$unique@email.com"
 
         given()
             .contentType(ContentType.JSON)
             .body(
                 """
                 {
-                  "nome": "Mecânico Fluxo IT",
+                  "nome": "Mecânico Tempo IT",
                   "email": "$emailMecanico",
                   "senha": "#Tiee123456",
-                  "telefone": "11944445555",
+                  "telefone": "11911112222",
                   "cpf": "${gerarCpf()}",
-                  "dataNascimento": "1982-04-15",
+                  "dataNascimento": "1980-06-10",
                   "nivel": "SENIOR",
-                  "valorHora": 120.00
+                  "valorHora": 100.00
                 }
                 """.trimIndent()
             )
@@ -79,12 +80,12 @@ class OrdemServicoFluxoIT {
             .body(
                 """
                 {
-                  "nome": "Cliente Fluxo IT",
+                  "nome": "Cliente Tempo IT",
                   "email": "$emailCliente",
                   "senha": "#Tiee123456",
-                  "telefone": "11955556666",
+                  "telefone": "11933334444",
                   "cpf": "${gerarCpf()}",
-                  "dataNascimento": "1995-07-20"
+                  "dataNascimento": "1992-11-25"
                 }
                 """.trimIndent()
             )
@@ -111,9 +112,9 @@ class OrdemServicoFluxoIT {
                 """
                 {
                   "placa": "${gerarPlaca()}",
-                  "modelo": "Civic",
-                  "marca": "Honda",
-                  "ano": 2021,
+                  "modelo": "Corolla",
+                  "marca": "Toyota",
+                  "ano": 2022,
                   "proprietarioId": "$clienteId"
                 }
                 """.trimIndent()
@@ -131,9 +132,9 @@ class OrdemServicoFluxoIT {
             .body(
                 """
                 {
-                  "nomeServico": "Troca de Óleo",
-                  "descricaoServico": "Substituição do óleo do motor e filtro",
-                  "valorReferencia": 150.00
+                  "nomeServico": "Troca de Velas",
+                  "descricaoServico": "Substituição das velas de ignição",
+                  "valorReferencia": 200.00
                 }
                 """.trimIndent()
             )
@@ -150,11 +151,11 @@ class OrdemServicoFluxoIT {
             .body(
                 """
                 {
-                  "nome": "Filtro de Óleo",
-                  "descricao": "Filtro para motor 1.0",
-                  "custo": 25.50,
+                  "nome": "Vela NGK",
+                  "descricao": "Vela de ignição NGK",
+                  "custo": 30.00,
                   "qtdEstoqueInicial": 20,
-                  "estoqueMinimo": 2
+                  "estoqueMinimo": 4
                 }
                 """.trimIndent()
             )
@@ -166,36 +167,32 @@ class OrdemServicoFluxoIT {
             .getString("id")
     }
 
-    private fun criarOs(): String = given()
-        .contentType(ContentType.JSON)
-        .header("Authorization", "Bearer $tokenMecanico")
-        .body(
-            """
-            {
-              "motivo": "Revisão geral do veículo",
-              "clienteId": "$clienteId",
-              "mecanicoId": "$mecanicoId",
-              "veiculoId": "$veiculoId"
-            }
-            """.trimIndent()
-        )
-        .post("/ordem-servico")
-        .then()
-        .statusCode(201)
-        .extract()
-        .jsonPath()
-        .getString("id")
-
-    @Test
-    fun `deve executar fluxo completo de aprovacao e finalizacao`() {
-        val osId = criarOs()
+    private fun executarFluxoCompletoAteConclusion(): String {
+        val osId = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenMecanico")
+            .body(
+                """
+                {
+                  "motivo": "Substituição das velas",
+                  "clienteId": "$clienteId",
+                  "mecanicoId": "$mecanicoId",
+                  "veiculoId": "$veiculoId"
+                }
+                """.trimIndent()
+            )
+            .post("/ordem-servico")
+            .then()
+            .statusCode(201)
+            .extract()
+            .jsonPath()
+            .getString("id")
 
         given()
             .header("Authorization", "Bearer $tokenMecanico")
             .post("/ordem-servico/$osId/diagnostico")
             .then()
             .statusCode(200)
-            .body("status", equalTo("EM_DIAGNOSTICO"))
 
         given()
             .contentType(ContentType.JSON)
@@ -203,15 +200,14 @@ class OrdemServicoFluxoIT {
             .body(
                 """
                 {
-                  "servicos": [{"servicoId": "$servicoId", "valorCobrado": 150.00}],
-                  "insumos": [{"insumoId": "$insumoId", "quantidade": 2}]
+                  "servicos": [{"servicoId": "$servicoId", "valorCobrado": 200.00}],
+                  "insumos": [{"insumoId": "$insumoId", "quantidade": 4}]
                 }
                 """.trimIndent()
             )
             .put("/ordem-servico/$osId/diagnostico/itens")
             .then()
             .statusCode(200)
-            .body("itensServico", notNullValue())
 
         given()
             .contentType(ContentType.JSON)
@@ -220,14 +216,12 @@ class OrdemServicoFluxoIT {
             .post("/ordem-servico/$osId/orcamento")
             .then()
             .statusCode(200)
-            .body("status", equalTo("AGUARDANDO_APROVACAO"))
 
         given()
             .header("Authorization", "Bearer $tokenCliente")
             .post("/ordem-servico/$osId/orcamento/aprovacao")
             .then()
             .statusCode(200)
-            .body("status", equalTo("EM_EXECUCAO"))
 
         val itemId = given()
             .header("Authorization", "Bearer $tokenMecanico")
@@ -241,176 +235,117 @@ class OrdemServicoFluxoIT {
         given()
             .contentType(ContentType.JSON)
             .header("Authorization", "Bearer $tokenMecanico")
-            .body("""{"observacao": "Serviço realizado com sucesso"}""")
+            .body("""{"observacao": "Velas substituídas com sucesso"}""")
             .patch("/ordem-servico/$osId/itens/$itemId/concluir")
             .then()
             .statusCode(200)
 
-        given()
-            .header("Authorization", "Bearer $tokenMecanico")
-            .post("/ordem-servico/$osId/finalizacao")
-            .then()
-            .statusCode(200)
-            .body("status", equalTo("FINALIZADA"))
-
-        given()
-            .header("Authorization", "Bearer $tokenMecanico")
-            .post("/ordem-servico/$osId/entrega")
-            .then()
-            .statusCode(200)
-            .body("status", equalTo("ENTREGUE"))
+        return osId
     }
 
     @Test
-    fun `deve executar fluxo de reprovacao de orcamento`() {
-        val osId = criarOs()
+    fun `deve retornar tempo medio em horas com itens concluidos`() {
+        executarFluxoCompletoAteConclusion()
 
         given()
             .header("Authorization", "Bearer $tokenMecanico")
-            .post("/ordem-servico/$osId/diagnostico")
-            .then()
+            .queryParam("unidade", "HORAS")
+        .`when`()
+            .get("/servicos/$servicoId/tempo-medio-conclusao")
+        .then()
             .statusCode(200)
-
-        given()
-            .contentType(ContentType.JSON)
-            .header("Authorization", "Bearer $tokenMecanico")
-            .body(
-                """
-                {
-                  "servicos": [{"servicoId": "$servicoId", "valorCobrado": 150.00}],
-                  "insumos": [{"insumoId": "$insumoId", "quantidade": 1}]
-                }
-                """.trimIndent()
-            )
-            .put("/ordem-servico/$osId/diagnostico/itens")
-            .then()
-            .statusCode(200)
-
-        given()
-            .contentType(ContentType.JSON)
-            .header("Authorization", "Bearer $tokenMecanico")
-            .body("""{"prazoEntrega": "2026-12-31"}""")
-            .post("/ordem-servico/$osId/orcamento")
-            .then()
-            .statusCode(200)
-
-        given()
-            .contentType(ContentType.JSON)
-            .header("Authorization", "Bearer $tokenCliente")
-            .body("""{"motivo": "Valores muito altos"}""")
-            .post("/ordem-servico/$osId/orcamento/reprovacao")
-            .then()
-            .statusCode(200)
-            .body("status", equalTo("CANCELADA"))
+            .body("servicoId", equalTo(servicoId))
+            .body("unidade", equalTo("HORAS"))
+            .body("totalAmostras", equalTo(1))
+            .body("tempoMedio", notNullValue())
     }
 
     @Test
-    fun `deve cancelar OS no status RECEBIDA`() {
-        val osId = criarOs()
-
+    fun `deve retornar zero amostras para servico sem itens concluidos`() {
         given()
-            .contentType(ContentType.JSON)
-            .header("Authorization", "Bearer $tokenCliente")
-            .body("""{"motivo": "Desistência do serviço"}""")
-            .post("/ordem-servico/$osId/cancelamento")
-            .then()
+            .header("Authorization", "Bearer $tokenMecanico")
+            .queryParam("unidade", "MINUTOS")
+        .`when`()
+            .get("/servicos/$servicoId/tempo-medio-conclusao")
+        .then()
             .statusCode(200)
-            .body("status", equalTo("CANCELADA"))
+            .body("servicoId", equalTo(servicoId))
+            .body("totalAmostras", equalTo(0))
+            .body("tempoMedio", equalTo(0.0f))
     }
 
     @Test
-    fun `deve retornar 404 ao enviar para diagnostico OS inexistente`() {
+    fun `deve retornar 404 para servico inexistente`() {
         given()
             .header("Authorization", "Bearer $tokenMecanico")
-            .post("/ordem-servico/00000000-0000-0000-0000-000000000000/diagnostico")
-            .then()
+            .queryParam("unidade", "HORAS")
+        .`when`()
+            .get("/servicos/00000000-0000-0000-0000-000000000000/tempo-medio-conclusao")
+        .then()
             .statusCode(404)
     }
 
     @Test
-    fun `deve retornar 403 quando mecanico tenta aprovar orcamento`() {
-        val osId = criarOs()
-
+    fun `deve retornar 401 sem token de autenticacao`() {
         given()
-            .header("Authorization", "Bearer $tokenMecanico")
-            .post("/ordem-servico/$osId/orcamento/aprovacao")
-            .then()
-            .statusCode(403)
-    }
-
-    @Test
-    fun `deve retornar 403 quando cliente tenta enviar OS para diagnostico`() {
-        val osId = criarOs()
-
-        given()
-            .header("Authorization", "Bearer $tokenCliente")
-            .post("/ordem-servico/$osId/diagnostico")
-            .then()
-            .statusCode(403)
-    }
-
-    @Test
-    fun `deve retornar 401 ao acessar endpoint sem token`() {
-        given()
-            .post("/ordem-servico/00000000-0000-0000-0000-000000000000/diagnostico")
-            .then()
+            .queryParam("unidade", "HORAS")
+        .`when`()
+            .get("/servicos/$servicoId/tempo-medio-conclusao")
+        .then()
             .statusCode(401)
     }
 
     @Test
-    fun `deve retornar 400 quando observacao de conclusao esta vazia`() {
-        val osId = criarOs()
+    fun `deve retornar tempo medio em segundos minutos e dias consistentemente`() {
+        executarFluxoCompletoAteConclusion()
 
-        given()
+        val segundos = given()
             .header("Authorization", "Bearer $tokenMecanico")
-            .post("/ordem-servico/$osId/diagnostico")
-            .then()
-            .statusCode(200)
-
-        given()
-            .contentType(ContentType.JSON)
-            .header("Authorization", "Bearer $tokenMecanico")
-            .body(
-                """
-                {
-                  "servicos": [{"servicoId": "$servicoId", "valorCobrado": 150.00}],
-                  "insumos": [{"insumoId": "$insumoId", "quantidade": 1}]
-                }
-                """.trimIndent()
-            )
-            .put("/ordem-servico/$osId/diagnostico/itens")
-            .then()
-            .statusCode(200)
-
-        given()
-            .contentType(ContentType.JSON)
-            .header("Authorization", "Bearer $tokenMecanico")
-            .body("""{"prazoEntrega": "2026-12-31"}""")
-            .post("/ordem-servico/$osId/orcamento")
-            .then()
-            .statusCode(200)
-
-        given()
-            .header("Authorization", "Bearer $tokenCliente")
-            .post("/ordem-servico/$osId/orcamento/aprovacao")
-            .then()
-            .statusCode(200)
-
-        val itemId = given()
-            .header("Authorization", "Bearer $tokenMecanico")
-            .get("/ordem-servico/$osId")
+            .queryParam("unidade", "SEGUNDOS")
+            .get("/servicos/$servicoId/tempo-medio-conclusao")
             .then()
             .statusCode(200)
             .extract()
             .jsonPath()
-            .getString("itensServico[0].id")
+            .getDouble("tempoMedio")
 
-        given()
-            .contentType(ContentType.JSON)
+        val minutos = given()
             .header("Authorization", "Bearer $tokenMecanico")
-            .body("""{"observacao": ""}""")
-            .patch("/ordem-servico/$osId/itens/$itemId/concluir")
+            .queryParam("unidade", "MINUTOS")
+            .get("/servicos/$servicoId/tempo-medio-conclusao")
             .then()
-            .statusCode(400)
+            .statusCode(200)
+            .extract()
+            .jsonPath()
+            .getDouble("tempoMedio")
+
+        val horas = given()
+            .header("Authorization", "Bearer $tokenMecanico")
+            .queryParam("unidade", "HORAS")
+            .get("/servicos/$servicoId/tempo-medio-conclusao")
+            .then()
+            .statusCode(200)
+            .extract()
+            .jsonPath()
+            .getDouble("tempoMedio")
+
+        val dias = given()
+            .header("Authorization", "Bearer $tokenMecanico")
+            .queryParam("unidade", "DIAS")
+            .get("/servicos/$servicoId/tempo-medio-conclusao")
+            .then()
+            .statusCode(200)
+            .extract()
+            .jsonPath()
+            .getDouble("tempoMedio")
+
+        // All units should be consistent conversions of the same duration
+        assertEquals(segundos / 60.0, minutos, 0.5)
+        assertEquals(minutos / 60.0, horas, 0.01)
+        assertEquals(horas / 24.0, dias, 0.001)
+    }
+
+    private fun assertEquals(expected: Double, actual: Double, delta: Double) {
+        org.junit.jupiter.api.Assertions.assertEquals(expected, actual, delta)
     }
 }

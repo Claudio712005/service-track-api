@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class GerarOrcamentoServiceTest {
@@ -38,6 +39,7 @@ class GerarOrcamentoServiceTest {
 
     private val mecanicoId = UsuarioId.gerar()
     private val clienteId = UsuarioId.gerar()
+    private val prazoValido = LocalDate.now().plusDays(7)
 
     private fun buildInsumo(id: InsumoId = InsumoId.gerar(), qtd: Int = 10): Insumo = Insumo.reconstituir(
         id = id,
@@ -117,7 +119,7 @@ class GerarOrcamentoServiceTest {
         justRun { insumoRepository.atualizar(any()) }
         every { osRepository.atualizar(any()) } answers { firstArg() }
 
-        val result = service.gerarOrcamento(os.id.valor)
+        val result = service.gerarOrcamento(os.id.valor, prazoValido)
 
         assertEquals(StatusOrdemServicoEnum.AGUARDANDO_APROVACAO, result.status)
         verify(exactly = 1) { insumoRepository.atualizar(insumo) }
@@ -130,7 +132,7 @@ class GerarOrcamentoServiceTest {
         every { osRepository.buscarPorId(any()) } returns null
 
         assertThrows<EntidadeNaoEncontradaException> {
-            service.gerarOrcamento(OrdemServicoId.gerar().valor)
+            service.gerarOrcamento(OrdemServicoId.gerar().valor, prazoValido)
         }
 
         verify(exactly = 0) { osRepository.atualizar(any()) }
@@ -144,7 +146,7 @@ class GerarOrcamentoServiceTest {
         every { osRepository.buscarPorId(any()) } returns os
 
         assertThrows<OperacaoNegadaException> {
-            service.gerarOrcamento(os.id.valor)
+            service.gerarOrcamento(os.id.valor, prazoValido)
         }
 
         verify(exactly = 0) { osRepository.atualizar(any()) }
@@ -157,7 +159,7 @@ class GerarOrcamentoServiceTest {
         every { osRepository.buscarPorId(any()) } returns os
 
         assertThrows<OperacaoNegadaException> {
-            service.gerarOrcamento(os.id.valor)
+            service.gerarOrcamento(os.id.valor, prazoValido)
         }
 
         verify(exactly = 0) { osRepository.atualizar(any()) }
@@ -171,7 +173,7 @@ class GerarOrcamentoServiceTest {
         every { osRepository.buscarPorId(any()) } returns os
 
         assertThrows<DomainException> {
-            service.gerarOrcamento(os.id.valor)
+            service.gerarOrcamento(os.id.valor, prazoValido)
         }
 
         verify(exactly = 0) { osRepository.atualizar(any()) }
@@ -200,7 +202,37 @@ class GerarOrcamentoServiceTest {
         every { osRepository.buscarPorId(any()) } returns os
 
         assertThrows<DomainException> {
-            service.gerarOrcamento(os.id.valor)
+            service.gerarOrcamento(os.id.valor, prazoValido)
+        }
+
+        verify(exactly = 0) { osRepository.atualizar(any()) }
+    }
+
+    @Test
+    fun `deve lancar DomainException quando prazo de conclusao e no passado`() {
+        val insumoId = InsumoId.gerar()
+        val osId = OrdemServicoId.gerar()
+        val item = buildItemServico(osId)
+        val os = OrdemServico.reconstituir(
+            id = osId,
+            motivo = "Revisão geral",
+            observacao = "",
+            clienteId = clienteId,
+            mecanicoId = mecanicoId,
+            veiculoId = VeiculoId.gerar(),
+            dataCriacao = LocalDateTime.now(),
+            dataAtualizacao = LocalDateTime.now(),
+            status = StatusOrdemServico.deEnum(StatusOrdemServicoEnum.EM_DIAGNOSTICO),
+            prazoConclusao = null,
+            orcamento = null,
+            insumos = mutableListOf(insumoId),
+            itensServico = mutableListOf(item),
+        )
+        every { jwt.getUsuarioId() } returns mecanicoId
+        every { osRepository.buscarPorId(any()) } returns os
+
+        assertThrows<DomainException> {
+            service.gerarOrcamento(os.id.valor, LocalDate.now().minusDays(1))
         }
 
         verify(exactly = 0) { osRepository.atualizar(any()) }
