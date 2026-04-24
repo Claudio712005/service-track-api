@@ -1,447 +1,308 @@
-# Domain Layer — ServiceTrack API
+# _domain — ServiceTrack API
 
-## 1. Responsabilidade da camada
-
-A camada `_domain` é o núcleo do sistema. Ela contém **todo o conhecimento do negócio** da oficina mecânica: regras de negócio, invariantes, ciclo de vida das entidades e a linguagem ubíqua do domínio.
-
-Esta camada é completamente **isolada de infraestrutura**. Não depende de frameworks, bancos de dados, HTTP, filas ou qualquer detalhe técnico externo. Toda regra que pode ser expressa em termos de negócio pertence aqui — se uma regra precisa de uma chamada de banco para ser validada, ela não pertence ao domínio.
-
-A arquitetura segue os princípios de **Domain-Driven Design (DDD)**, com separação clara entre Entidades, Value Objects e Aggregates, e com as regras de transição de estado encapsuladas dentro das próprias entidades.
+Núcleo do sistema. Contém **todo o conhecimento do negócio** da oficina mecânica: entidades, value objects, regras de negócio, invariantes e a linguagem ubíqua do domínio. Não possui nenhuma dependência de framework ou infraestrutura.
 
 ---
 
-## 2. Modelo de domínio
+## 1. Subdomínios
 
-### Linguagem Ubíqua
-
-| Termo do Negócio | Representação no Código |
-|---|---|
-| Ordem de Serviço | `OrdemServico` |
-| Orçamento | `Orcamento` |
-| Insumo / Peça | `Insumo` |
-| Mecânico | `Mecanico` |
-| Cliente | `Usuario` (com `Role.CLIENTE`) |
-| Veículo | `Veiculo` |
-| Serviço (catálogo) | `Servico` |
-| Item de OS (execução de serviço) | `ItemOrdemServico` |
-| Prazo de conclusão | `PrazoConclusao` |
-| Status da OS | `StatusOrdemServicoEnum` |
-| Nível do mecânico | `NivelMecanicoEnum` |
-
----
-
-### Entidades
-
-#### `OrdemServico`
-Aggregate root central do sistema. Representa o ciclo de vida completo de um atendimento, desde a abertura até a entrega do veículo. Orquestra as transições de status, a gestão de insumos e a aprovação do orçamento.
-
-| Campo | Tipo | Descrição |
+| Subdomínio | Pacote | Papel |
 |---|---|---|
-| `id` | `OrdemServicoId` | Identidade da OS |
-| `motivo` | `String` | Razão da abertura da OS |
-| `clienteId` | `UsuarioId` | Referência ao cliente |
-| `mecanicoId` | `UsuarioId` | Mecânico responsável |
-| `veiculoId` | `VeiculoId` | Veículo em atendimento |
-| `status` | `StatusOrdemServico` | Estado atual com máquina de estados |
-| `orcamento` | `Orcamento?` | Orçamento gerado durante o diagnóstico |
-| `insumos` | `List<InsumoId>` | Peças e insumos utilizados |
-| `itensServico` | `List<ItemOrdemServico>` | Serviços executados nesta OS com contexto de execução |
-| `prazoConclusao` | `PrazoConclusao?` | Prazo estimado de entrega |
-
-#### `Servico`
-Entidade de **catálogo de serviços** da oficina. Representa o tipo de serviço oferecido (ex: "Troca de óleo", "Alinhamento"), sem nenhum acoplamento a uma OS específica. É reutilizável em múltiplas OS.
-
-| Campo | Tipo | Descrição |
-|---|---|---|
-| `id` | `ServicoId` | Identidade do serviço |
-| `nomeServico` | `String` | Nome do serviço no catálogo |
-| `descricaoServico` | `String` | Descrição detalhada |
-| `valorReferencia` | `ValorMonetario?` | Preço de tabela (opcional, serve de sugestão) |
-| `dataCriacao` | `LocalDateTime` | Auditoria |
-
-#### `ItemOrdemServico`
-Entidade de associação que representa a **execução de um `Servico` dentro de uma `OrdemServico` específica**. Resolve o N:N com contexto próprio: o mesmo serviço pode ter valores, mecânicos e status de conclusão diferentes em cada OS.
-
-| Campo | Tipo | Descrição |
-|---|---|---|
-| `id` | `ItemOrdemServicoId` | UUID próprio |
-| `servicoId` | `ServicoId` | Referência ao catálogo |
-| `ordemServicoId` | `OrdemServicoId` | Referência à OS |
-| `valor` | `ValorMonetario` | Valor cobrado **nesta** OS (pode diferir do catálogo) |
-| `feito` | `Boolean` | Se o serviço foi concluído |
-| `mecanicoResponsavelId` | `UsuarioId?` | Mecânico que executou o item |
-| `dataRealizacao` | `LocalDateTime?` | Quando foi concluído |
-| `observacao` | `String?` | Observação do mecânico |
-
-#### `Usuario`
-Representa qualquer pessoa autenticada no sistema. O papel de negócio (cliente ou mecânico) é determinado pelo conjunto de `Role` associado.
-
-#### `Veiculo`
-Veículo cadastrado e vinculado a um proprietário. Armazena placa, modelo, marca e ano.
-
-#### `Mecanico`
-Perfil técnico do mecânico. Contém nível de experiência (`JUNIOR`, `PLENO`, `SENIOR`) e valor por hora, utilizados para calcular o custo da mão de obra.
-
-#### `Insumo`
-Peça ou insumo utilizado nos serviços. Controla estoque disponível, estoque mínimo e custo unitário.
+| Ordem de Serviço | `domain.ordemServico` | **Core Domain** — coração do negócio |
+| Orçamento | `domain.orcamento` | Core Domain — parte integrante da OS |
+| Mecânico | `domain.mecanico` | Supporting — gestão do profissional |
+| Veículo | `domain.veiculo` | Supporting — ativo sobre o qual a OS é aberta |
+| Usuário | `domain.usuario` | Supporting — clientes e mecânicos |
+| Serviço | `domain.servico` | Generic — catálogo de serviços oferecidos |
+| Insumo | `domain.insumo` | Generic — catálogo de peças e materiais |
+| Auditoria | `domain.auditoria` | Cross-cutting — rastreabilidade de operações |
 
 ---
 
-### Value Objects
+## 2. Linguagem Ubíqua
 
-Value Objects são imutáveis, definidos pelos seus atributos e carregam validações internas.
-
-| Value Object | Validação encapsulada |
+| Termo | Significado no domínio |
 |---|---|
-| `Cpf` | 11 dígitos + verificação dos dois dígitos verificadores |
-| `Email` | Formato `local@dominio` via regex |
-| `Senha` | Mínimo 6 caracteres, maiúscula, minúscula, número e caractere especial |
-| `Telefone` | Apenas dígitos, entre 10 e 11 caracteres |
-| `Placa` | Formato Mercosul (`ABC1D23`) ou antigo (`ABC1234`) |
-| `ValorMonetario` | Não negativo; expõe `somar()` e `multiplicar()` com arredondamento `HALF_UP` |
-| `ValorHora` | Deve ser maior que zero |
-| `HorasTrabalho` | Deve ser maior que zero |
-| `NivelMecanico` | Encapsula lógica de promoção e multiplicador de custo |
-| `StatusOrdemServico` | Encapsula a máquina de estados com transições válidas |
-| `PrazoConclusao` | Data futura; expõe `horasRestantes()` |
-| `OrcamentoId`, `InsumoId`, `UsuarioId`, `VeiculoId`, `OrdemServicoId` | Identidades tipadas (evitam troca acidental de IDs) |
+| **Ordem de Serviço (OS)** | Registro de um atendimento à um veículo, desde a abertura até a entrega |
+| **Item de OS** | Um serviço específico associado a uma OS, com mecânico responsável |
+| **Orçamento** | Estimativa de custo (mão de obra + insumos) gerada durante o diagnóstico |
+| **Diagnóstico** | Fase em que o mecânico inspeciona o veículo e registra serviços e insumos |
+| **Mecânico** | Profissional que executa os serviços; possui nível (JUNIOR, PLENO, SENIOR) |
+| **Insumo** | Peça ou material utilizado durante a execução de um serviço |
+| **Serviço** | Tipo de trabalho do catálogo (ex.: troca de óleo, alinhamento) |
+| **Veículo** | Ativo do cliente sobre o qual a OS é aberta |
+| **Cliente** | Proprietário do veículo; aprova ou reprova o orçamento |
 
 ---
 
-### Aggregates
+## 3. Aggregate Roots e Entidades
 
-#### Aggregate Root: `OrdemServico`
+### OrdemServico (Aggregate Root)
 
-O único ponto de entrada para modificar o estado de uma OS, seu orçamento e seus itens de serviço. `Orcamento` e `ItemOrdemServico` são partes internas do agregado e só podem ser acessados e modificados através da `OrdemServico`.
-
-```
-OrdemServico (Aggregate Root)
-├── Orcamento                ← parte do agregado, acesso somente via OrdemServico
-├── List<ItemOrdemServico>   ← itens com contexto de execução (valor, feito, mecânico)
-│   └── ItemOrdemServico
-│       ├── ServicoId        ← referência ao catálogo (agregado independente)
-│       ├── ValorMonetario   ← valor cobrado nesta OS
-│       ├── UsuarioId?       ← mecânico responsável pelo item
-│       └── feito, observacao, dataRealizacao
-├── List<InsumoId>           ← referências por ID (insumos são agregados independentes)
-├── StatusOrdemServico       ← VO com máquina de estados
-└── PrazoConclusao?          ← VO de prazo estimado
-```
-
-Os demais conceitos (`Usuario`, `Veiculo`, `Insumo`, `Mecanico`, `Servico`) são aggregates independentes, referenciados dentro da `OrdemServico` apenas por seus IDs tipados.
-
----
-
-## 3. Regras de negócio
-
-### Ordem de Serviço
-- Uma OS é sempre criada com status `RECEBIDA`.
-- O motivo da OS não pode ser vazio.
-- Insumos só podem ser adicionados ou removidos quando o status é `EM_DIAGNOSTICO`.
-- Serviços (itens de OS) só podem ser adicionados ou removidos durante `EM_DIAGNOSTICO`.
-- O mesmo serviço do catálogo não pode ser adicionado mais de uma vez à mesma OS.
-- O orçamento só pode ser gerado quando o status é `EM_DIAGNOSTICO`; ao ser gerado, o status avança automaticamente para `AGUARDANDO_APROVACAO`.
-- A aprovação do orçamento só é possível com status `AGUARDANDO_APROVACAO`; ao aprovar, o status avança para `EM_EXECUCAO`.
-- A reprovação do orçamento cancela a OS automaticamente (`CANCELADA`).
-- O prazo de conclusão não pode ser uma data no passado e só pode ser definido uma vez.
-- Um mecânico só pode ser reatribuído se o novo for diferente do atual.
-
-### Serviço (catálogo)
-- Nome e descrição são obrigatórios e não podem ser vazios ou em branco.
-- O `valorReferencia` é opcional; representa um preço de tabela sugerido, podendo ser atualizado a qualquer momento.
-- O `Servico` não carrega estado de execução — ele é um catálogo reutilizável.
-
-### Item de Ordem de Serviço (`ItemOrdemServico`)
-- Criado exclusivamente pela `OrdemServico.adicionarServico()` — nunca diretamente.
-- O valor do item pode ser atualizado livremente enquanto não estiver concluído.
-- Para concluir, é obrigatório ter um mecânico vinculado e uma observação não vazia.
-- Um segundo mecânico não pode ser vinculado sem antes desvincular o atual.
-- Nenhuma propriedade pode ser alterada após a conclusão do item.
-
-### Orçamento
-- O orçamento é composto por custo de mão de obra (`custoMaoDeObra`) e custo de insumos (`custoInsumos`); o valor total é calculado como a soma dos dois.
-- Um orçamento já aprovado não pode ser reprovado.
-- Um orçamento já aprovado não pode ser aprovado novamente.
-- A reprovação exige um motivo não vazio.
-
-### Insumo / Controle de Estoque
-- A quantidade de estoque não pode ficar negativa após uma reserva.
-- A quantidade a reservar ou adicionar deve ser maior que zero.
-- O estoque mínimo é configurável por insumo; `estaAbaixoDoEstoqueMinimo()` sinaliza necessidade de reposição.
-- O custo total de um insumo para uma quantidade é calculado como `custo unitário × quantidade`.
-
-### Mecânico
-- A promoção de nível segue a sequência: `JUNIOR → PLENO → SENIOR`.
-- Mecânicos no nível `SENIOR` não podem ser promovidos.
-- A promoção retorna um novo `Mecanico` (imutabilidade); o original não é alterado.
-- O custo da mão de obra é calculado como: `valorHora × horas × multiplicadorDoNivel`.
-
-### Usuário
-- Um usuário deve ter pelo menos um perfil (`Role`) associado.
-- O nome não pode ser vazio.
-- Um usuário desativado não pode ser desativado novamente, e um ativo não pode ser ativado novamente.
-
-### Veículo
-- Modelo, marca e ano são obrigatórios; o ano deve ser maior ou igual a 1900.
-- A nova placa ao alterar deve ser diferente da atual.
-- O novo proprietário ao transferir deve ser diferente do atual.
-
----
-
-## 4. Estados e ciclo de vida da Ordem de Serviço
-
-```
-                    ┌─────────────────────────────────────┐
-                    │                                     │
-         abrir()    ▼        iniciarDiagnostico()         │
-  ──────► RECEBIDA ──────► EM_DIAGNOSTICO                 │
-                                  │                       │ cancelar()
-                                  │ gerarOrcamento()      │ (qualquer etapa, exceto entregue)
-                                  ▼                       │
-                        AGUARDANDO_APROVACAO ─────────────┤
-                          │           │                   │
-              aprovar()   │           │ reprovar()        │
-                          ▼           ▼                   │
-                     EM_EXECUCAO   CANCELADA ◄────────────┘
-                          │
-                finalizar()│
-                          ▼
-                      FINALIZADA
-                          │
-                 entregar()│
-                          ▼
-                       ENTREGUE
-```
-
-| Status | Descrição |
-|---|---|
-| `RECEBIDA` | OS aberta, aguardando início do diagnóstico |
-| `EM_DIAGNOSTICO` | Mecânico avaliando o veículo; insumos podem ser adicionados |
-| `AGUARDANDO_APROVACAO` | Orçamento gerado e enviado ao cliente para aprovação |
-| `EM_EXECUCAO` | Cliente aprovou; serviço em andamento |
-| `FINALIZADA` | Serviço concluído; aguardando entrega ao cliente |
-| `ENTREGUE` | Veículo entregue ao cliente; estado final |
-| `CANCELADA` | OS encerrada sem conclusão; estado final |
-
----
-
-## 5. Invariantes
-
-Invariantes são condições que nunca podem ser violadas, independentemente do fluxo de execução.
-
-1. **Uma OS nunca pode ter status inválido** — toda transição passa pela máquina de estados em `StatusOrdemServico`; transições não mapeadas lançam `IllegalStateException`.
-2. **O estoque de um insumo nunca pode ficar negativo** — `reservar()` valida antes de decrementar.
-3. **Um orçamento aprovado é irreversível** — `reprovar()` em um orçamento já aprovado lança `IllegalStateException`.
-4. **Insumos não podem ser manipulados fora do diagnóstico** — qualquer tentativa fora de `EM_DIAGNOSTICO` lança `IllegalStateException`.
-5. **Serviços (itens) não podem ser adicionados/removidos fora do diagnóstico** — idem.
-6. **O mesmo serviço não pode aparecer duas vezes na mesma OS** — `adicionarServico()` rejeita duplicatas.
-7. **Um item de OS concluído é imutável** — valor, mecânico e observação não podem ser alterados pós-conclusão.
-8. **A OS sempre inicia como `RECEBIDA`** — o factory `abrir()` impõe este estado; não há outro caminho de criação.
-9. **O prazo de conclusão é imutável após definição** — `definirPrazoConclusao()` rejeita redefinição.
-10. **Um `ValorMonetario` nunca pode ser negativo** — validado no `init` do Value Object.
-11. **Um `Cpf` inválido nunca instancia** — dígitos verificadores calculados e validados no `init`.
-12. **Uma `OrdemServico` sem motivo nunca instancia** — factory `abrir()` exige motivo não vazio.
-13. **Um `Servico` sem nome ou descrição nunca instancia** — `gerar()` exige ambos não vazios.
-14. **Mecânico `SENIOR` não pode ser promovido** — `proximoNivel()` lança `DomainException`.
-
----
-
-## 6. Exemplos de código
-
-### Entidade com comportamento — `OrdemServico`
+O aggregate raiz do domínio. Controla o ciclo de vida completo de um atendimento.
 
 ```kotlin
-val os = OrdemServico.abrir(
-    motivo = "Barulho no motor ao acelerar",
-    clienteId = UsuarioId.gerar(),
-    mecanicoId = UsuarioId.gerar(),
-    veiculoId = VeiculoId.gerar()
+class OrdemServico private constructor(
+    val id: OrdemServicoId,
+    val motivo: String,
+    var observacao: String,
+    val clienteId: UsuarioId,
+    private var mecanicoId: UsuarioId,
+    val veiculoId: VeiculoId,
+    val dataCriacao: LocalDateTime,
+    var dataAtualizacao: LocalDateTime,
+    private var status: StatusOrdemServico,   // value object com state machine
+    private var prazoConclusao: PrazoConclusao?,
+    private var orcamento: Orcamento?,
+    private val insumos: MutableList<InsumoId>,
+    private val itensServico: MutableList<ItemOrdemServico>,
+)
+```
+
+A construção é bloqueada: `private constructor` + factory methods `abrir()` e `reconstituir()`. Isso garante que nenhuma OS entre em estado inválido.
+
+**Regras de negócio encapsuladas:**
+
+- Insumos e serviços só podem ser adicionados/removidos durante `EM_DIAGNOSTICO`
+- Orçamento só pode ser gerado durante `EM_DIAGNOSTICO`
+- Aprovação/reprovação só é possível em `AGUARDANDO_APROVACAO`
+- Conclusão de item só é possível em `EM_EXECUCAO`
+- Um serviço concluído não pode ser removido nem ter seu valor alterado
+- Prazo de conclusão não pode estar no passado e não pode ser redefinido
+
+---
+
+### ItemOrdemServico (Entidade interna do Aggregate)
+
+Representa a execução de um serviço específico dentro de uma OS.
+
+```kotlin
+class ItemOrdemServico(
+    val id: ItemOrdemServicoId,
+    val servicoId: ServicoId,
+    val ordemServicoId: OrdemServicoId,
+    var valor: ValorMonetario,
+    var feito: Boolean,
+    var mecanicoResponsavelId: UsuarioId?,
+    var dataRealizacao: LocalDateTime?,
+    var observacao: String?,
+)
+```
+
+**Regras:** Um item só pode ser concluído se tiver mecânico vinculado e observação não vazia. Serviços já concluídos são imutáveis.
+
+---
+
+### Orcamento (Entidade interna do Aggregate)
+
+```kotlin
+class Orcamento(
+    val id: OrcamentoId,
+    val custoMaoDeObra: ValorMonetario,
+    val custoInsumos: ValorMonetario,
+    private var aprovado: Boolean,
+    private var observacao: String,
 )
 
-os.iniciarDiagnostico()
-
-// Insumos
-os.adicionarInsumo(InsumoId.de("id-filtro-oleo"))
-os.adicionarInsumo(InsumoId.de("id-oleo-5w30"))
-
-// Serviços com valor negociado para esta OS
-val itemTrocaOleo = os.adicionarServico(
-    servicoId = ServicoId("id-troca-oleo"),  // referência ao catálogo
-    valor = ValorMonetario(BigDecimal("80.00")) // valor desta OS pode diferir do catálogo
-)
-itemTrocaOleo.vincularMecanico(mecanicoId)
-itemTrocaOleo.concluir("Troca realizada, filtro de óleo substituído")
-
-os.gerarOrcamento(
-    custoMaoDeObra = ValorMonetario(BigDecimal("180.00")),
-    custoInsumos   = ValorMonetario(BigDecimal("95.00"))
-)
-
-os.aprovarOrcamento()
-
-os.finalizar()
-os.entregar()
+val valorTotal: ValorMonetario get() = custoMaoDeObra.somar(custoInsumos)
 ```
 
-### Catálogo de serviços — `Servico`
+**Regras:** Orçamento aprovado não pode ser reprovado. Reprovação exige motivo não vazio.
+
+---
+
+### Mecanico
+
+Entidade independente que representa o profissional da oficina.
 
 ```kotlin
-// Cadastro no catálogo (feito uma vez)
-val trocaOleo = Servico.gerar(
-    nomeServico = "Troca de Óleo",
-    descricaoServico = "Troca do óleo do motor e filtro de óleo",
-    valorReferencia = ValorMonetario(BigDecimal("80.00")) // preço de tabela, opcional
+class Mecanico(
+    val usuarioId: UsuarioId,
+    private var valorHora: ValorHora,
+    private var nivel: NivelMecanico      // JUNIOR | PLENO | SENIOR
 )
 
-// Reutilizado em múltiplas OS com valores diferentes por OS
-val itemNaOs42 = os42.adicionarServico(trocaOleo.id, ValorMonetario(BigDecimal("80.00")))
-val itemNaOs87 = os87.adicionarServico(trocaOleo.id, ValorMonetario(BigDecimal("65.00"))) // desconto
+fun calcularCusto(horas: HorasTrabalho): ValorMonetario
+fun promover(): Mecanico   // retorna nova instância com nível promovido
 ```
 
-### Enum de status com descrição
+O cálculo de custo aplica um multiplicador por nível: JUNIOR=1x, PLENO=2x, SENIOR=3x.
+
+---
+
+### Usuario
+
+Representa clientes e mecânicos. O papel é definido pelo conjunto de `Role`.
 
 ```kotlin
-enum class StatusOrdemServicoEnum(val ordem: Int, val descricao: String) {
-    CANCELADA(0, "Cancelada"),
-    RECEBIDA(1, "Recebida"),
-    EM_DIAGNOSTICO(2, "Em Diagnóstico"),
-    AGUARDANDO_APROVACAO(3, "Aguardando Aprovação"),
-    EM_EXECUCAO(4, "Em Execução"),
-    FINALIZADA(5, "Finalizada"),
-    ENTREGUE(6, "Entregue")
-}
-```
+class Usuario(
+    val id: UsuarioId,
+    private var nome: String,
+    private var email: Email,
+    private var senha: Senha,        // armazenado como hash
+    private var cpf: Cpf,
+    private var telefone: Telefone,
+    private val roles: MutableSet<Role>  // CLIENTE | MECANICO
+)
 
-### Value Object com máquina de estados
-
-```kotlin
-@JvmInline
-value class StatusOrdemServico private constructor(val valor: StatusOrdemServicoEnum) {
-
-    fun podeTransitarPara(novoStatus: StatusOrdemServicoEnum): Boolean =
-        when (valor) {
-            StatusOrdemServicoEnum.RECEBIDA ->
-                novoStatus in listOf(EM_DIAGNOSTICO, CANCELADA)
-            StatusOrdemServicoEnum.EM_DIAGNOSTICO ->
-                novoStatus in listOf(AGUARDANDO_APROVACAO, CANCELADA)
-            StatusOrdemServicoEnum.AGUARDANDO_APROVACAO ->
-                novoStatus in listOf(EM_EXECUCAO, CANCELADA)
-            StatusOrdemServicoEnum.EM_EXECUCAO ->
-                novoStatus in listOf(FINALIZADA, CANCELADA)
-            StatusOrdemServicoEnum.FINALIZADA ->
-                novoStatus == ENTREGUE
-            else -> false
-        }
-
-    fun transitarPara(novoStatus: StatusOrdemServicoEnum): StatusOrdemServico {
-        if (!podeTransitarPara(novoStatus))
-            throw IllegalStateException("Transição inválida de $valor para $novoStatus")
-        return StatusOrdemServico(novoStatus)
-    }
-}
-```
-
-### Regra de negócio encapsulada — cálculo de custo do mecânico
-
-```kotlin
-fun calcularCusto(horas: HorasTrabalho): ValorMonetario {
-    val total = valorHora.valor
-        .multiply(horas.valor.toBigDecimal())
-        .multiply(nivel.multiplicador().toBigDecimal())
-        .setScale(2, RoundingMode.HALF_UP)
-    return ValorMonetario(total)
-}
-```
-
-### Controle de estoque com invariante
-
-```kotlin
-fun reservar(qtdNecessaria: Int) {
-    if (qtdNecessaria <= 0)
-        throw DomainException("A quantidade necessária deve ser maior que zero.")
-    if (qtdNecessaria > qtdEstoque)
-        throw DomainException("Quantidade necessária ($qtdNecessaria) excede o estoque disponível ($qtdEstoque).")
-    qtdEstoque -= qtdNecessaria
-    dataAtualizacao = LocalDateTime.now()
-}
+fun ehCliente(): Boolean
+fun ehMecanico(): Boolean
+fun criarCliente(...): Usuario  // factory method
+fun criarMecanico(...): Usuario // factory method
 ```
 
 ---
 
-## 7. Restrições da camada
-
-O domínio **não deve conter** nenhum dos itens abaixo. A presença de qualquer um deles é um indicativo de violação arquitetural.
-
-| Categoria | Exemplos proibidos |
-|---|---|
-| Frameworks web | Spring MVC, Quarkus REST, JAX-RS, anotações `@RestController`, `@Path` |
-| Persistência | JPA, Hibernate, `@Entity`, `@Repository`, JDBC, Panache |
-| Injeção de dependência | `@Inject`, `@Autowired`, `@ApplicationScoped` |
-| Serialização | Jackson, Gson, `@JsonProperty`, `ObjectMapper` |
-| Infraestrutura de rede | HTTP clients, sockets, mensageria (Kafka, RabbitMQ) |
-| I/O | Leitura de arquivos, variáveis de ambiente, configurações externas |
-| Validação de framework | Bean Validation (`@NotNull`, `@Size`) — validações devem estar no `init` dos VOs |
-| Logging externo | `Logger`, `log.info()` — use eventos de domínio se necessário |
-
----
-
-## 8. Decisões arquiteturais
-
-### Isolamento total do domínio
-O módulo `_domain` possui apenas dependências de teste (`junit-jupiter`, `kotlin-test`). Nenhuma dependência de runtime externo é declarada. Isso garante que o domínio possa ser testado de forma completamente isolada e que nenhum detalhe de infraestrutura vaze para as regras de negócio.
-
-### Construtor privado + factory method
-Todas as entidades expõem apenas factory methods (`abrir()`, `criar()`, `gerar()`) como ponto de criação. O construtor privado garante que nenhum objeto seja criado em estado inválido por código externo.
+### Veiculo
 
 ```kotlin
-class OrdemServico private constructor(...) {
-    companion object {
-        fun abrir(motivo: String, ...): OrdemServico { ... }
-    }
-}
+class Veiculo(
+    val id: VeiculoId,
+    private var proprietarioId: UsuarioId,
+    private var placa: Placa,
+    private var modelo: String,
+    private var marca: String,
+    private var ano: Int,
+    private var ativo: IndicativoSimNao
+)
 ```
 
-### Value Objects com `@JvmInline`
-Os VOs utilizam `@JvmInline value class` para evitar overhead de boxing na JVM, mantendo a semântica de imutabilidade e type-safety sem custo de performance. Isso impede, por exemplo, que um `UsuarioId` seja passado onde se espera um `VeiculoId`.
-
-### Máquina de estados no Value Object
-A lógica de transição de status da OS está encapsulada em `StatusOrdemServico` (um VO), não na entidade `OrdemServico` nem em um service externo. Isso garante que a regra viva próxima ao dado que ela protege e que não possa ser ignorada por nenhum caminho de código.
-
-### Orçamento como parte do agregado `OrdemServico`
-O `Orcamento` não possui repositório próprio nem é acessado diretamente. Ele é criado, aprovado e reprovado exclusivamente através dos métodos de `OrdemServico`. Isso mantém a consistência entre o status da OS e o estado do orçamento — aprovar o orçamento e avançar para `EM_EXECUCAO` são operações atômicas dentro do mesmo agregado.
-
-### Referência a outros aggregates por ID
-A `OrdemServico` referencia `Usuario`, `Veiculo` e `Insumo` somente por seus IDs tipados (`UsuarioId`, `VeiculoId`, `InsumoId`). Isso respeita os limites dos aggregates e evita acoplamento estrutural entre agregados distintos.
-
-### Exceções de domínio tipadas
-`DomainException` é a exceção base para violações de regras de negócio explícitas. `IllegalStateException` é utilizada para violações de invariante de estado (ex: transição inválida, reaprovação de orçamento). `IllegalArgumentException` é utilizada para pré-condições de criação (via `require()`). Essa distinção facilita o tratamento diferenciado nas camadas externas.
+**Regras:** Veículo desativado não pode ter dados ou placa alterados. Ano mínimo: 1900.
 
 ---
 
-## 9. Cobertura de testes unitários
+### Servico e Insumo
 
-Todos os testes estão em `src/test`. São puramente unitários — sem banco, sem framework, sem mock.
+Entidades de catálogo. `Servico` representa os tipos de trabalho disponíveis; `Insumo`, as peças e materiais.
 
-| Arquivo de Teste | Entidade / VO coberto | Nº de casos |
+```kotlin
+class Servico(
+    val id: ServicoId,
+    val nomeServico: String,
+    val descricaoServico: String,
+    var valorReferencia: ValorMonetario?,  // pode não ter valor fixo
+)
+```
+
+---
+
+## 4. Value Objects
+
+| VO | Tipo Kotlin | Invariante |
 |---|---|---|
-| `OrdemServicoTest` | `OrdemServico` (ciclo completo + serviços + insumos) | 40+ |
-| `ItemOrdemServicoTest` | `ItemOrdemServico` (criação, vincular, concluir, reconstituir) | 18 |
-| `ServicoTest` | `Servico` (catálogo: criação, validações, atualização, reconstituir) | 14 |
-| `OrcamentoTest` | `Orcamento` (aprovação, reprovação, cálculo de total) | 9 |
-| `InsumoTest` | `Insumo` (estoque, reserva, reposição, custo) | 18 |
-| `MecanicoTest` | `Mecanico` (promoção, cálculo de custo) | 9 |
-| `StatusOrdemServicoTest` | `StatusOrdemServico` (máquina de estados completa) | 13 |
-| `ValorMonetarioTest` | `ValorMonetario` | — |
-| `CpfTest` | `Cpf` | — |
-| `EmailTest` | `Email` | — |
-| `SenhaTest` | `Senha` | — |
-| `TelefoneTest` | `Telefone` | — |
-| `PlacaTest` | `Placa` | — |
-| `VeiculoTest` | `Veiculo` | — |
-| `UserTest` | `Usuario` | — |
+| `ValorMonetario` | `@JvmInline value class` | Não negativo; operações `somar()` e `multiplicar()` |
+| `Cpf` | `@JvmInline value class` | 11 dígitos + algoritmo de validação dos dois dígitos verificadores |
+| `Placa` | `@JvmInline value class` | Regex `[A-Z]{3}[0-9][A-Z0-9][0-9]{2}` (padrão Mercosul) |
+| `Email` | `@JvmInline value class` | Formato de e-mail válido |
+| `Senha` | `@JvmInline value class` | Não pode ser vazia (hash armazenado) |
+| `Telefone` | `@JvmInline value class` | Formato de telefone válido |
+| `StatusOrdemServico` | `@JvmInline value class` | Encapsula a state machine de transição de status |
+| `NivelMecanico` | `@JvmInline value class` | Encapsula nível e multiplicador; impede promoção de SENIOR |
+| `ValorHora` | `@JvmInline value class` | Valor por hora do mecânico, não negativo |
+| `HorasTrabalho` | `@JvmInline value class` | Horas trabalhadas, não negativo |
+| `PrazoConclusao` | `data class` | Prazo não pode ser no passado |
+| `OrdemServicoId`, `UsuarioId`, etc. | `@JvmInline value class` | IDs tipados (UUID gerado ou reconstituído) |
 
-Para executar todos os testes do domínio:
+O uso de `@JvmInline value class` garante tipagem forte sem overhead de alocação em tempo de execução.
+
+---
+
+## 5. State Machine da Ordem de Serviço
+
+A máquina de estados está encapsulada no Value Object `StatusOrdemServico`. Transições inválidas lançam `IllegalStateException` no domínio.
+
+```
+RECEBIDA
+  ├─→ EM_DIAGNOSTICO
+  └─→ CANCELADA
+
+EM_DIAGNOSTICO
+  ├─→ AGUARDANDO_APROVACAO
+  └─→ CANCELADA
+
+AGUARDANDO_APROVACAO
+  ├─→ EM_EXECUCAO      (orçamento aprovado)
+  └─→ CANCELADA        (orçamento reprovado)
+
+EM_EXECUCAO
+  ├─→ FINALIZADA
+  └─→ CANCELADA
+
+FINALIZADA
+  └─→ ENTREGUE
+```
+
+---
+
+## 6. Enums
+
+| Enum | Valores | Localização |
+|---|---|---|
+| `StatusOrdemServicoEnum` | `RECEBIDA, EM_DIAGNOSTICO, AGUARDANDO_APROVACAO, EM_EXECUCAO, FINALIZADA, ENTREGUE, CANCELADA` | `domain.ordemServico` |
+| `NivelMecanicoEnum` | `JUNIOR, PLENO, SENIOR` | `domain.mecanico` |
+| `Role` | `CLIENTE, MECANICO` | `domain.shared.enums` |
+| `IndicativoSimNao` | `S, N` | `domain.shared.enums` |
+| `UnidadeTempoEnum` | Unidades de tempo para tempo médio de serviço | `domain.servico` |
+| `TipoEventoAuditoria` | Tipos de evento auditável | `domain.auditoria.enums` |
+| `TipoEntidade` | Entidades auditáveis | `domain.auditoria.enums` |
+
+---
+
+## 7. Exceções de domínio
+
+`DomainException` é a base para todas as violações de regra de negócio no domínio. É mapeada pela `_infrastructure` para HTTP 400.
+
+```kotlin
+class DomainException(message: String) : RuntimeException(message)
+```
+
+---
+
+## 8. Domínio rico
+
+Este projeto pratica **Rich Domain Model**: as entidades não são anêmicas. Toda a lógica que diz respeito a uma entidade vive nela.
+
+Exemplos concretos:
+
+```kotlin
+// A OS controla sua própria máquina de estados
+os.iniciarDiagnostico()         // valida e transita RECEBIDA → EM_DIAGNOSTICO
+os.gerarOrcamento(maoDeObra, insumos) // só funciona em EM_DIAGNOSTICO
+os.aprovarOrcamento()           // transita AGUARDANDO_APROVACAO → EM_EXECUCAO
+
+// O mecânico calcula seu próprio custo com o multiplicador de nível
+mecanico.calcularCusto(HorasTrabalho(8))
+
+// O CPF valida seus próprios dígitos verificadores
+Cpf("123.456.789-09")  // lança DomainException se inválido
+
+// A placa valida o formato Mercosul
+Placa("ABC1D23")  // válido; Placa("abc123") → DomainException
+```
+
+---
+
+## 9. Testes de domínio
+
+Testes unitários puros em JUnit 5 + AssertJ, sem nenhuma dependência de framework.
+
+**Cobertura por área:**
+
+| Área | Arquivos de teste |
+|---|---|
+| `OrdemServico` (aggregate + state machine) | `OrdemServicoTest`, `StatusOrdemServicoTest` |
+| `ItemOrdemServico` | `ItemOrdemServicoTest` |
+| `Orcamento` | `OrcamentoTest` |
+| `Mecanico` | `MecanicoTest`, `NivelMecanicoTest`, `ValorHoraTest`, `HorasTrabalhoTest` |
+| `Usuario` | `UsuarioTest`, `CpfTest`, `EmailTest`, `SenhaTest`, `TelefoneTest` |
+| `Veiculo` | `VeiculoTest`, `PlacaTest`, `DadosVeiculoTest` |
+| `Servico` | `ServicoTest` |
+| `Insumo` | `InsumoTest` |
+| `ValorMonetario` | `ValorMonetarioTest` |
+| `Auditoria` | `AuditoriaTest`, `EventoAuditoriaTest`, `CampoAlteradoTest`, VOs de auditoria |
 
 ```bash
+cd software/service-track-api
 ./gradlew :_domain:test
+./gradlew :_domain:jacocoTestReport
 ```

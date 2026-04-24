@@ -1,200 +1,227 @@
 # ServiceTrack API
 
-Sistema de gestão de ordens de serviço para oficina mecânica, desenvolvido como MVP com foco em organização operacional, rastreabilidade e eficiência no atendimento ao cliente.
+Backend para gestão de ordens de serviço de oficinas mecânicas. Responsável por controlar todo o ciclo de vida de uma OS — da abertura ao diagnóstico, orçamento, execução e entrega — com rastreabilidade completa por auditoria.
 
 ---
 
-## Sobre o Projeto
+## Contexto de negócio
 
-O ServiceTrack resolve problemas recorrentes em oficinas mecânicas:
+Uma oficina mecânica precisa registrar e acompanhar cada atendimento. O sistema suporta:
 
-- Falta de controle sobre o fluxo de ordens de serviço
-- Gestão manual e imprecisa de estoque de insumos
-- Dificuldade de comunicação sobre status entre mecânicos e clientes
-- Ausência de histórico rastreável de serviços e orçamentos
+- Abertura de OS por cliente ou atendente
+- Diagnóstico pelo mecânico (associação de serviços e insumos)
+- Geração de orçamento com custo de mão de obra e insumos
+- Aprovação ou reprovação do orçamento pelo cliente
+- Execução dos serviços com registro por mecânico responsável
+- Finalização e entrega do veículo
 
-A API oferece suporte a todo o ciclo de vida de uma ordem de serviço, desde o recebimento do veículo até a entrega ao cliente, incluindo diagnóstico, geração de orçamento, aprovação e finalização.
+---
+
+## Stack tecnológica
+
+| Camada | Tecnologia |
+|---|---|
+| Linguagem | Kotlin 2.0.21 + JVM 21 |
+| Framework | Quarkus 3.15.1 |
+| Persistência (prod) | PostgreSQL 16 |
+| Persistência (dev/test) | H2 in-memory |
+| ORM | Hibernate ORM (via Quarkus) |
+| Autenticação | JWT RS256 (SmallRye JWT) |
+| Criptografia de senha | BCrypt |
+| Build | Gradle Kotlin DSL (multi-module) |
+| Containers | Docker + Docker Compose |
+| Qualidade | JaCoCo + SonarCloud |
+| Segurança (SAST) | Semgrep |
+| CI | GitHub Actions |
 
 ---
 
 ## Arquitetura
 
-O sistema adota **Arquitetura Hexagonal** organizada como **Monolito Modular**, com separação clara de responsabilidades entre três módulos Gradle independentes:
+O projeto é um **monólito modular** estruturado em três módulos Gradle alinhados com Hexagonal Architecture e DDD:
 
 ```
-_domain         → Entidades, regras de negócio, objetos de valor e exceções de domínio.
-                  Sem dependências externas — puro Kotlin.
-
-_application    → Casos de uso, ports (interfaces) e DTOs.
-                  Orquestra o domínio sem conhecer detalhes de infraestrutura.
-
-_infrastructure → Adaptadores: REST controllers, persistência, autenticação JWT,
-                  proxy de auditoria e configuração de injeção de dependências.
-                  Único módulo com dependências de framework (Quarkus).
+_domain          ← regras de negócio puras (sem dependência de framework)
+_application     ← orquestração de casos de uso, ports, DTOs, services
+_infrastructure  ← REST, persistência, JWT, interceptors, adapters
 ```
 
-O fluxo de dependência segue a direção: `_infrastructure → _application → _domain`.  
-Nenhuma camada interna conhece a camada externa.
+A regra de dependência segue a direção:
 
-As decisões arquiteturais estão documentadas em ADRs e RFCs:
+```
+infrastructure → application → domain
+```
 
-- [ADR-001 - Monolito Modular](docs/adr/ADR-001-monolito-modular.md) · [RFC-001](docs/rfc/RFC-001-monolito-modular.md)
-- [ADR-002 - PostgreSQL](docs/adr/ADR-002-postgresql.md) · [RFC-002](docs/rfc/RFC-002-postgresql.md)
-- [ADR-003 - Kotlin](docs/adr/ADR-003-kotlin.md) · [RFC-003](docs/rfc/RFC-003-kotlin.md)
-- [ADR-004 - Quarkus](docs/adr/ADR-004-quarkus.md) · [RFC-004](docs/rfc/RFC-004-quarkus.md)
-- [ADR-005 - Autenticação JWT](docs/adr/ADR-005-autenticacao-jwt.md) · [RFC-005](docs/rfc/RFC-005-autenticacao-jwt.md)
+`_domain` não conhece `_application` nem `_infrastructure`. `_application` não conhece `_infrastructure`. A inversão de dependência é feita via interfaces (ports) definidas em `_application` e implementadas em `_infrastructure`.
 
----
-
-## Stack Tecnológica
-
-| Camada | Tecnologia |
-|---|---|
-| Linguagem | Kotlin 2.0.21 (compilador K2) |
-| Framework | Quarkus 3.x |
-| Persistência | Hibernate ORM + Panache · PostgreSQL (produção) · H2 (testes) |
-| REST | RESTEasy Reactive + Jackson |
-| Contrato de API | OpenAPI 3.0 (contract-first) · geração de código via `openapi-generator` |
-| Autenticação | SmallRye JWT · RSA-256 (par de chaves assimétricas) |
-| Validação | Hibernate Validator (Jakarta Bean Validation) |
-| Build | Gradle 8 multi-module |
-| Cobertura | JaCoCo |
-| CI | GitHub Actions |
+Para detalhes de cada camada, veja:
+- [_domain/README.md](software/service-track-api/_domain/README.md)
+- [_application/README.md](software/service-track-api/_application/README.md)
+- [_infrastructure/README.md](software/service-track-api/_infrastructure/README.md)
 
 ---
 
-## Segurança
+## Principais decisões arquiteturais
 
-A autenticação é baseada em **JWT com assinatura RSA-256** (par de chaves assimétricas):
-
-- O servidor assina tokens com a **chave privada** (`privateKey.pem`).
-- A verificação é feita com a **chave pública** (`publicKey.pem`).
-- O controle de acesso por perfil é implementado via `@RolesAllowed` — os papéis disponíveis são `CLIENTE` e `MECANICO`.
-- Em CI, as chaves são geradas dinamicamente com `openssl` a cada execução do pipeline.
-
----
-
-## Variáveis de Ambiente
-
-| Variável | Descrição | Padrão (dev) |
+| ADR | Decisão | Razão resumida |
 |---|---|---|
-| `QUARKUS_DATASOURCE_USERNAME` | Usuário do banco de dados | `servicetrack` |
-| `QUARKUS_DATASOURCE_PASSWORD` | Senha do banco de dados | `servicetrack` |
-| `QUARKUS_DATASOURCE_JDBC_URL` | JDBC URL do PostgreSQL | `jdbc:postgresql://localhost:5432/servicetrack` |
-
-Em desenvolvimento (`%dev`), o banco utilizado é H2 em memória — não é necessário configurar variáveis de banco.
-
-As chaves RSA devem estar disponíveis em:
-
-```
-software/service-track-api/_infrastructure/src/main/resources/keys/privateKey.pem
-software/service-track-api/_infrastructure/src/main/resources/keys/publicKey.pem
-```
+| [ADR-001](docs/adr/ADR-001-monolito-modular.md) | Monólito Modular | Menor complexidade operacional no MVP |
+| [ADR-002](docs/adr/ADR-002-postgresql.md) | PostgreSQL | Banco relacional robusto para dados transacionais |
+| [ADR-003](docs/adr/ADR-003-kotlin.md) | Kotlin | Expressividade, null safety, value classes |
+| [ADR-004](docs/adr/ADR-004-quarkus.md) | Quarkus | Startup rápido, suporte nativo a CDI/MicroProfile |
+| [ADR-005](docs/adr/ADR-005-autenticacao-jwt.md) | JWT RS256 | Stateless, integrado via SmallRye JWT |
 
 ---
 
-## Como Executar
+## Como rodar o projeto
 
 ### Pré-requisitos
 
-- JDK 21+
-- Gradle (ou use o wrapper `./gradlew`)
-- Docker e Docker Compose (opcional, para rodar via container)
+- Docker e Docker Compose instalados
+- Arquivo `.env` configurado em `software/service-track-api/`
 
-### Executar localmente (modo dev)
+### Variáveis de ambiente
+
+Crie `software/service-track-api/.env`:
+
+```env
+POSTGRES_USER=servicetrack
+POSTGRES_PASSWORD=servicetrack@123
+POSTGRES_DB=servicetrack
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_JDBC_URL=jdbc:postgresql://postgres:5432/servicetrack
+```
+
+As chaves JWT devem estar em `_infrastructure/src/main/resources/keys/`:
+
+```bash
+openssl genrsa -out privateKey.pem 2048
+openssl rsa -in privateKey.pem -pubout -out publicKey.pem
+```
+
+### Subindo com Docker Compose
+
+```bash
+cd software/service-track-api
+docker compose up --build
+```
+
+| Serviço | URL |
+|---|---|
+| API | `http://localhost:8080` |
+| PostgreSQL | `localhost:5432` |
+
+### Modo dev (H2 in-memory)
 
 ```bash
 cd software/service-track-api
 ./gradlew :_infrastructure:quarkusDev
 ```
 
-O modo dev utiliza H2 em memória — nenhuma configuração de banco é necessária.  
-O Swagger UI fica disponível em: `http://localhost:8080/q/swagger-ui`
-
-### Executar com Docker
-
-```bash
-docker-compose up --build
-```
-
-A aplicação sobe conectada ao PostgreSQL configurado no `docker-compose.yml`.  
-API disponível em: `http://localhost:8080`
-
-### Build do artefato
-
-```bash
-cd software/service-track-api
-./gradlew :_infrastructure:build
-```
+Console H2 disponível em `http://localhost:8080/h2-console`.
 
 ---
 
-## Testes
-
-O projeto possui testes em todas as camadas, com metas de cobertura aplicadas via JaCoCo:
-
-| Módulo | Tipo | Cobertura mínima |
-|---|---|---|
-| `_domain` | Unitários (JUnit 5 + MockK) | 90% |
-| `_application` | Unitários (JUnit 5 + MockK) | 80% |
-| `_infrastructure` | Integração (`@QuarkusTest` + RestAssured) | 60% |
-
-Para executar todos os testes:
+## Como rodar os testes
 
 ```bash
 cd software/service-track-api
-./gradlew test
-```
 
-Para executar por módulo:
-
-```bash
+# Testes unitários de domínio (sem framework)
 ./gradlew :_domain:test
+
+# Testes unitários de application (MockK)
 ./gradlew :_application:test
+
+# Testes de integração (QuarkusTest + H2) — exige chaves JWT em _infrastructure/src/test/resources/keys/
 ./gradlew :_infrastructure:test
 ```
 
-Os testes de integração sobem o contexto Quarkus completo com H2 em memória. O schema é recriado a cada execução (`drop-and-create`).
+Geração de relatórios JaCoCo por módulo:
 
----
-
-## Documentação
-
-- **Contrato OpenAPI**: [`software/service-track-api/openapi.yaml`](software/service-track-api/openapi.yaml)
-- **Swagger UI** (modo dev): `http://localhost:8080/q/swagger-ui`
-- **SRS**: [`docs/srs.md`](docs/srs.md)
-- **ADRs**: [`docs/adr/`](docs/adr/)
-- **RFCs**: [`docs/rfc/`](docs/rfc/)
-
----
-
-## Organização do Repositório
-
-```
-docs/
-  adr/              → Architectural Decision Records
-  rfc/              → Request for Comments (discussão técnica expandida)
-  template/         → Templates para ADR e RFC
-  srs.md            → Software Requirements Specification
-
-software/
-  service-track-api/
-    _domain/        → Entidades, VOs, regras de negócio
-    _application/   → Casos de uso, ports, DTOs
-    _infrastructure/→ Adaptadores, persistência, REST, segurança
-    openApi/        → Definições YAML do contrato de API
-
-terraform/          → Infraestrutura como código (provisionamento cloud)
+```bash
+./gradlew :_domain:jacocoTestReport
+./gradlew :_application:jacocoTestReport
+./gradlew :_infrastructure:jacocoTestReport
+# Saída: <módulo>/build/reports/jacoco/test/jacocoTestReport.xml
 ```
 
 ---
 
-## Autor
+## OpenAPI / Swagger UI
 
-Cláudio da Silva Araújo Filho — RM: 372729
+O projeto adota abordagem **contract-first**. Os contratos estão em `software/service-track-api/openApi/`.
+
+Com a aplicação rodando:
+
+```
+http://localhost:8080/q/swagger-ui
+```
 
 ---
 
-## Licença
+## Estrutura de pastas
 
-Projeto acadêmico — FIAP Pós-Graduação em Arquitetura de Software — 15SOAT
+```
+ServiceTrack-API/
+├── docs/
+│   ├── adr/               # Architecture Decision Records
+│   ├── rfc/               # Request for Comments
+│   ├── c4/                # Diagramas C4 (context, container, components, code)
+│   ├── mvp-1/             # Domain Storytelling e Event Storming
+│   └── srs.md             # Software Requirements Specification
+└── software/
+    └── service-track-api/
+        ├── _domain/       # Regras de negócio puras
+        ├── _application/  # Casos de uso, ports, DTOs
+        ├── _infrastructure/ # REST, persistência, JWT, adapters
+        ├── openApi/       # Especificações OpenAPI (contract-first)
+        ├── docker-compose.yaml
+        ├── Dockerfile
+        └── build.gradle.kts
+```
+
+---
+
+## CI
+
+Pipeline em `.github/workflows/ci.yml`. Executa em pushes para `main`, `develop` e `fase-*`.
+
+**Jobs (encadeados):**
+
+| Job | O que faz |
+|---|---|
+| Domain Coverage | `./gradlew :_domain:test :_domain:jacocoTestReport` |
+| Application Coverage | `./gradlew :_application:test :_application:jacocoTestReport` |
+| Infrastructure Coverage | Gera chaves JWT temporárias via OpenSSL, executa `./gradlew :_infrastructure:test :_infrastructure:jacocoTestReport` |
+| Sonar Analysis | Agrega os três relatórios e envia para SonarCloud |
+
+---
+
+## Segurança
+
+Pipeline em `.github/workflows/security.yml`. Executa nos mesmos branches do CI.
+
+**SAST com Semgrep:**
+- Analisa todo o código com regras `auto`
+- Gera relatórios JSON e SARIF
+- **Bloqueia o pipeline** se houver findings Critical/High
+- SARIF enviado ao GitHub Code Scanning (Security tab)
+
+---
+
+## Cobertura de código
+
+Medida por módulo com JaCoCo e consolidada no SonarCloud. Exclusões: DTOs, entities JPA, classes de configuração e código gerado pelo OpenAPI Generator.
+
+---
+
+## Roadmap / Evoluções futuras
+
+| Item | Status |
+|---|---|
+| Infraestrutura como código (Terraform) | **Não implementado** |
+| Pipeline de CD / deploy automatizado | **Não implementado** |
+| Notificações ao cliente (e-mail/SMS) | Possível evolução |
+| Migração para microsserviços | Possível evolução pós-validação do monólito |

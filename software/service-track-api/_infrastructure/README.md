@@ -1,111 +1,227 @@
-# Módulo `_infrastructure`
+# _infrastructure — ServiceTrack API
 
-Camada de adaptadores do ServiceTrack API. É a única camada que conhece o framework Quarkus, o banco de dados, o protocolo HTTP e os mecanismos de segurança. Traduz requisições externas em chamadas para os casos de uso da camada `_application` e persiste ou recupera dados do banco sem expor detalhes de infraestrutura ao domínio.
-
----
-
-## Responsabilidades
-
-- **Controladores REST**: expor endpoints HTTP, aplicar validações de entrada e delegar para os casos de uso.
-- **Persistência**: implementar os `RepositoryPort` definidos em `_application`, mapeando entidades JPA ↔ objetos de domínio.
-- **Autenticação e autorização**: emitir e validar tokens JWT via SmallRye JWT; aplicar `@RolesAllowed` nos endpoints.
-- **Proxy de auditoria**: interceptar chamadas anotadas com `@Auditavel` e registrar eventos de auditoria de forma transparente.
-- **Wiring de dependências**: instanciar e injetar implementações dos casos de uso por meio de classes de configuração CDI.
-- **Geração de código de contrato**: compilar as definições OpenAPI YAML em interfaces Java utilizadas como base dos controllers.
+Camada de adaptadores. É a única camada que conhece o Quarkus, o banco de dados, o protocolo HTTP e os mecanismos de segurança. Implementa todos os ports definidos em `_application` e expõe a API REST gerada a partir do contrato OpenAPI.
 
 ---
 
-## Tecnologias Principais
+## 1. Responsabilidade
 
-| Tecnologia | Uso |
+- Receber requisições HTTP e traduzi-las em chamadas aos casos de uso
+- Implementar os ports de saída (repositórios, JWT, criptografia)
+- Configurar o container de injeção de dependência (CDI)
+- Mapear exceções de domínio e aplicação para respostas HTTP
+- Interceptar operações auditáveis e registrar eventos de auditoria
+
+Esta camada **não toma decisões de negócio**. Se precisa de uma regra, delega ao domínio via `_application`.
+
+---
+
+## 2. REST Resources
+
+O projeto adota **contract-first**: as interfaces REST são geradas pelo OpenAPI Generator a partir dos contratos em `openApi/`. As implementações estão em `_infrastructure`.
+
+| Resource | Contexto |
 |---|---|
-| Quarkus 3.x | Runtime, CDI, configuração, servidor HTTP embutido |
-| Hibernate ORM + Panache (Kotlin) | Mapeamento ORM e repositórios com `PanacheEntity` |
-| RESTEasy Reactive + Jackson | Serialização JSON e binding HTTP |
-| SmallRye JWT | Emissão e validação de tokens JWT (RS256) |
-| Hibernate Validator | Validação de DTOs de entrada (`@Valid`, `@NotNull`, etc.) |
-| H2 (testes) | Banco em memória com `drop-and-create` nos testes de integração |
-| RestAssured + `@QuarkusTest` | Testes de integração com contexto Quarkus completo |
-| openapi-generator | Geração de interfaces Java e DTOs a partir dos arquivos YAML |
+| `AutenticacaoResourceImpl` | Login, cadastro de cliente |
+| `MecanicoResourceImpl` | CRUD de mecânicos |
+| `ClienteResourceImpl` | Consulta de clientes |
+| `VeiculoResourceImpl` | CRUD de veículos |
+| `ServicoResourceImpl` | CRUD de serviços do catálogo |
+| `InsumoResourceImpl` | CRUD de insumos do catálogo |
+| `OrdemServicoResourceImpl` | Criação e todo o ciclo de vida da OS |
+| `CatalogoResourceImpl` | Endpoints de consulta ao catálogo (serviços + insumos) |
 
----
+Cada resource injeta o(s) use case(s) correspondente(s) e delega sem lógica adicional:
 
-## Estrutura de Pacotes
+```kotlin
+@Path("/ordens-servico")
+class OrdemServicoResourceImpl(
+    private val criarOrdemServico: CriarOrdemServicoUseCase,
+    private val aprovarOrcamento: AprovarOrcamentoUseCase,
+    // ...
+) : OrdemServicoApi {
 
-```
-infrastructure/
-  autenticacao/     → Emissão de tokens JWT e endpoint de login
-  usuario/          → Adapter de persistência e resource de usuários
-  mecanico/         → Adapter de persistência e resource de mecânicos
-  veiculo/          → Adapter de persistência e resource de veículos
-  servico/          → Adapter de persistência e resource de serviços
-  insumo/           → Adapter de persistência e resource de insumos
-  catalogo/         → Resource de catálogo (serviços e insumos disponíveis)
-  ordemServico/     → Adapter de persistência, resource e mappers de OS
-  auditoria/        → Entidade JPA de auditoria, adapter de repositório e proxy AOP
-  config/           → Classes de configuração CDI (wiring dos casos de uso)
-  api/              → Interfaces geradas pelo openapi-generator (contratos REST)
+    override fun criar(dto: OrdemServicoReqDTO): Response =
+        Response.status(201).entity(criarOrdemServico.executar(dto)).build()
+}
 ```
 
-Cada contexto segue o mesmo padrão de três arquivos:
-
-- `*Entity.kt` — entidade JPA com mapeamento de colunas e conversão para domínio (`.toDomain()`).
-- `*RepositoryAdapter.kt` — implementação do `RepositoryPort` definido em `_application`.
-- `*ResourceImpl.kt` — implementação da interface gerada pelo OpenAPI, com anotações de segurança.
-- `*Mapper.kt` — funções de extensão para converter DTOs de request em DTOs de aplicação.
-- `*ServiceConfig.kt` — classe `@ApplicationScoped` que instancia os casos de uso via `AuditoriaProxy.envolver()`.
-
 ---
 
-## Fluxo de uma Requisição HTTP
+## 3. Persistência
+
+### JPA Entities
+
+Cada entidade de domínio tem uma entidade JPA correspondente. A conversão domain ↔ entity é feita no `RepositoryAdapter`.
+
+| JPA Entity | Entidade de domínio |
+|---|---|
+| `OrdemServicoEntity` | `OrdemServico` |
+| `ItemOrdemServicoEntity` | `ItemOrdemServico` |
+| `OrcamentoEntity` / `OrcamentoEmbeddable` | `Orcamento` |
+| `MecanicoEntity` | `Mecanico` |
+| `UsuarioEntity` | `Usuario` |
+| `VeiculoEntity` | `Veiculo` |
+| `ServicoEntity` | `Servico` |
+| `InsumoEntity` | `Insumo` |
+| `AuditoriaEntity` | `Auditoria` |
+
+### Repository Adapters
+
+Implementam os ports de saída definidos em `_application`. Traduzem entre o modelo de domínio e o modelo de persistência.
 
 ```
-Cliente HTTP
-    │
-    ▼
-RESTEasy (binding + validação @Valid)
-    │
-    ▼
-*ResourceImpl (@RolesAllowed → SmallRye JWT verifica token)
-    │  converte request DTO → application DTO via Mapper
-    ▼
-AuditoriaProxy (intercepta @Auditavel; captura estado anterior)
-    │
-    ▼
-*UseCase (interface de _application)
-    │  instanciado por *ServiceConfig com dependências injetadas
-    ▼
-*Service (implementação em _application)
-    │  chama RepositoryPort, domínio, etc.
-    ▼
-*RepositoryAdapter (implementação em _infrastructure)
-    │  converte domínio ↔ entidade JPA
-    ▼
-Panache / Hibernate ORM → PostgreSQL (produção) / H2 (testes)
+OrdemServicoRepositoryAdapter  implements  OrdemServicoRepositoryPort
+MecanicoRepositoryAdapter      implements  MecanicoRepositoryPort
+UsuarioRepositoryAdapter       implements  UsuarioRepositoryPort
+VeiculoRepositoryAdapter       implements  VeiculoRepositoryPort
+ServicoRepositoryAdapter       implements  ServicoRepositoryPort
+InsumoRepositoryAdapter        implements  InsumoRepositoryPort
+AuditoriaRepositoryAdapter     implements  AuditoriaRepositoryPort
 ```
 
-Após a execução do caso de uso, o `AuditoriaProxy` persiste o evento de auditoria com o estado anterior e posterior da entidade.
+### Banco de dados por perfil
+
+| Perfil Quarkus | Banco |
+|---|---|
+| `dev` | H2 in-memory (`jdbc:h2:mem:servicetrack`) |
+| `test` | H2 in-memory (recriado a cada execução de IT) |
+| `prod` | PostgreSQL 16 (via variável `QUARKUS_DATASOURCE_JDBC_URL`) |
+
+Schema gerenciado pelo Hibernate com `quarkus.hibernate-orm.database.generation=update`.
 
 ---
 
-## Proxy de Auditoria
+## 4. Segurança
 
-O mecanismo de auditoria é implementado por `AuditoriaProxy`, que envolve cada caso de uso num proxy JDK dinâmico. Métodos anotados com `@Auditavel` têm seu estado anterior capturado antes da execução e o estado posterior registrado após. Nenhum serviço de negócio precisa conhecer esse comportamento — a anotação é suficiente.
+### JWT (RS256)
 
-Toda instanciação de caso de uso em `*ServiceConfig.kt` passa por `AuditoriaProxy.envolver(useCase, ...)`.
+`JwtAdapter` implementa `JwtPort` usando SmallRye JWT. Gera tokens assinados com chave privada RSA e os valida com a chave pública.
+
+```
+mp.jwt.verify.issuer=service-track-api
+mp.jwt.verify.publickey.location=classpath:keys/publicKey.pem
+mp.jwt.verify.publickey.algorithm=RS256
+smallrye.jwt.sign.key.location=classpath:keys/privateKey.pem
+servicetrack.jwt.expiracao-horas=8
+```
+
+### BCrypt
+
+`BcryptCriptografiaAdapter` implementa `CriptografiaPort`. Usado para hash de senha no cadastro e verificação no login.
+
+### Mapeamento de exceções para HTTP
+
+`ExceptionMappers` (JAX-RS `@Provider`) converte cada exceção em resposta HTTP estruturada:
+
+| Exceção | HTTP |
+|---|---|
+| `DomainException` | 400 Bad Request |
+| `ConstraintViolationException` | 400 Bad Request |
+| `EntidadeNaoEncontradaException` | 404 Not Found |
+| `CredenciaisInvalidasException` | 401 Unauthorized |
+| `OperacaoNegadaException` | 403 Forbidden |
+| `UsuarioJaExisteException` | 409 Conflict |
+| `VeiculoJaExisteException` | 409 Conflict |
+
+Resposta padronizada:
+
+```json
+{
+  "mensagem": "Recurso não encontrado",
+  "detalhe": "Ordem de serviço com id X não encontrada"
+}
+```
 
 ---
 
-## Contrato de API (Contract-First)
+## 5. Auditoria
 
-O contrato REST é definido em arquivos YAML dentro de `openApi/` e processado pelo plugin `openapi-generator` durante o build do Gradle. O resultado são interfaces Java em `build/generated/openapi/` que os `*ResourceImpl.kt` implementam. Isso garante que o contrato seja a fonte de verdade e que qualquer divergência cause falha de compilação.
+A auditoria utiliza um interceptor CDI (`AuditoriaInterceptor`) acionado pela anotação `@AuditavelInterceptorBinding`. O fluxo é:
+
+1. O resource ou service anota o método com `@Auditavel(entidade, evento)`
+2. Antes da execução, o estado anterior pode ser armazenado em `AuditoriaContextoHolder`
+3. Após a execução, o interceptor extrai o ID do resultado e registra o evento via `RegistrarAuditoriaPort`
+4. O `RegistrarAuditoriaAdapter` persiste o registro em `AuditoriaEntity`
+
+O padrão Strategy (`AuditoriaStrategy`) determina como cada tipo de evento (criação, atualização, remoção, login) monta o registro:
+
+```
+AuditoriaStrategyFactory
+  ├── CiacaoAuditoriaStrategy
+  ├── AtualizacaoAuditoriaStrategy
+  ├── RemocaoAuditoriaStrategy
+  ├── LoginAuditoriaStrategy
+  └── LogoutAuditoriaStrategy
+```
 
 ---
 
-## Boas Práticas
+## 6. Inversão de dependência
 
-- **Isolamento do domínio**: as entidades JPA e os DTOs de request/response nunca são expostos para `_application` ou `_domain`. A conversão é sempre explícita, em funções de extensão nos Mappers.
-- **Injeção de dependência**: use `@ApplicationScoped` + `@Inject` nas classes de infraestrutura. Os casos de uso são instanciados manualmente nas classes `*ServiceConfig` para que o proxy de auditoria seja aplicado corretamente.
-- **Transações declarativas**: use `@Transactional` nos métodos do resource que modificam estado. Operações de leitura não precisam da anotação.
-- **Validação na borda**: toda validação de formato e obrigatoriedade de campos ocorre nos DTOs gerados pelo OpenAPI, via anotações Bean Validation. A camada de aplicação assume que os dados chegam válidos.
-- **Testes de integração**: cada classe de IT deve usar CPFs únicos para evitar colisões no schema H2 compartilhado entre testes do mesmo módulo.
+A infraestrutura depende das abstrações definidas em `_application`, nunca o contrário:
+
+```
+_application define:           _infrastructure implementa:
+OrdemServicoRepositoryPort  ←  OrdemServicoRepositoryAdapter
+JwtPort                     ←  JwtAdapter
+CriptografiaPort            ←  BcryptCriptografiaAdapter
+RegistrarAuditoriaPort      ←  RegistrarAuditoriaAdapter
+```
+
+A configuração dos services de aplicação é feita em classes de configuração CDI (`*ServiceConfig`), que injetam os adapters nos constructors dos services da camada `_application`:
+
+```kotlin
+@ApplicationScoped
+class OrdemServicoServiceConfig(
+    private val ordemServicoRepo: OrdemServicoRepositoryPort,
+    private val mecanicoRepo: MecanicoRepositoryPort,
+    // ...
+) {
+    @Produces
+    fun criarOrdemServicoService(): CriarOrdemServicoUseCase =
+        CriarOrdemServicoService(ordemServicoRepo, mecanicoRepo, ...)
+}
+```
+
+---
+
+## 7. Testes de integração (IT)
+
+Os testes de integração usam `@QuarkusTest` com banco H2 in-memory e RestAssured para chamadas HTTP. As chaves JWT são geradas via OpenSSL antes de cada execução no CI.
+
+**Convenções:**
+- Cada classe de IT testa um fluxo ou recurso completo
+- CPFs e dados únicos são gerados por classe para evitar conflitos entre testes
+- Testes de fluxo (`OrdemServicoFluxoIT`) verificam o ciclo completo de uma OS do início ao fim
+
+| Teste IT | Cobertura |
+|---|---|
+| `LoginIT` | Autenticação e geração de token |
+| `CadastrarClienteIT` | Cadastro de usuário cliente |
+| `CadastrarMecanicoIT` | Cadastro de mecânico |
+| `AtualizarMecanicoIT` | Atualização de dados do mecânico |
+| `MecanicoIT` | Busca e listagem de mecânicos |
+| `ClienteIT` | Consulta de clientes |
+| `VeiculoIT` | CRUD completo de veículos |
+| `ServicoIT` | CRUD completo de serviços |
+| `InsumoIT` | CRUD completo de insumos |
+| `CatalogoIT` | Consulta ao catálogo público |
+| `OrdemServicoIT` | Criação e operações de OS |
+| `OrdemServicoFluxoIT` | Fluxo completo: abertura → diagnóstico → orçamento → execução → entrega |
+| `TempoMedioConclusaoIT` | Cálculo de tempo médio por serviço |
+| `AuditoriaProxyTest` | Verificação do mecanismo de auditoria |
+
+```bash
+cd software/service-track-api
+
+# Gerar chaves JWT para testes (necessário uma vez)
+mkdir -p _infrastructure/src/test/resources/keys
+openssl genrsa -out _infrastructure/src/test/resources/keys/privateKey.pem 2048
+openssl rsa -in _infrastructure/src/test/resources/keys/privateKey.pem \
+  -pubout -out _infrastructure/src/test/resources/keys/publicKey.pem
+
+# Executar testes de integração
+./gradlew :_infrastructure:test
+./gradlew :_infrastructure:jacocoTestReport
+```
