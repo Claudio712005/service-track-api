@@ -58,39 +58,41 @@ jobs:
         id: gate
         working-directory: ${{ github.workspace }}
         run: |
-          ::group::Vulnerability gate
+          echo "::group::Vulnerability gate"
+          
           REPORTS_DIR="software/service-track-api/reports"
           JSON="$REPORTS_DIR/semgrep.json"
           SUMMARY="$REPORTS_DIR/semgrep-summary.txt"
-
+          
           TOTAL=$(jq '.results | length' "$JSON")
           CRITICAL_HIGH=$(jq '[.results[] | select(.extra.severity == "ERROR")] | length' "$JSON")
           MEDIUM=$(jq '[.results[] | select(.extra.severity == "WARNING")] | length' "$JSON")
           LOW=$(jq '[.results[] | select(.extra.severity == "INFO")] | length' "$JSON")
-
+          
           {
             echo "## Semgrep Security Report"
             echo ""
             echo "* Total findings: $TOTAL"
-            echo "* Critical/High: $CRITICAL_HIGH"
-            echo "* Medium: $MEDIUM"
-            echo "* Low: $LOW"
-            echo ""
-            echo "### Findings"
-            echo ""
-            if [ "$TOTAL" -eq 0 ]; then
+              echo "* Critical/High: $CRITICAL_HIGH"
+              echo "* Medium: $MEDIUM"
+              echo "* Low: $LOW"
+              echo ""
+              echo "### Findings"
+              echo ""
+              if [ "$TOTAL" -eq 0 ]; then
               echo "* No findings."
-            else
+              else
               jq -r '.results[] | "* [\(.check_id)] \(.extra.message) (\(.path):\(.start.line))"' "$JSON"
-            fi
+              fi
           } | tee "$SUMMARY"
-
+          
           echo "critical_high=$CRITICAL_HIGH" >> "$GITHUB_OUTPUT"
-          ::endgroup::
-
+          
+          echo "::endgroup::"
+          
           if [ "$CRITICAL_HIGH" -gt 0 ]; then
-            echo "::error::Semgrep found $CRITICAL_HIGH Critical/High severity finding(s). Pipeline blocked."
-            exit 1
+          echo "::error::Semgrep found $CRITICAL_HIGH Critical/High severity finding(s). Pipeline blocked."
+          exit 1
           fi
 
       - name: Upload SARIF (SAST)
