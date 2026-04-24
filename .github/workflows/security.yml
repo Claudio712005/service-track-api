@@ -37,20 +37,22 @@ jobs:
         id: semgrep
         working-directory: ${{ github.workspace }}
         run: |
-          ::group::Semgrep analysis
+          echo "::group::Semgrep analysis"
+          
           REPORTS_DIR="software/service-track-api/reports"
           mkdir -p "$REPORTS_DIR"
-
+          
           semgrep --config=auto \
-                  --json \
-                  --output "$REPORTS_DIR/semgrep.json" \
-                  software/service-track-api/ || true
-
+          --json \
+          --output "$REPORTS_DIR/semgrep.json" \
+          software/service-track-api/ || true
+          
           semgrep --config=auto \
-                  --sarif \
-                  --output "$REPORTS_DIR/semgrep.sarif" \
-                  software/service-track-api/ || true
-          ::endgroup::
+          --sarif \
+          --output "$REPORTS_DIR/semgrep.sarif" \
+          software/service-track-api/ || true
+          
+          echo "::endgroup::"
 
       - name: Parse results and generate summary
         id: gate
