@@ -2,10 +2,10 @@ type: object
 properties:
   token:
     type: string
-    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NDkyNzE3MDA2MyIsImlhdCI6MTY4ODQyODg0OSwiZXhwIjoxNjg4NDMyNDQ5fQ.7s8n9m"
+    example: "mock-jwt-token-"
   refreshToken:
     type: string
-    example: "d1f2e3c4b5a6978877665544332211aabbccddeeff00112233445566778899"
+    example: "mock-refresh-token"
   usuarioId:
     type: string
     format: uuid
