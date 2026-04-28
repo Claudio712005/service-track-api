@@ -242,7 +242,7 @@ class VeiculoTest {
         val exception = assertThrows<DomainException> {
             veiculo.atualizarProprietario(UsuarioId.gerar())
         }
-        assertTrue(exception.message!!.contains("desative o veículo"))
+        assertTrue(exception.message!!.equals("Veículo inativo não pode ter o proprietário alterado"))
     }
 
     @Test
