@@ -21,6 +21,6 @@ class RemoverInsumoService(
             ?: throw EntidadeNaoEncontradaException(Insumo::class.java.name, arrayOf(id.valor))
 
         AuditoriaContextoHolder.registrarAntes(InsumoResDTO.de(existente))
-        repository.remover(id)
+        repository.desativar(id)
     }
 }

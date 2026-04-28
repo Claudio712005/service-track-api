@@ -35,7 +35,7 @@ class LoginServiceTest {
         senha = "#Tiee123456"
     )
 
-    private val usuarioAtivo = Usuario.reconstituir(
+    private fun buildUsuario(ativo: Boolean): Usuario = Usuario.reconstituir(
         id = UsuarioId.gerar(),
         nome = "Cláudio",
         email = Email("clausilvaaraujo11@gmail.com"),
@@ -43,7 +43,7 @@ class LoginServiceTest {
         dataNascimento = LocalDate.of(2005, 1, 7),
         telefone = Telefone("11999999999"),
         cpf = Cpf("14716682072"),
-        ativo = true,
+        ativo = ativo,
         roles = setOf(Role.CLIENTE),
         dataCriacao = LocalDateTime.now(),
         dataAtualizacao = LocalDateTime.now()
@@ -51,6 +51,7 @@ class LoginServiceTest {
 
     @Test
     fun `deve realizar login com sucesso e retornar token`() {
+        val usuarioAtivo = buildUsuario(ativo = true)
         every { usuarioRepository.buscarPorEmail(requisicao.email) } returns usuarioAtivo
         every { criptografia.comparar(any(), requisicao.senha) } returns true
         every { jwt.gerarToken(any(), any(), any()) } returns "jwt-token-gerado"
@@ -77,6 +78,7 @@ class LoginServiceTest {
 
     @Test
     fun `deve lancar CredenciaisInvalidasException quando senha estiver incorreta`() {
+        val usuarioAtivo = buildUsuario(ativo = true)
         every { usuarioRepository.buscarPorEmail(requisicao.email) } returns usuarioAtivo
         every { criptografia.comparar(any(), requisicao.senha) } returns false
 
@@ -84,6 +86,19 @@ class LoginServiceTest {
             service.login(requisicao)
         }
 
+        verify(exactly = 0) { jwt.gerarToken(any(), any(), any()) }
+    }
+
+    @Test
+    fun `deve lancar CredenciaisInvalidasException quando usuario estiver inativo`() {
+        val usuarioInativo = buildUsuario(ativo = false)
+        every { usuarioRepository.buscarPorEmail(requisicao.email) } returns usuarioInativo
+
+        assertThrows<CredenciaisInvalidasException> {
+            service.login(requisicao)
+        }
+
+        verify(exactly = 0) { criptografia.comparar(any(), any()) }
         verify(exactly = 0) { jwt.gerarToken(any(), any(), any()) }
     }
 }

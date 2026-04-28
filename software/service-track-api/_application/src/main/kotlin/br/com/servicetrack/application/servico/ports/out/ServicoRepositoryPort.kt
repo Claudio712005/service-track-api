@@ -9,5 +9,5 @@ interface ServicoRepositoryPort {
     fun buscarPorId(id: ServicoId): Servico?
     fun listarTodos(): List<Servico>
     fun atualizar(servico: Servico)
-    fun remover(id: ServicoId)
+    fun desativar(id: ServicoId)
 }

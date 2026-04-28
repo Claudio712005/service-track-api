@@ -199,7 +199,12 @@ project(":_infrastructure").afterEvaluate {
     )
 
     tasks.named<JacocoReport>("jacocoTestReport") {
-        dependsOn(tasks.named("openApiGenerate"))
+        dependsOn(
+            tasks.named("classes"),
+            tasks.named("openApiGenerate"),
+            tasks.named("quarkusGenerateCode"),
+            tasks.named("quarkusGenerateCodeDev"),
+        )
 
         classDirectories.setFrom(
             fileTree(layout.buildDirectory.dir("classes/kotlin/main")) {

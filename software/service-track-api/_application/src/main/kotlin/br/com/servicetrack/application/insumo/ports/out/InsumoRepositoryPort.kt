@@ -9,5 +9,5 @@ interface InsumoRepositoryPort {
     fun buscarPorId(id: InsumoId): Insumo?
     fun listarTodos(): List<Insumo>
     fun atualizar(insumo: Insumo)
-    fun remover(id: InsumoId)
+    fun desativar(id: InsumoId)
 }

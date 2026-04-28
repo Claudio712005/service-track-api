@@ -21,6 +21,6 @@ class RemoverServicoService(
             ?: throw EntidadeNaoEncontradaException(Servico::class.java.name, arrayOf(id.valor))
 
         AuditoriaContextoHolder.registrarAntes(ServicoResDTO.de(existente))
-        repository.remover(id)
+        repository.desativar(id)
     }
 }

@@ -18,34 +18,34 @@ class RemoverServicoServiceTest {
     private val service = RemoverServicoService(repository)
 
     @Test
-    fun `deve remover servico existente com sucesso`() {
+    fun `deve desativar servico existente com sucesso`() {
         val servico = Servico.gerar(
             nomeServico = "Troca de Óleo",
             descricaoServico = "Troca do óleo do motor",
             valorReferencia = ValorMonetario(BigDecimal("120.00"))
         )
         every { repository.buscarPorId(servico.id) } returns servico
-        every { repository.remover(servico.id) } returns Unit
+        every { repository.desativar(servico.id) } returns Unit
 
         service.removerServico(servico.id)
 
         verify(exactly = 1) { repository.buscarPorId(servico.id) }
-        verify(exactly = 1) { repository.remover(servico.id) }
+        verify(exactly = 1) { repository.desativar(servico.id) }
     }
 
     @Test
-    fun `deve remover servico sem valor de referencia`() {
+    fun `deve desativar servico sem valor de referencia`() {
         val servico = Servico.gerar(
             nomeServico = "Diagnóstico",
             descricaoServico = "Diagnóstico eletrônico",
             valorReferencia = null
         )
         every { repository.buscarPorId(servico.id) } returns servico
-        every { repository.remover(servico.id) } returns Unit
+        every { repository.desativar(servico.id) } returns Unit
 
         service.removerServico(servico.id)
 
-        verify(exactly = 1) { repository.remover(servico.id) }
+        verify(exactly = 1) { repository.desativar(servico.id) }
     }
 
     @Test
@@ -58,6 +58,6 @@ class RemoverServicoServiceTest {
         }
 
         verify(exactly = 1) { repository.buscarPorId(id) }
-        verify(exactly = 0) { repository.remover(any()) }
+        verify(exactly = 0) { repository.desativar(any()) }
     }
 }

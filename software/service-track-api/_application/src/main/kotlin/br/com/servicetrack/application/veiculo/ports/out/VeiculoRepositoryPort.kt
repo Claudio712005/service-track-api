@@ -10,7 +10,9 @@ interface VeiculoRepositoryPort {
     fun salvar(veiculo: Veiculo)
     fun existeVeiculoPorPlaca(placa: String): Boolean
     fun buscarPorId(id: VeiculoId): Veiculo?
+    fun buscarInativoPorPlaca(placa: String): Veiculo?
     fun desativar(id: VeiculoId)
+    fun reativar(id: VeiculoId)
     fun atualizar(veiculo: Veiculo)
     fun listarPorProprietario(proprietarioId: UsuarioId): List<Veiculo>
     fun listarTodos(): List<Veiculo>

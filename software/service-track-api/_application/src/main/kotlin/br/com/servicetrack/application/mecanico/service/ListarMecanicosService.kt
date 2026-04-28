@@ -14,6 +14,6 @@ class ListarMecanicosService(
     override fun listarMecanicos(): List<MecanicoResDTO> =
         mecanicoRepository.listarTodos().mapNotNull { mecanico ->
             val usuario = usuarioRepository.buscarPorId(UsuarioId(mecanico.usuarioId.valor))
-            usuario?.let { MecanicoResDTO.de(it, mecanico) }
+            usuario?.takeIf { it.estaAtivo() }?.let { MecanicoResDTO.de(it, mecanico) }
         }
 }

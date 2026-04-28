@@ -24,11 +24,11 @@ class LoginService(
         val usuario = usuarioRepository.buscarPorEmail(req.email)
             ?: throw CredenciaisInvalidasException()
 
-        val dados = usuario.obterDados()
-
-        if (!criptografia.comparar(usuario.obterSenhaHash().valor, req.senha)) {
+        if (!usuario.estaAtivo() || !criptografia.comparar(usuario.obterSenhaHash().valor, req.senha)) {
             throw CredenciaisInvalidasException()
         }
+
+        val dados = usuario.obterDados()
 
         val token = jwt.gerarToken(
             usuarioId = dados.id.valor,

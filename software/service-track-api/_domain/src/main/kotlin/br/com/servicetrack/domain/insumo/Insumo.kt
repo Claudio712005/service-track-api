@@ -13,7 +13,8 @@ class Insumo private constructor(
     val estoqueMinimo: Int,
     val dataCriacao: LocalDateTime,
     private var dataAtualizacao: LocalDateTime,
-    private var qtdEstoque: Int
+    private var qtdEstoque: Int,
+    private var ativo: Boolean = true,
 ) {
 
     companion object {
@@ -39,7 +40,8 @@ class Insumo private constructor(
                 estoqueMinimo = estoqueMinimo,
                 dataCriacao = agora,
                 dataAtualizacao = agora,
-                qtdEstoque = qtdEstoqueInicial
+                qtdEstoque = qtdEstoqueInicial,
+                ativo = true,
             )
         }
 
@@ -52,6 +54,7 @@ class Insumo private constructor(
             qtdEstoque: Int,
             dataCriacao: LocalDateTime,
             dataAtualizacao: LocalDateTime,
+            ativo: Boolean = true,
         ): Insumo = Insumo(
             id = id,
             nome = nome,
@@ -61,7 +64,16 @@ class Insumo private constructor(
             dataCriacao = dataCriacao,
             dataAtualizacao = dataAtualizacao,
             qtdEstoque = qtdEstoque,
+            ativo = ativo,
         )
+    }
+
+    fun estaAtivo(): Boolean = ativo
+
+    fun desativar() {
+        check(ativo) { "Insumo já está desativado" }
+        ativo = false
+        dataAtualizacao = LocalDateTime.now()
     }
 
 

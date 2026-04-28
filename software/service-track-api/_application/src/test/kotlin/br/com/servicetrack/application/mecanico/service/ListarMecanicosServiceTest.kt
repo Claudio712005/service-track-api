@@ -6,6 +6,7 @@ import br.com.servicetrack.domain.mecanico.Mecanico
 import br.com.servicetrack.domain.mecanico.NivelMecanicoEnum
 import br.com.servicetrack.domain.mecanico.vo.NivelMecanico
 import br.com.servicetrack.domain.mecanico.vo.ValorHora
+import br.com.servicetrack.domain.shared.enums.Role
 import br.com.servicetrack.domain.usuario.Usuario
 import br.com.servicetrack.domain.usuario.vo.*
 import io.mockk.*
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class ListarMecanicosServiceTest {
 
@@ -128,5 +130,58 @@ class ListarMecanicosServiceTest {
 
         verify { mecanicoRepository.listarTodos() }
         verify(exactly = 0) { usuarioRepository.buscarPorId(any()) }
+    }
+
+    @Test
+    fun `deve ignorar mecanico cujo usuario estiver inativo`() {
+        val usuarioId1 = UsuarioId.gerar()
+        val usuarioId2 = UsuarioId.gerar()
+
+        val mecanico1 = Mecanico.criar(
+            usuarioId = usuarioId1,
+            valorHora = ValorHora(BigDecimal("100.00")),
+            nivel = NivelMecanico.criar(NivelMecanicoEnum.PLENO)
+        )
+        val mecanico2 = Mecanico.criar(
+            usuarioId = usuarioId2,
+            valorHora = ValorHora(BigDecimal("150.00")),
+            nivel = NivelMecanico.criar(NivelMecanicoEnum.SENIOR)
+        )
+
+        val usuarioAtivo = Usuario.reconstituir(
+            id = usuarioId1,
+            nome = "João Silva",
+            email = Email("joao@email.com"),
+            senhaHash = Senha.deHash("\$2a\$10\$hashFake"),
+            dataNascimento = LocalDate.of(1990, 1, 1),
+            telefone = Telefone("11999999999"),
+            cpf = Cpf("72732437018"),
+            ativo = true,
+            roles = setOf(Role.MECANICO),
+            dataCriacao = LocalDateTime.now(),
+            dataAtualizacao = LocalDateTime.now()
+        )
+        val usuarioInativo = Usuario.reconstituir(
+            id = usuarioId2,
+            nome = "Maria Souza",
+            email = Email("maria@email.com"),
+            senhaHash = Senha.deHash("\$2a\$10\$hashFake"),
+            dataNascimento = LocalDate.of(1992, 2, 2),
+            telefone = Telefone("11988888888"),
+            cpf = Cpf("10136451039"),
+            ativo = false,
+            roles = setOf(Role.MECANICO),
+            dataCriacao = LocalDateTime.now(),
+            dataAtualizacao = LocalDateTime.now()
+        )
+
+        every { mecanicoRepository.listarTodos() } returns listOf(mecanico1, mecanico2)
+        every { usuarioRepository.buscarPorId(usuarioId1) } returns usuarioAtivo
+        every { usuarioRepository.buscarPorId(usuarioId2) } returns usuarioInativo
+
+        val resultado = service.listarMecanicos()
+
+        assertEquals(1, resultado.size)
+        assertEquals(usuarioAtivo.id.valor, resultado[0].usuarioId)
     }
 }

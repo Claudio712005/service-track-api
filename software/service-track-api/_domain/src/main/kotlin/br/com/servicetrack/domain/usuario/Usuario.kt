@@ -115,6 +115,12 @@ class Usuario private constructor(
         )
     }
 
+    fun estaAtivo(): Boolean = ativo
+
+    fun validarAtivo() {
+        check(ativo) { "Usuário está inativo" }
+    }
+
     fun desativar() {
         check(ativo) { "Usuário já está desativado" }
         ativo = false

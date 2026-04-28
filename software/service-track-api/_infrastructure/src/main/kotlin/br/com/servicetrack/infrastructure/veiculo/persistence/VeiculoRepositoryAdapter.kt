@@ -17,20 +17,24 @@ class VeiculoRepositoryAdapter : VeiculoRepositoryPort {
         entity.persist()
     }
 
-    override fun existeVeiculoPorPlaca(placa: String): Boolean {
-        return VeiculoEntity.count("placa", placa) > 0
-    }
+    override fun existeVeiculoPorPlaca(placa: String): Boolean =
+        VeiculoEntity.count("placa = ?1 and ativo = ?2", placa, IndicativoSimNao.S) > 0
 
-    override fun buscarPorId(id: VeiculoId): Veiculo? {
-        return VeiculoEntity
-            .find("id", UUID.fromString(id.valor))
+    override fun buscarPorId(id: VeiculoId): Veiculo? =
+        VeiculoEntity
+            .find("id = ?1 and ativo = ?2", UUID.fromString(id.valor), IndicativoSimNao.S)
             .firstResult()
             ?.toDomain()
-    }
+
+    override fun buscarInativoPorPlaca(placa: String): Veiculo? =
+        VeiculoEntity
+            .find("placa = ?1 and ativo = ?2", placa, IndicativoSimNao.N)
+            .firstResult()
+            ?.toDomain()
 
     override fun desativar(id: VeiculoId) {
         val entity = VeiculoEntity
-            .find("id", UUID.fromString(id.valor))
+            .find("id = ?1 and ativo = ?2", UUID.fromString(id.valor), IndicativoSimNao.S)
             .firstResult()
             ?: throw EntidadeNaoEncontradaException(
                 Veiculo::class.java.name,
@@ -38,6 +42,18 @@ class VeiculoRepositoryAdapter : VeiculoRepositoryPort {
             )
 
         entity.ativo = IndicativoSimNao.N
+    }
+
+    override fun reativar(id: VeiculoId) {
+        val entity = VeiculoEntity
+            .find("id = ?1 and ativo = ?2", UUID.fromString(id.valor), IndicativoSimNao.N)
+            .firstResult()
+            ?: throw EntidadeNaoEncontradaException(
+                Veiculo::class.java.name,
+                parametros = arrayOf(id.valor)
+            )
+
+        entity.ativo = IndicativoSimNao.S
     }
 
     override fun atualizar(veiculo: Veiculo) {

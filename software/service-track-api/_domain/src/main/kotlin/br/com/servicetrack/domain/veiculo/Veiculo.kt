@@ -103,7 +103,7 @@ class Veiculo private constructor(
 
     fun atualizarProprietario(novoProprietarioId: UsuarioId) {
         if(!veiculoAtivo()){
-            throw DomainException("Veículo ativo não pode ter o proprietário alterado, desative o veículo para realizar essa operação")
+            throw DomainException("Veículo inativo não pode ter o proprietário alterado")
         }
 
         if (this.proprietarioId == novoProprietarioId) {

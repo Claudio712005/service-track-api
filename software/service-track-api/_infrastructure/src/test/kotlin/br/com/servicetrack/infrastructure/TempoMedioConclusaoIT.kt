@@ -339,7 +339,6 @@ class TempoMedioConclusaoIT {
             .jsonPath()
             .getDouble("tempoMedio")
 
-        // All units should be consistent conversions of the same duration
         assertEquals(segundos / 60.0, minutos, 0.5)
         assertEquals(minutos / 60.0, horas, 0.01)
         assertEquals(horas / 24.0, dias, 0.001)

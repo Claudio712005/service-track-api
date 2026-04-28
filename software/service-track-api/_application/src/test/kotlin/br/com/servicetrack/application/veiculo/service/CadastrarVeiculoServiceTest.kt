@@ -7,6 +7,7 @@ import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
 import br.com.servicetrack.application.veiculo.dto.request.CadastrarVeiculoReqDTO
 import br.com.servicetrack.application.veiculo.ports.out.VeiculoRepositoryPort
+import br.com.servicetrack.domain.shared.enums.IndicativoSimNao
 import br.com.servicetrack.domain.shared.enums.Role
 import br.com.servicetrack.domain.usuario.Usuario
 import br.com.servicetrack.domain.usuario.vo.Cpf
@@ -14,6 +15,9 @@ import br.com.servicetrack.domain.usuario.vo.Email
 import br.com.servicetrack.domain.usuario.vo.Senha
 import br.com.servicetrack.domain.usuario.vo.Telefone
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
+import br.com.servicetrack.domain.veiculo.Veiculo
+import br.com.servicetrack.domain.veiculo.vo.Placa
+import br.com.servicetrack.domain.veiculo.vo.VeiculoId
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -71,10 +75,24 @@ class CadastrarVeiculoServiceTest {
         dataAtualizacao = LocalDateTime.now()
     )
 
+    private fun buildVeiculoInativo(placa: String = "ABC1D23", proprietario: UsuarioId = proprietarioId): Veiculo =
+        Veiculo.reconstituir(
+            id = VeiculoId.gerar(),
+            marca = "Fiat",
+            placa = Placa(placa),
+            ano = 2018,
+            proprietarioId = proprietario,
+            modelo = "Uno",
+            dataCriacao = LocalDateTime.now(),
+            dataAtualizacao = LocalDateTime.now(),
+            ativo = IndicativoSimNao.N
+        )
+
     @Test
     fun `deve cadastrar veiculo com sucesso quando proprietario e usuario token sao o mesmo`() {
         val proprietario = buildCliente(proprietarioId)
 
+        every { veiculoRepository.buscarInativoPorPlaca(requisicao.placa) } returns null
         every { veiculoRepository.existeVeiculoPorPlaca(requisicao.placa) } returns false
         every { usuarioRepository.buscarPorId(proprietarioId) } returns proprietario
         every { jwt.getUsuarioId() } returns tokenUsuarioId
@@ -96,6 +114,7 @@ class CadastrarVeiculoServiceTest {
         val mecanico = buildMecanico(mecanicoId)
         val proprietario = buildCliente(proprietarioId)
 
+        every { veiculoRepository.buscarInativoPorPlaca(requisicao.placa) } returns null
         every { veiculoRepository.existeVeiculoPorPlaca(requisicao.placa) } returns false
         every { usuarioRepository.buscarPorId(proprietarioId) } returns proprietario
         every { jwt.getUsuarioId() } returns mecanicoId
@@ -110,6 +129,7 @@ class CadastrarVeiculoServiceTest {
 
     @Test
     fun `deve lançar excecao quando placa ja existe`() {
+        every { veiculoRepository.buscarInativoPorPlaca(requisicao.placa) } returns null
         every { veiculoRepository.existeVeiculoPorPlaca(requisicao.placa) } returns true
 
         assertThrows<VeiculoJaExisteException> {
@@ -121,6 +141,7 @@ class CadastrarVeiculoServiceTest {
 
     @Test
     fun `deve lançar excecao quando proprietario nao encontrado`() {
+        every { veiculoRepository.buscarInativoPorPlaca(requisicao.placa) } returns null
         every { veiculoRepository.existeVeiculoPorPlaca(requisicao.placa) } returns false
         every { usuarioRepository.buscarPorId(proprietarioId) } returns null
 
@@ -136,6 +157,7 @@ class CadastrarVeiculoServiceTest {
         val outroId = UsuarioId.gerar()
         val proprietario = buildCliente(proprietarioId)
 
+        every { veiculoRepository.buscarInativoPorPlaca(requisicao.placa) } returns null
         every { veiculoRepository.existeVeiculoPorPlaca(requisicao.placa) } returns false
         every { usuarioRepository.buscarPorId(proprietarioId) } returns proprietario
         every { jwt.getUsuarioId() } returns outroId
@@ -154,6 +176,7 @@ class CadastrarVeiculoServiceTest {
         val outroCliente = buildCliente(outroClienteId)
         val proprietario = buildCliente(proprietarioId)
 
+        every { veiculoRepository.buscarInativoPorPlaca(requisicao.placa) } returns null
         every { veiculoRepository.existeVeiculoPorPlaca(requisicao.placa) } returns false
         every { usuarioRepository.buscarPorId(proprietarioId) } returns proprietario
         every { jwt.getUsuarioId() } returns outroClienteId
@@ -163,6 +186,37 @@ class CadastrarVeiculoServiceTest {
             service.cadastrarVeiculo(requisicao)
         }
 
+        verify(exactly = 0) { veiculoRepository.salvar(any()) }
+    }
+
+    @Test
+    fun `deve reativar veiculo inativo quando cadastrar com a mesma placa`() {
+        val veiculoInativo = buildVeiculoInativo()
+        val veiculoId = veiculoInativo.obterDados().id
+        val veiculoReativado = Veiculo.reconstituir(
+            id = veiculoId,
+            marca = requisicao.marca,
+            placa = Placa(requisicao.placa),
+            ano = requisicao.ano,
+            proprietarioId = proprietarioId,
+            modelo = requisicao.modelo,
+            dataCriacao = LocalDateTime.now(),
+            dataAtualizacao = LocalDateTime.now(),
+            ativo = IndicativoSimNao.S
+        )
+
+        every { veiculoRepository.buscarInativoPorPlaca(requisicao.placa) } returns veiculoInativo
+        every { veiculoRepository.reativar(veiculoId) } returns Unit
+        every { veiculoRepository.buscarPorId(veiculoId) } returns veiculoReativado
+        every { veiculoRepository.atualizar(any()) } returns Unit
+
+        val response = service.cadastrarVeiculo(requisicao)
+
+        assertNotNull(response)
+        assertEquals(requisicao.placa, response.placa)
+        assertEquals(requisicao.marca, response.marca)
+        assertEquals(requisicao.modelo, response.modelo)
+        verify(exactly = 1) { veiculoRepository.reativar(veiculoId) }
         verify(exactly = 0) { veiculoRepository.salvar(any()) }
     }
 }

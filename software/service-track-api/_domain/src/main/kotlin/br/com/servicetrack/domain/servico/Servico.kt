@@ -12,6 +12,7 @@ class Servico private constructor(
     var valorReferencia: ValorMonetario? = null,
     val dataCriacao: LocalDateTime,
     private var dataAtualizacao: LocalDateTime,
+    private var ativo: Boolean = true,
 ) {
 
     companion object {
@@ -32,6 +33,7 @@ class Servico private constructor(
                 valorReferencia = valorReferencia,
                 dataCriacao = agora,
                 dataAtualizacao = agora,
+                ativo = true,
             )
         }
 
@@ -42,6 +44,7 @@ class Servico private constructor(
             valorReferencia: ValorMonetario?,
             dataCriacao: LocalDateTime,
             dataAtualizacao: LocalDateTime,
+            ativo: Boolean = true,
         ): Servico = Servico(
             id = id,
             nomeServico = nomeServico,
@@ -49,7 +52,16 @@ class Servico private constructor(
             valorReferencia = valorReferencia,
             dataCriacao = dataCriacao,
             dataAtualizacao = dataAtualizacao,
+            ativo = ativo,
         )
+    }
+
+    fun estaAtivo(): Boolean = ativo
+
+    fun desativar() {
+        check(ativo) { "Serviço já está desativado" }
+        ativo = false
+        dataAtualizacao = LocalDateTime.now()
     }
 
     fun atualizarValorReferencia(novoValor: ValorMonetario) {

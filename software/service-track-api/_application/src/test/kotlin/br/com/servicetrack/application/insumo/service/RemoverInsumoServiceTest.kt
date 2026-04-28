@@ -18,7 +18,7 @@ class RemoverInsumoServiceTest {
     private val service = RemoverInsumoService(repository)
 
     @Test
-    fun `deve remover insumo existente com sucesso`() {
+    fun `deve desativar insumo existente com sucesso`() {
         val insumo = Insumo.criar(
             nome = "Filtro de Óleo",
             descricao = "Filtro motor 1.0",
@@ -27,16 +27,16 @@ class RemoverInsumoServiceTest {
             estoqueMinimo = 2
         )
         every { repository.buscarPorId(insumo.id) } returns insumo
-        every { repository.remover(insumo.id) } returns Unit
+        every { repository.desativar(insumo.id) } returns Unit
 
         service.removerInsumo(insumo.id)
 
         verify(exactly = 1) { repository.buscarPorId(insumo.id) }
-        verify(exactly = 1) { repository.remover(insumo.id) }
+        verify(exactly = 1) { repository.desativar(insumo.id) }
     }
 
     @Test
-    fun `deve remover insumo com estoque zerado`() {
+    fun `deve desativar insumo com estoque zerado`() {
         val insumo = Insumo.criar(
             nome = "Pastilha de Freio",
             descricao = "Pastilha dianteira",
@@ -45,11 +45,11 @@ class RemoverInsumoServiceTest {
             estoqueMinimo = 0
         )
         every { repository.buscarPorId(insumo.id) } returns insumo
-        every { repository.remover(insumo.id) } returns Unit
+        every { repository.desativar(insumo.id) } returns Unit
 
         service.removerInsumo(insumo.id)
 
-        verify(exactly = 1) { repository.remover(insumo.id) }
+        verify(exactly = 1) { repository.desativar(insumo.id) }
     }
 
     @Test
@@ -62,6 +62,6 @@ class RemoverInsumoServiceTest {
         }
 
         verify(exactly = 1) { repository.buscarPorId(id) }
-        verify(exactly = 0) { repository.remover(any()) }
+        verify(exactly = 0) { repository.desativar(any()) }
     }
 }

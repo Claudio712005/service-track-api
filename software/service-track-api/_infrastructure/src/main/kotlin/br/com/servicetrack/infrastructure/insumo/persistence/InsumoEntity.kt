@@ -42,6 +42,9 @@ class InsumoEntity : PanacheEntityBase {
     @Column(name = "data_atualizacao", nullable = false)
     lateinit var dataAtualizacao: LocalDateTime
 
+    @Column(name = "ativo", nullable = false)
+    var ativo: Boolean = true
+
     companion object : PanacheCompanion<InsumoEntity> {
 
         fun de(insumo: Insumo): InsumoEntity = InsumoEntity().apply {
@@ -53,6 +56,7 @@ class InsumoEntity : PanacheEntityBase {
             qtdEstoque = insumo.obterQtdEstoque()
             dataCriacao = insumo.dataCriacao
             dataAtualizacao = insumo.dataCriacao
+            ativo = insumo.estaAtivo()
         }
     }
 
@@ -65,5 +69,6 @@ class InsumoEntity : PanacheEntityBase {
         qtdEstoque = qtdEstoque,
         dataCriacao = dataCriacao,
         dataAtualizacao = dataAtualizacao,
+        ativo = ativo,
     )
 }

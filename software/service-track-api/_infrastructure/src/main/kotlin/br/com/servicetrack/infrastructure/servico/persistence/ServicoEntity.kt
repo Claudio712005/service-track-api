@@ -35,6 +35,9 @@ class ServicoEntity : PanacheEntityBase {
     @Column(name = "data_atualizacao", nullable = false)
     lateinit var dataAtualizacao: LocalDateTime
 
+    @Column(name = "ativo", nullable = false)
+    var ativo: Boolean = true
+
     companion object : PanacheCompanion<ServicoEntity> {
 
         fun de(servico: Servico): ServicoEntity = ServicoEntity().apply {
@@ -44,6 +47,7 @@ class ServicoEntity : PanacheEntityBase {
             valorReferencia = servico.valorReferencia?.valor
             dataCriacao = servico.dataCriacao
             dataAtualizacao = servico.dataCriacao
+            ativo = servico.estaAtivo()
         }
     }
 
@@ -54,5 +58,6 @@ class ServicoEntity : PanacheEntityBase {
         valorReferencia = valorReferencia?.let { ValorMonetario(it) },
         dataCriacao = dataCriacao,
         dataAtualizacao = dataAtualizacao,
+        ativo = ativo,
     )
 }
