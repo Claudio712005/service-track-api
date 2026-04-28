@@ -53,12 +53,14 @@ class VeiculoRepositoryAdapter : VeiculoRepositoryPort {
     }
 
     override fun listarTodos(): List<Veiculo> {
-        return VeiculoEntity.listAll().map { it.toDomain() }
+        return VeiculoEntity.list("ativo"
+            , IndicativoSimNao.S
+        ).map { it.toDomain() }
     }
 
     override fun listarPorProprietario(proprietarioId: UsuarioId): List<Veiculo> {
         return VeiculoEntity
-            .find("proprietario.id", UUID.fromString(proprietarioId.valor))
+            .find("proprietario.id = ?1 and ativo = ?2", UUID.fromString(proprietarioId.valor), IndicativoSimNao.S)
             .list()
             .map { it.toDomain() }
     }

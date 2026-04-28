@@ -199,6 +199,8 @@ project(":_infrastructure").afterEvaluate {
     )
 
     tasks.named<JacocoReport>("jacocoTestReport") {
+        dependsOn(tasks.named("openApiGenerate"))
+
         classDirectories.setFrom(
             fileTree(layout.buildDirectory.dir("classes/kotlin/main")) {
                 exclude(infraExcludes)

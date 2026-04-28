@@ -3,9 +3,6 @@ properties:
   token:
     type: string
     example: "mock-jwt-token-"
-  refreshToken:
-    type: string
-    example: "mock-refresh-token"
   usuarioId:
     type: string
     format: uuid

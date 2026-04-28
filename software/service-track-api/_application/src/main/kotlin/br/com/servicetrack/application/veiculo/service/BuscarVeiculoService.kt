@@ -14,6 +14,11 @@ class BuscarVeiculoService(
     override fun buscarVeiculo(id: VeiculoId): DadosveiculoResDTO {
         val veiculo = repository.buscarPorId(id)
             ?: throw EntidadeNaoEncontradaException(Veiculo::class.java.name, arrayOf(id.valor))
+
+        if(!veiculo.veiculoAtivo()) {
+            throw EntidadeNaoEncontradaException(Veiculo::class.java.name, arrayOf(id.valor))
+        }
+
         return DadosveiculoResDTO.de(veiculo)
     }
 }

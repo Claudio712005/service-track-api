@@ -124,7 +124,7 @@ class Veiculo private constructor(
         )
     }
 
-    private fun veiculoAtivo(): Boolean {
+    fun veiculoAtivo(): Boolean {
         return ativo == IndicativoSimNao.S
     }
 

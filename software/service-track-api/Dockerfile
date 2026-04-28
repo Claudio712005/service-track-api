@@ -1,5 +1,4 @@
-# Build stage para OS Mac
-FROM --platform=linux/amd64 eclipse-temurin:21-jdk-alpine AS build
+FROM eclipse-temurin:21-jdk AS build
 WORKDIR /workspace
 
 COPY gradlew gradlew.bat ./
@@ -8,21 +7,21 @@ COPY settings.gradle.kts build.gradle.kts jacoco-config.gradle.kts ./
 COPY openapi.yaml ./
 COPY openApi/ openApi/
 
+COPY gradle.properties ./
+
 COPY _domain/build.gradle.kts          _domain/
 COPY _application/build.gradle.kts     _application/
 COPY _infrastructure/build.gradle.kts  _infrastructure/
 
 RUN chmod +x gradlew
 
-ENV GRADLE_OPTS="-Dorg.gradle.native=false"
-
-RUN ./gradlew :_infrastructure:dependencies --no-daemon -q 2>&1 | tail -3 || true
+RUN ./gradlew dependencies -q 2>&1 | tail -3 || true
 
 COPY _domain/src/          _domain/src/
 COPY _application/src/     _application/src/
 COPY _infrastructure/src/  _infrastructure/src/
 
-RUN ./gradlew :_infrastructure:build -x test --no-daemon
+RUN ./gradlew :_infrastructure:build -x test
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
