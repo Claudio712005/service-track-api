@@ -1,9 +1,12 @@
 package br.com.servicetrack.infrastructure.usuario
 
+import br.com.servicetrack.application.usuario.ports.`in`.AtualizarUsuarioUseCase
 import br.com.servicetrack.application.usuario.ports.`in`.BuscarClienteUseCase
 import br.com.servicetrack.application.usuario.ports.`in`.CriarUsuarioUseCase
+import br.com.servicetrack.application.usuario.ports.`in`.DesativarUsuarioUseCase
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import br.com.servicetrack.infrastructure.api.ClientesApi
+import br.com.servicetrack.infrastructure.api.dto.AtualizarClienteRequest
 import br.com.servicetrack.infrastructure.api.dto.CadastrarClienteRequest
 import jakarta.annotation.security.PermitAll
 import jakarta.annotation.security.RolesAllowed
@@ -17,7 +20,9 @@ import java.net.URI
 @ApplicationScoped
 class ClienteResourceImpl @Inject constructor(
     private val criarUsuarioUseCase: CriarUsuarioUseCase,
-    private val buscarClienteUseCase: BuscarClienteUseCase
+    private val buscarClienteUseCase: BuscarClienteUseCase,
+    private val atualizarUsuarioUseCase: AtualizarUsuarioUseCase,
+    private val desativarUsuarioUseCase: DesativarUsuarioUseCase
 ) : ClientesApi {
 
     @PermitAll
@@ -36,5 +41,20 @@ class ClienteResourceImpl @Inject constructor(
     override fun buscarCliente(@PathParam("id") id: String): Response {
         val cliente = buscarClienteUseCase.buscarCliente(UsuarioId(id))
         return Response.ok(cliente.toClienteResponse()).build()
+    }
+
+    @RolesAllowed("CLIENTE", "MECANICO")
+    @Transactional
+    override fun atualizarCliente(@PathParam("id") id: String, atualizarClienteRequest: AtualizarClienteRequest): Response {
+        val dto = atualizarClienteRequest.toApplicationDTO()
+        val resultado = atualizarUsuarioUseCase.atualizarUsuario(UsuarioId(id), dto)
+        return Response.ok(resultado.toClienteResponse()).build()
+    }
+
+    @RolesAllowed("CLIENTE", "MECANICO")
+    @Transactional
+    override fun desativarCliente(@PathParam("id") id: String): Response {
+        desativarUsuarioUseCase.desativarUsuario(UsuarioId(id))
+        return Response.noContent().build()
     }
 }

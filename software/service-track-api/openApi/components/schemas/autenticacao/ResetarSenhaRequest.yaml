@@ -1,0 +1,15 @@
+type: object
+required:
+  - senhaAtual
+  - novaSenha
+  - confirmacaoNovaSenha
+properties:
+  senhaAtual:
+    type: string
+    example: "Senha@123"
+  novaSenha:
+    type: string
+    example: "NovaSenha@456"
+  confirmacaoNovaSenha:
+    type: string
+    example: "NovaSenha@456"

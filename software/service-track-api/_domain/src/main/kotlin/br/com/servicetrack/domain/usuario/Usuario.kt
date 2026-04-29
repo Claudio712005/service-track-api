@@ -133,6 +133,14 @@ class Usuario private constructor(
         atualizarData()
     }
 
+    fun atualizar(novoNome: String, novoEmail: Email, novoTelefone: Telefone) {
+        require(novoNome.isNotBlank()) { "Nome não pode ser vazio" }
+        nome = novoNome
+        email = novoEmail
+        telefone = novoTelefone
+        atualizarData()
+    }
+
     fun alterarSenha(novaSenha: Senha) {
         senha = novaSenha
         atualizarData()

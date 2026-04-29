@@ -9,4 +9,7 @@ interface UsuarioRepositoryPort {
     fun existePorEmailOuCpf(email: String, cpf: String): Boolean
     fun buscarPorEmail(email: String): Usuario?
     fun buscarPorId(id: UsuarioId): Usuario?
+    fun atualizar(usuario: Usuario)
+    fun desativar(id: UsuarioId)
+    fun existeEmailEmOutroUsuario(email: String, idAtual: UsuarioId): Boolean
 }

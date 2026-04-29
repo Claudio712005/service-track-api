@@ -22,6 +22,8 @@ paths:
     $ref: './openApi/mecanicos/mecanico_id.yaml'
   /autenticacao:
     $ref: './openApi/autenticacao/login.yaml'
+  /autenticacao/reset-senha:
+    $ref: './openApi/autenticacao/reset_senha.yaml'
   /veiculos:
     $ref: './openApi/veiculo/veiculo.yaml'
   /veiculos/{id}:

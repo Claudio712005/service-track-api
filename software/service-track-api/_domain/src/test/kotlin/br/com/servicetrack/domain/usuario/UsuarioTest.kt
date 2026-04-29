@@ -106,6 +106,37 @@ class UsuarioTest {
     }
 
     @Test
+    fun `deve atualizar nome, email e telefone`() {
+        val usuario = buildUsuario()
+
+        usuario.atualizar(
+            novoNome = "Novo Nome",
+            novoEmail = Email("novo@email.com"),
+            novoTelefone = Telefone("11988887777")
+        )
+
+        val dados = usuario.obterDados()
+        assertEquals("Novo Nome", dados.nome)
+        assertEquals("novo@email.com", dados.email.valor)
+        assertEquals("11988887777", dados.telefone.valor)
+    }
+
+    @Test
+    fun `deve lançar exceção ao atualizar com nome vazio`() {
+        val usuario = buildUsuario()
+
+        val exception = assertThrows<IllegalArgumentException> {
+            usuario.atualizar(
+                novoNome = "",
+                novoEmail = Email("novo@email.com"),
+                novoTelefone = Telefone("11988887777")
+            )
+        }
+
+        assertEquals("Nome não pode ser vazio", exception.message)
+    }
+
+    @Test
     fun `deve alterar senha`() {
         val usuario = buildUsuario()
         val novaSenha = Senha.deHash("\$2a\$10\$xyzAbcDef1234567890ABCDE")
