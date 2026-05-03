@@ -1,0 +1,41 @@
+---
+title: C4 Component - Usuario (Autenticação & Clientes)
+---
+flowchart TD
+    HTTP(["HTTP Request"])
+
+    subgraph INFRA["Infrastructure"]
+        AR["AutenticacaoResourceImpl<br/>POST /autenticacao"]
+        CR["ClienteResourceImpl<br/>POST /clientes<br/>GET /clientes/{id}"]
+        URA["UsuarioRepositoryAdapter<br/>(JPA + Panache)"]
+        BCRYPT["BcryptCriptografiaAdapter"]
+        JWTAD["JwtAdapter"]
+        UE["UsuarioEntity"]
+    end
+
+    subgraph APP["Application"]
+        LUC["LoginUsuarioUseCase"]
+        CUC["CriarUsuarioUseCase"]
+        BCC["BuscarClienteUseCase"]
+        LS["LoginService"]
+        CS["CriarUsuarioService"]
+        BS["BuscarClienteService"]
+        URP["UsuarioRepositoryPort"]
+        JP["JwtPort"]
+        CP["CriptografiaPort"]
+    end
+
+    subgraph DOMAIN["Domain"]
+        U["Usuario<br/>+ DadosUsuario"]
+        VO["Email / Senha / Cpf<br/>Telefone / UsuarioId"]
+    end
+
+    HTTP --> AR & CR
+    AR --> LUC --> LS
+    CR --> CUC & BCC
+    CUC --> CS
+    BCC --> BS
+    LS & CS & BS --> URP --> URA --> UE
+    LS --> JP --> JWTAD
+    CS --> CP --> BCRYPT
+    LS & CS & BS --> U & VO

@@ -1,0 +1,193 @@
+package br.com.servicetrack.infrastructure.config.service.ordemServico
+
+import br.com.servicetrack.application.auditoria.ports.out.RegistrarAuditoriaPort
+import br.com.servicetrack.application.insumo.ports.`out`.InsumoRepositoryPort
+import br.com.servicetrack.application.ordemServico.ports.`in`.AprovarOrcamentoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.ConcluirItemServicoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.AssociarItensOrdemServicoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.BuscarOrdemServicoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.CancelarOrdemServicoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.CriarOrdemServicoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.EntregarOrdemServicoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.EnviarParaDiagnosticoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.FinalizarOrdemServicoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.GerarOrcamentoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.ListarOrdensServicoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.ReprovarOrcamentoUseCase
+import br.com.servicetrack.application.ordemServico.ports.out.OrdemServicoRepositoryPort
+import br.com.servicetrack.application.ordemServico.service.AprovarOrcamentoService
+import br.com.servicetrack.application.ordemServico.service.ConcluirItemServicoService
+import br.com.servicetrack.application.ordemServico.service.AssociarItensOrdemServicoService
+import br.com.servicetrack.application.ordemServico.service.BuscarOrdemServicoService
+import br.com.servicetrack.application.ordemServico.service.CancelarOrdemServicoService
+import br.com.servicetrack.application.ordemServico.service.CriarOrdemServicoService
+import br.com.servicetrack.application.ordemServico.service.EntregarOrdemServicoService
+import br.com.servicetrack.application.ordemServico.service.EnviarParaDiagnosticoService
+import br.com.servicetrack.application.ordemServico.service.FinalizarOrdemServicoService
+import br.com.servicetrack.application.ordemServico.service.GerarOrcamentoService
+import br.com.servicetrack.application.ordemServico.service.ListarOrdensServicoService
+import br.com.servicetrack.application.ordemServico.service.ReprovarOrcamentoService
+import br.com.servicetrack.application.servico.ports.`out`.ServicoRepositoryPort
+import br.com.servicetrack.application.usuario.ports.`out`.JwtPort
+import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
+import br.com.servicetrack.infrastructure.auditoria.AuditoriaProxy
+import jakarta.enterprise.context.ApplicationScoped
+import jakarta.enterprise.inject.Produces
+
+@ApplicationScoped
+class OrdemServicoServiceConfig {
+
+    @Produces
+    @ApplicationScoped
+    fun criarOrdemServicoUseCase(
+        repository: OrdemServicoRepositoryPort,
+        usuarioRepositoryPort: UsuarioRepositoryPort,
+        jwtPort: JwtPort,
+        auditoria: RegistrarAuditoriaPort,
+    ): CriarOrdemServicoUseCase = AuditoriaProxy.envolver(
+        CriarOrdemServicoService(repository, usuarioRepositoryPort, jwtPort),
+        CriarOrdemServicoUseCase::class.java,
+        auditoria,
+    )
+
+    @Produces
+    @ApplicationScoped
+    fun enviarParaDiagnosticoUseCase(
+        repository: OrdemServicoRepositoryPort,
+        jwtPort: JwtPort,
+        auditoria: RegistrarAuditoriaPort,
+    ): EnviarParaDiagnosticoUseCase = AuditoriaProxy.envolver(
+        EnviarParaDiagnosticoService(repository, jwtPort),
+        EnviarParaDiagnosticoUseCase::class.java,
+        auditoria,
+    )
+
+    @Produces
+    @ApplicationScoped
+    fun buscarOrdemServicoUseCase(
+        repository: OrdemServicoRepositoryPort,
+        usuarioRepository: UsuarioRepositoryPort,
+        jwtPort: JwtPort,
+        auditoria: RegistrarAuditoriaPort,
+    ): BuscarOrdemServicoUseCase = AuditoriaProxy.envolver(
+        BuscarOrdemServicoService(repository, usuarioRepository, jwtPort),
+        BuscarOrdemServicoUseCase::class.java,
+        auditoria,
+    )
+
+    @Produces
+    @ApplicationScoped
+    fun listarOrdensServicoUseCase(
+        repository: OrdemServicoRepositoryPort,
+        usuarioRepository: UsuarioRepositoryPort,
+        jwtPort: JwtPort,
+        auditoria: RegistrarAuditoriaPort,
+    ): ListarOrdensServicoUseCase = AuditoriaProxy.envolver(
+        ListarOrdensServicoService(repository, usuarioRepository, jwtPort),
+        ListarOrdensServicoUseCase::class.java,
+        auditoria,
+    )
+
+    @Produces
+    @ApplicationScoped
+    fun associarItensOrdemServicoUseCase(
+        osRepository: OrdemServicoRepositoryPort,
+        servicoRepository: ServicoRepositoryPort,
+        insumoRepository: InsumoRepositoryPort,
+        jwtPort: JwtPort,
+        auditoria: RegistrarAuditoriaPort,
+    ): AssociarItensOrdemServicoUseCase = AuditoriaProxy.envolver(
+        AssociarItensOrdemServicoService(osRepository, servicoRepository, insumoRepository, jwtPort),
+        AssociarItensOrdemServicoUseCase::class.java,
+        auditoria,
+    )
+
+    @Produces
+    @ApplicationScoped
+    fun gerarOrcamentoUseCase(
+        osRepository: OrdemServicoRepositoryPort,
+        insumoRepository: InsumoRepositoryPort,
+        jwtPort: JwtPort,
+        auditoria: RegistrarAuditoriaPort,
+    ): GerarOrcamentoUseCase = AuditoriaProxy.envolver(
+        GerarOrcamentoService(osRepository, insumoRepository, jwtPort),
+        GerarOrcamentoUseCase::class.java,
+        auditoria,
+    )
+
+    @Produces
+    @ApplicationScoped
+    fun aprovarOrcamentoUseCase(
+        repository: OrdemServicoRepositoryPort,
+        jwtPort: JwtPort,
+        auditoria: RegistrarAuditoriaPort,
+    ): AprovarOrcamentoUseCase = AuditoriaProxy.envolver(
+        AprovarOrcamentoService(repository, jwtPort),
+        AprovarOrcamentoUseCase::class.java,
+        auditoria,
+    )
+
+    @Produces
+    @ApplicationScoped
+    fun reprovarOrcamentoUseCase(
+        osRepository: OrdemServicoRepositoryPort,
+        insumoRepository: InsumoRepositoryPort,
+        jwtPort: JwtPort,
+        auditoria: RegistrarAuditoriaPort,
+    ): ReprovarOrcamentoUseCase = AuditoriaProxy.envolver(
+        ReprovarOrcamentoService(osRepository, insumoRepository, jwtPort),
+        ReprovarOrcamentoUseCase::class.java,
+        auditoria,
+    )
+
+    @Produces
+    @ApplicationScoped
+    fun cancelarOrdemServicoUseCase(
+        osRepository: OrdemServicoRepositoryPort,
+        insumoRepository: InsumoRepositoryPort,
+        jwtPort: JwtPort,
+        auditoria: RegistrarAuditoriaPort,
+    ): CancelarOrdemServicoUseCase = AuditoriaProxy.envolver(
+        CancelarOrdemServicoService(osRepository, insumoRepository, jwtPort),
+        CancelarOrdemServicoUseCase::class.java,
+        auditoria,
+    )
+
+    @Produces
+    @ApplicationScoped
+    fun finalizarOrdemServicoUseCase(
+        osRepository: OrdemServicoRepositoryPort,
+        usuarioRepository: UsuarioRepositoryPort,
+        jwtPort: JwtPort,
+        auditoria: RegistrarAuditoriaPort,
+    ): FinalizarOrdemServicoUseCase = AuditoriaProxy.envolver(
+        FinalizarOrdemServicoService(osRepository, usuarioRepository, jwtPort),
+        FinalizarOrdemServicoUseCase::class.java,
+        auditoria,
+    )
+
+    @Produces
+    @ApplicationScoped
+    fun entregarOrdemServicoUseCase(
+        osRepository: OrdemServicoRepositoryPort,
+        usuarioRepository: UsuarioRepositoryPort,
+        jwtPort: JwtPort,
+        auditoria: RegistrarAuditoriaPort,
+    ): EntregarOrdemServicoUseCase = AuditoriaProxy.envolver(
+        EntregarOrdemServicoService(osRepository, usuarioRepository, jwtPort),
+        EntregarOrdemServicoUseCase::class.java,
+        auditoria,
+    )
+
+    @Produces
+    @ApplicationScoped
+    fun concluirItemServicoUseCase(
+        osRepository: OrdemServicoRepositoryPort,
+        jwtPort: JwtPort,
+        auditoria: RegistrarAuditoriaPort,
+    ): ConcluirItemServicoUseCase = AuditoriaProxy.envolver(
+        ConcluirItemServicoService(osRepository, jwtPort),
+        ConcluirItemServicoUseCase::class.java,
+        auditoria,
+    )
+}

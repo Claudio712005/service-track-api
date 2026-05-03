@@ -1,0 +1,16 @@
+type: object
+required:
+  - nome
+  - email
+  - telefone
+properties:
+  nome:
+    type: string
+    example: "João da Silva"
+  email:
+    type: string
+    format: email
+    example: "joao@email.com"
+  telefone:
+    type: string
+    example: "11999999999"

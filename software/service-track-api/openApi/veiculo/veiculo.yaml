@@ -1,0 +1,61 @@
+get:
+  summary: Listar veículos. Clientes veem apenas os próprios; mecânicos veem todos.
+  operationId: listarVeiculos
+  tags:
+    - Veículos
+  security:
+    - bearerAuth: []
+  responses:
+    '200':
+      description: Lista de veículos
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '../components/schemas/veiculo/DadosVeiculoResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+
+post:
+  summary: Realizar o cadastro de um novo veículo. Requer autenticação.
+  operationId: criarVeiculo
+  tags:
+    - Veículos
+  security:
+    - bearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/veiculo/CadastrarVeiculoRequest.yaml'
+  responses:
+    '201':
+      description: Veículo criado com sucesso
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/veiculo/DadosVeiculoResponse.yaml'
+    '400':
+      description: Requisição inválida
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Proprietário não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

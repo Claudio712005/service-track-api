@@ -1,0 +1,117 @@
+name: Security
+
+on:
+  push:
+    branches: ["main", "develop", "fase-*"]
+  pull_request:
+    branches: ["main", "develop"]
+
+permissions:
+  security-events: write
+  actions: read
+  contents: read
+
+jobs:
+
+  sast:
+    name: SAST · Semgrep
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-semgrep-${{ runner.os }}
+          restore-keys: pip-semgrep-
+
+      - name: Install Semgrep
+        run: pip install semgrep --quiet
+
+      - name: Run Semgrep
+        id: semgrep
+        working-directory: ${{ github.workspace }}
+        run: |
+          echo "::group::Semgrep analysis"
+          
+          REPORTS_DIR="software/service-track-api/reports"
+          mkdir -p "$REPORTS_DIR"
+          
+          semgrep --config=auto \
+          --json \
+          --output "$REPORTS_DIR/semgrep.json" \
+          software/service-track-api/ || true
+          
+          semgrep --config=auto \
+          --sarif \
+          --output "$REPORTS_DIR/semgrep.sarif" \
+          software/service-track-api/ || true
+          
+          echo "::endgroup::"
+
+      - name: Parse results and generate summary
+        id: gate
+        working-directory: ${{ github.workspace }}
+        run: |
+          echo "::group::Vulnerability gate"
+          
+          REPORTS_DIR="software/service-track-api/reports"
+          JSON="$REPORTS_DIR/semgrep.json"
+          SUMMARY="$REPORTS_DIR/semgrep-summary.txt"
+          
+          TOTAL=$(jq '.results | length' "$JSON")
+          CRITICAL_HIGH=$(jq '[.results[] | select(.extra.severity == "ERROR")] | length' "$JSON")
+          MEDIUM=$(jq '[.results[] | select(.extra.severity == "WARNING")] | length' "$JSON")
+          LOW=$(jq '[.results[] | select(.extra.severity == "INFO")] | length' "$JSON")
+          
+          {
+            echo "## Semgrep Security Report"
+            echo ""
+            echo "* Total findings: $TOTAL"
+              echo "* Critical/High: $CRITICAL_HIGH"
+              echo "* Medium: $MEDIUM"
+              echo "* Low: $LOW"
+              echo ""
+              echo "### Findings"
+              echo ""
+              if [ "$TOTAL" -eq 0 ]; then
+              echo "* No findings."
+              else
+              jq -r '.results[] | "* [\(.check_id)] \(.extra.message) (\(.path):\(.start.line))"' "$JSON"
+              fi
+          } | tee "$SUMMARY"
+          
+          echo "critical_high=$CRITICAL_HIGH" >> "$GITHUB_OUTPUT"
+          
+          echo "::endgroup::"
+          
+          if [ "$CRITICAL_HIGH" -gt 0 ]; then
+          echo "::error::Semgrep found $CRITICAL_HIGH Critical/High severity finding(s). Pipeline blocked."
+          exit 1
+          fi
+
+      - name: Upload SARIF (SAST)
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
+        with:
+          sarif_file: software/service-track-api/reports/semgrep.sarif
+          category: semgrep
+
+      - name: Upload Semgrep artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-reports
+          path: |
+            software/service-track-api/reports/semgrep.sarif
+            software/service-track-api/reports/semgrep.json
+            software/service-track-api/reports/semgrep-summary.txt
+          if-no-files-found: warn
+          retention-days: 7
+

@@ -1,0 +1,19 @@
+type: object
+required:
+  - placa
+  - modelo
+  - marca
+  - ano
+  - proprietarioId
+properties:
+  placa:
+    type: string
+  modelo:
+    type: string
+  marca:
+    type: string
+  ano:
+    type: integer
+    minimum: 1886
+  proprietarioId:
+    type: string

@@ -1,0 +1,6 @@
+type: object
+properties:
+  motivo:
+    type: string
+    description: Motivo opcional do cancelamento
+    example: "Vou levar o veículo para outra oficina"

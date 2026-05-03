@@ -1,0 +1,45 @@
+post:
+  summary: Registrar entrega da OS ao cliente. Apenas mecânicos. Transição FINALIZADA → ENTREGUE.
+  operationId: entregarOrdemServico
+  tags:
+    - OrdemServico
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    '200':
+      description: OS entregue ao cliente com sucesso
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ordemServico/ResumoOrdemServicoResponse.yaml'
+    '400':
+      description: Transição de status inválida
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Apenas mecânicos podem registrar a entrega
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: OS não encontrada
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

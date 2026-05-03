@@ -1,0 +1,57 @@
+### JetBrains ###
+.idea/
+*.iml
+*.iws
+
+### Gradle ###
+.gradle/
+build/
+bin/
+*.bin
+**/build/
+**/bin/
+gradle-app.setting
+
+### Kotlin ###
+.kotlin/
+kotlin-js-store/
+
+### Java / JVM ###
+*.class
+*.jar
+!**/gradle/wrapper/gradle-wrapper.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+replay_pid*
+
+### JaCoCo ###
+jacoco/
+
+### Keys & Secrets ###
+software/service-track-api/_infrastructure/src/test/resources/keys/
+**/privateKey.pem
+**/.env
+**/.env.*
+!**/.env.example
+
+### Logs ###
+logs/
+*.log
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Temp ###
+.mtj.tmp/
+*.ctxt
+
+### Reports ###
+reports/
+*.sarif
+*.json

@@ -1,0 +1,45 @@
+post:
+  summary: Aprovar orçamento. Apenas o cliente titular da OS. Transição AGUARDANDO_APROVACAO → EM_EXECUCAO.
+  operationId: aprovarOrcamento
+  tags:
+    - OrdemServico
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    '200':
+      description: Orçamento aprovado. OS em execução.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ordemServico/ResumoOrdemServicoResponse.yaml'
+    '400':
+      description: Status inválido para aprovação
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Apenas o cliente titular pode aprovar o orçamento
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: OS não encontrada
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

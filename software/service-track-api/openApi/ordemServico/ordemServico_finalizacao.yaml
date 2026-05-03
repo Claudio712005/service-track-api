@@ -1,0 +1,48 @@
+post:
+  summary: |
+    Finalizar OS. Apenas mecânicos.
+    Valida que todos os serviços da OS foram concluídos (feito = true).
+    Transição EM_EXECUCAO → FINALIZADA.
+  operationId: finalizarOrdemServico
+  tags:
+    - OrdemServico
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    '200':
+      description: OS finalizada com sucesso
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ordemServico/ResumoOrdemServicoResponse.yaml'
+    '400':
+      description: Serviços pendentes ou transição de status inválida
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Apenas mecânicos podem finalizar uma OS
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: OS não encontrada
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

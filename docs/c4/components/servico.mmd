@@ -1,0 +1,43 @@
+---
+title: C4 Component - Servico (Catálogo de Serviços)
+---
+flowchart TD
+    HTTP(["HTTP Request"])
+
+    subgraph INFRA["Infrastructure"]
+        SR["ServicoResourceImpl<br/>POST /servicos<br/>GET /servicos<br/>GET /servicos/{id}<br/>PUT /servicos/{id}<br/>DELETE /servicos/{id}<br/>GET /servicos/{id}/tempo-medio-conclusao"]
+        SRA["ServicoRepositoryAdapter<br/>(JPA + Panache)"]
+        SE["ServicoEntity"]
+    end
+
+    subgraph APP["Application"]
+        CSC["CriarServicoUseCase"]
+        BSC["BuscarServicoUseCase"]
+        ASC["AtualizarServicoUseCase"]
+        LSC["ListarServicosUseCase"]
+        RSC["RemoverServicoUseCase"]
+        BTMC["BuscarTempoMedioConclusaoUseCase"]
+        CSS["CriarServicoService"]
+        BSS["BuscarServicoService"]
+        ASS["AtualizarServicoService"]
+        LSS["ListarServicosService"]
+        RSS["RemoverServicoService"]
+        BTMS["BuscarTempoMedioConclusaoService"]
+        SRP["ServicoRepositoryPort"]
+    end
+
+    subgraph DOMAIN["Domain"]
+        S["Servico"]
+        VO["ServicoId / UnidadeTempoEnum"]
+    end
+
+    HTTP --> SR
+    SR --> CSC & BSC & ASC & LSC & RSC & BTMC
+    CSC --> CSS
+    BSC --> BSS
+    ASC --> ASS
+    LSC --> LSS
+    RSC --> RSS
+    BTMC --> BTMS
+    CSS & BSS & ASS & LSS & RSS & BTMS --> SRP --> SRA --> SE
+    CSS & BSS & ASS & LSS & RSS & BTMS --> S & VO

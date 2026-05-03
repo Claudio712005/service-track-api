@@ -1,0 +1,36 @@
+type: object
+required:
+  - nome
+  - email
+  - senha
+  - dataNascimento
+  - telefone
+  - cpf
+properties:
+  nome:
+    type: string
+    minLength: 2
+    example: "Cláudio da Silva Araújo"
+  email:
+    type: string
+    format: email
+    example: "claudio@email.com"
+  senha:
+    type: string
+    format: password
+    minLength: 6
+    example: "Senha@123"
+  dataNascimento:
+    type: string
+    format: date
+    example: "1990-01-15"
+  telefone:
+    type: string
+    minLength: 10
+    maxLength: 11
+    example: "11987654321"
+  cpf:
+    type: string
+    minLength: 11
+    maxLength: 14
+    example: "54927170063"

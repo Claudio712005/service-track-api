@@ -1,0 +1,9 @@
+type: object
+required:
+  - motivo
+properties:
+  motivo:
+    type: string
+    minLength: 1
+    description: Motivo da reprovação do orçamento
+    example: "Valor acima do esperado para o tipo de serviço"

@@ -1,0 +1,21 @@
+type: object
+properties:
+  id:
+    type: string
+    format: uuid
+  nome:
+    type: string
+    example: "Óleo de Motor 5W30"
+  descricao:
+    type: string
+    example: "Óleo sintético para motores a gasolina e flex"
+  custo:
+    type: number
+    format: double
+    example: 35.00
+  estoqueMinimo:
+    type: integer
+    example: 5
+  qtdEstoque:
+    type: integer
+    example: 20

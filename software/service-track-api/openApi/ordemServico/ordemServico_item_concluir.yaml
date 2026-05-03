@@ -1,0 +1,60 @@
+patch:
+  summary: |
+    Marcar item de serviço como concluído. Apenas o mecânico vinculado à OS.
+    Se o mecânico ainda não estiver vinculado ao item, vincula automaticamente.
+    Requer OS em status EM_EXECUCAO.
+  operationId: concluirItemServico
+  tags:
+    - OrdemServico
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: itemId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/ordemServico/ConcluirItemServicoRequest.yaml'
+  responses:
+    '200':
+      description: Item de serviço marcado como concluído
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ordemServico/OrdemServicoResponse.yaml'
+    '400':
+      description: Serviço já concluído, mecânico não vinculado, ou OS em status incorreto
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Apenas o mecânico vinculado à OS pode concluir itens
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: OS ou item de serviço não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

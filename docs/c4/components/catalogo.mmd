@@ -1,0 +1,27 @@
+---
+title: C4 Component - Catalogo (Read Model)
+---
+flowchart TD
+    HTTP(["HTTP Request (público)"])
+
+    subgraph INFRA["Infrastructure"]
+        CR["CatalogoResourceImpl<br/>GET /catalogo/servicos<br/>GET /catalogo/insumos"]
+    end
+
+    subgraph APP["Application"]
+        LSC["ListarServicosUseCase"]
+        LIC["ListarInsumosUseCase"]
+        SRP["ServicoRepositoryPort"]
+        IRP["InsumoRepositoryPort"]
+    end
+
+    subgraph INFRA_PERSIST["Persistence"]
+        SRA["ServicoRepositoryAdapter"]
+        IRA["InsumoRepositoryAdapter"]
+        SE["ServicoEntity"]
+        IE["InsumoEntity"]
+    end
+
+    HTTP --> CR
+    CR --> LSC --> SRP --> SRA --> SE
+    CR --> LIC --> IRP --> IRA --> IE

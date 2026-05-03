@@ -1,0 +1,37 @@
+---
+title: C4 Component - Mecanico
+---
+flowchart TD
+    HTTP(["HTTP Request"])
+
+    subgraph INFRA["Infrastructure"]
+        MR["MecanicoResourceImpl<br/>POST /mecanicos<br/>GET /mecanicos<br/>GET /mecanicos/{id}<br/>PUT /mecanicos/{id}"]
+        MRA["MecanicoRepositoryAdapter<br/>(JPA + Panache)"]
+        ME["MecanicoEntity"]
+    end
+
+    subgraph APP["Application"]
+        CMC["CadastrarMecanicoUseCase"]
+        BMC["BuscarMecanicoUseCase"]
+        AMC["AtualizarMecanicoUseCase"]
+        LMC["ListarMecanicosUseCase"]
+        CMS["CadastrarMecanicoService"]
+        BMS["BuscarMecanicoService"]
+        AMS["AtualizarMecanicoService"]
+        LMS["ListarMecanicosService"]
+        MRP["MecanicoRepositoryPort"]
+    end
+
+    subgraph DOMAIN["Domain"]
+        M["Mecanico"]
+        VO["HorasTrabalho / NivelMecanico<br/>ValorHora / NivelMecanicoEnum"]
+    end
+
+    HTTP --> MR
+    MR --> CMC & BMC & AMC & LMC
+    CMC --> CMS
+    BMC --> BMS
+    AMC --> AMS
+    LMC --> LMS
+    CMS & BMS & AMS & LMS --> MRP --> MRA --> ME
+    CMS & BMS & AMS & LMS --> M & VO
