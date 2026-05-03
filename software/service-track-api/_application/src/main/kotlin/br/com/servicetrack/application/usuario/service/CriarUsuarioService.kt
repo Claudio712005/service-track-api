@@ -11,7 +11,9 @@ import br.com.servicetrack.application.usuario.ports.`out`.CriptografiaPort
 import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
 import br.com.servicetrack.domain.auditoria.enums.TipoEntidade
 import br.com.servicetrack.domain.auditoria.enums.TipoEventoAuditoria
+import br.com.servicetrack.domain.usuario.vo.Email
 import br.com.servicetrack.domain.usuario.vo.Senha
+import br.com.servicetrack.domain.usuario.vo.Telefone
 
 @ApplicationService
 class CriarUsuarioService(
@@ -29,12 +31,19 @@ class CriarUsuarioService(
         }
 
         Senha.criar(req.senha)
-
         val senhaHash = criptografia.criptografar(req.senha)
+
+        val usuarioInativo = repository.buscarInativoPorCpf(req.cpf)
+        if (usuarioInativo != null) {
+            usuarioInativo.ativar()
+            usuarioInativo.atualizar(req.nome, Email(req.email), Telefone(req.telefone))
+            usuarioInativo.alterarSenha(Senha.deHash(senhaHash))
+            repository.atualizar(usuarioInativo)
+            return ClienteResDTO.de(usuarioInativo)
+        }
+
         val novoUsuario = req.toDomain(senhaHash)
-
         repository.salvar(novoUsuario)
-
         return ClienteResDTO.de(novoUsuario)
     }
 }

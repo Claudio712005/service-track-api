@@ -12,4 +12,5 @@ interface UsuarioRepositoryPort {
     fun atualizar(usuario: Usuario)
     fun desativar(id: UsuarioId)
     fun existeEmailEmOutroUsuario(email: String, idAtual: UsuarioId): Boolean
+    fun buscarInativoPorCpf(cpf: String): Usuario?
 }

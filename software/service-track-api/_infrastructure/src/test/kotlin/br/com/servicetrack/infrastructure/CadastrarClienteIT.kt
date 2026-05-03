@@ -72,6 +72,63 @@ class CadastrarClienteIT {
     }
 
     @Test
+    fun `deve reativar usuario desativado com mesmo cpf e retornar 201`() {
+        given()
+            .contentType(ContentType.JSON)
+            .body(
+                """
+                {
+                  "nome": "Cliente Para Reativar IT",
+                  "email": "reativar.original.it@email.com",
+                  "senha": "#Tiee123456",
+                  "telefone": "11900011111",
+                  "cpf": "18080808074",
+                  "dataNascimento": "1992-05-10"
+                }
+                """.trimIndent()
+            )
+            .post("/clientes")
+            .then().statusCode(201)
+
+        val loginJson = given()
+            .contentType(ContentType.JSON)
+            .body("""{"email": "reativar.original.it@email.com", "senha": "#Tiee123456"}""")
+            .post("/autenticacao")
+            .then().statusCode(200)
+            .extract().jsonPath()
+
+        val token = loginJson.getString("token")
+        val id = loginJson.getString("usuarioId")
+
+        given()
+            .header("Authorization", "Bearer $token")
+            .delete("/clientes/$id")
+            .then().statusCode(204)
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(
+                """
+                {
+                  "nome": "Cliente Reativado IT",
+                  "email": "reativar.novo.it@email.com",
+                  "senha": "NovaSenha@456",
+                  "telefone": "11900022222",
+                  "cpf": "18080808074",
+                  "dataNascimento": "1992-05-10"
+                }
+                """.trimIndent()
+            )
+        .`when`()
+            .post("/clientes")
+        .then()
+            .statusCode(201)
+            .body("ativo", equalTo(true))
+            .body("nome", equalTo("Cliente Reativado IT"))
+            .body("email", equalTo("reativar.novo.it@email.com"))
+    }
+
+    @Test
     fun `deve retornar 400 quando senha nao atender a politica`() {
         given()
             .contentType(ContentType.JSON)

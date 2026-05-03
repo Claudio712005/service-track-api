@@ -32,6 +32,7 @@ class UsuarioRepositoryAdapter : UsuarioRepositoryPort {
         entity.email = dados.email.valor
         entity.telefone = dados.telefone.valor
         entity.senhaHash = usuario.obterSenhaHash().valor
+        entity.ativo = dados.ativo
         entity.dataAtualizacao = LocalDateTime.now()
     }
 
@@ -49,4 +50,7 @@ class UsuarioRepositoryAdapter : UsuarioRepositoryPort {
             email,
             UUID.fromString(idAtual.valor)
         ) > 0
+
+    override fun buscarInativoPorCpf(cpf: String): Usuario? =
+        UsuarioEntity.find("cpf = ?1 and ativo = ?2", cpf, false).firstResult()?.toDomain()
 }
