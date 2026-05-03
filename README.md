@@ -77,26 +77,26 @@ Para detalhes de cada camada, veja:
 
 ### Pré-requisitos
 
-- Docker e Docker Compose instalados
-- Arquivo `.env` configurado em `software/service-track-api/`
+| Ferramenta | Versão mínima | Observação |
+|---|---|---|
+| Docker Engine / Docker Desktop | 24+ | BuildKit habilitado por padrão |
+| Docker Compose | v2 (`docker compose`) | Integrado ao Docker Desktop |
+
+> **Apple Silicon (M1/M2/M3):** o build é nativo em ARM64. Para gerar uma imagem compatível com servidores Linux AMD64, use `docker buildx build --platform linux/amd64 -t servicetrack-api .` antes do `docker compose up`.
 
 ### Variáveis de ambiente
 
-Crie `software/service-track-api/.env`:
-
-```env
-POSTGRES_USER=servicetrack
-POSTGRES_PASSWORD=servicetrack@123
-POSTGRES_DB=servicetrack
-POSTGRES_HOST=postgres
-POSTGRES_PORT=5432
-POSTGRES_JDBC_URL=jdbc:postgresql://postgres:5432/servicetrack
+```bash
+cd software/service-track-api
+cp .env.example .env
 ```
+
+Edite `.env` com os valores desejados. O arquivo **nunca deve ser commitado** (já coberto pelo `.gitignore`).
 
 As chaves JWT devem estar em `_infrastructure/src/main/resources/keys/`:
 
 ```bash
-openssl genrsa -out privateKey.pem 2048
+openssl genrsa -out privateKey.pem 4096
 openssl rsa -in privateKey.pem -pubout -out publicKey.pem
 ```
 
@@ -107,10 +107,20 @@ cd software/service-track-api
 docker compose up --build
 ```
 
+O Compose aguarda o Postgres passar no healthcheck antes de iniciar a API — a primeira subida pode levar alguns segundos extras.
+
 | Serviço | URL |
 |---|---|
 | API | `http://localhost:8080` |
 | PostgreSQL | `localhost:5432` |
+| Swagger UI | `http://localhost:8080/q/swagger-ui` |
+
+#### Rebuild sem cache (quando necessário)
+
+```bash
+docker compose build --no-cache
+docker compose up
+```
 
 ### Modo dev (H2 in-memory)
 
@@ -120,6 +130,8 @@ cd software/service-track-api
 ```
 
 Console H2 disponível em `http://localhost:8080/h2-console`.
+
+> **Windows:** certifique-se de usar o terminal WSL2 ou Git Bash. O `gradlew` requer line endings LF — o `.gitattributes` na raiz garante isso automaticamente ao clonar.
 
 ---
 

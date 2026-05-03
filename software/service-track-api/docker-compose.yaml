@@ -13,6 +13,12 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d servicetrack"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   api:
     build:
@@ -23,12 +29,13 @@ services:
     networks:
       - servicetrack-network
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       QUARKUS_DATASOURCE_USERNAME: ${POSTGRES_USER}
       QUARKUS_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       QUARKUS_DATASOURCE_JDBC_URL: ${POSTGRES_JDBC_URL}
-      QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: update
+      QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: ${DB_GENERATION:-update}
     ports:
       - "8080:8080"
 

@@ -1,29 +1,39 @@
-FROM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:21-jdk-jammy AS build
+
+ENV GRADLE_USER_HOME=/root/.gradle
+
 WORKDIR /workspace
 
 COPY gradlew gradlew.bat ./
-COPY gradle/ gradle/
-COPY settings.gradle.kts build.gradle.kts jacoco-config.gradle.kts ./
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
+
+COPY gradle/           gradle/
+COPY settings.gradle.kts \
+     build.gradle.kts \
+     jacoco-config.gradle.kts \
+     gradle.properties ./
 COPY openapi.yaml ./
-COPY openApi/ openApi/
+COPY openApi/          openApi/
 
-COPY gradle.properties ./
+COPY _domain/build.gradle.kts         _domain/
+COPY _application/build.gradle.kts    _application/
+COPY _infrastructure/build.gradle.kts _infrastructure/
 
-COPY _domain/build.gradle.kts          _domain/
-COPY _application/build.gradle.kts     _application/
-COPY _infrastructure/build.gradle.kts  _infrastructure/
+RUN --mount=type=cache,target=/root/.gradle,sharing=locked \
+    ./gradlew dependencies -q
 
-RUN chmod +x gradlew
+COPY _domain/src/         _domain/src/
+COPY _application/src/    _application/src/
+COPY _infrastructure/src/ _infrastructure/src/
 
-RUN ./gradlew dependencies -q 2>&1 | tail -3 || true
-
-COPY _domain/src/          _domain/src/
-COPY _application/src/     _application/src/
-COPY _infrastructure/src/  _infrastructure/src/
-
-RUN ./gradlew :_infrastructure:build -x test
+RUN --mount=type=cache,target=/root/.gradle,sharing=locked \
+    ./gradlew :_infrastructure:build -x test
 
 FROM eclipse-temurin:21-jre-alpine
+
+ENV TZ=UTC \
+    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8"
+
 WORKDIR /app
 
 RUN addgroup -S servicetrack && adduser -S servicetrack -G servicetrack
@@ -35,6 +45,8 @@ USER servicetrack
 
 EXPOSE 8080
 
-CMD ["java", \
-     "-Djava.util.logging.manager=org.jboss.logmanager.LogManager", \
-     "-jar", "quarkus-run.jar"]
+ENTRYPOINT ["java", \
+    "-XX:+UseContainerSupport", \
+    "-XX:MaxRAMPercentage=75.0", \
+    "-Djava.util.logging.manager=org.jboss.logmanager.LogManager", \
+    "-jar", "quarkus-run.jar"]
