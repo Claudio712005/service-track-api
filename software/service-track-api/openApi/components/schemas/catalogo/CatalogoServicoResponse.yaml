@@ -1,0 +1,11 @@
+type: object
+properties:
+  id:
+    type: string
+    format: uuid
+  nomeServico:
+    type: string
+    example: "Troca de Óleo"
+  descricaoServico:
+    type: string
+    example: "Substituição do óleo do motor e filtro"

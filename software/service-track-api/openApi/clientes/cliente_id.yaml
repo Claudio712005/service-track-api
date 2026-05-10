@@ -1,0 +1,124 @@
+get:
+  summary: Buscar cliente por ID. O próprio cliente ou um mecânico podem consultar.
+  operationId: buscarCliente
+  tags:
+    - Clientes
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Cliente encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/cliente/ClienteResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Acesso não permitido
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Cliente não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+
+put:
+  summary: Atualizar dados de um usuário. Cliente atualiza apenas os próprios dados; Mecânico pode atualizar dados de clientes.
+  operationId: atualizarCliente
+  tags:
+    - Clientes
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/cliente/AtualizarClienteRequest.yaml'
+  responses:
+    '200':
+      description: Usuário atualizado com sucesso
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/cliente/ClienteResponse.yaml'
+    '400':
+      description: Dados inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Operação não permitida
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Usuário não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+
+delete:
+  summary: Desativar (soft delete) um usuário. Cliente desativa apenas a si mesmo; Mecânico pode desativar clientes.
+  operationId: desativarCliente
+  tags:
+    - Clientes
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '204':
+      description: Usuário desativado com sucesso
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Operação não permitida
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Usuário não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

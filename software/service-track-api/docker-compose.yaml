@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: servicetrack-postgres
+    restart: unless-stopped
+    networks:
+      - servicetrack-network
+    environment:
+      POSTGRES_DB: servicetrack
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d servicetrack"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: servicetrack-api
+    restart: unless-stopped
+    networks:
+      - servicetrack-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      QUARKUS_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      QUARKUS_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      QUARKUS_DATASOURCE_JDBC_URL: ${POSTGRES_JDBC_URL}
+      QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: ${DB_GENERATION:-update}
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
+
+networks:
+  servicetrack-network:
+    driver: bridge

@@ -1,0 +1,41 @@
+---
+title: C4 Component - Auditoria (Cross-cutting)
+---
+flowchart TD
+    SVC(["Qualquer Service<br/>(@Auditavel)"])
+
+    subgraph INFRA["Infrastructure"]
+        AI["AuditoriaInterceptor<br/>(CDI Interceptor)"]
+        ARA["AuditoriaRepositoryAdapter<br/>(JPA + Panache)"]
+        AE["AuditoriaEntity"]
+        RAA["RegistrarAuditoriaAdapter"]
+        PROXY["AuditoriaProxy"]
+        subgraph STRATEGY["Strategy Factory"]
+            SF["AuditoriaStrategyFactory"]
+            S1["CriacaoAuditoriaStrategy"]
+            S2["AtualizacaoAuditoriaStrategy"]
+            S3["RemocaoAuditoriaStrategy"]
+            S4["LoginAuditoriaStrategy"]
+            S5["LogoutAuditoriaStrategy"]
+        end
+    end
+
+    subgraph APP["Application (Ports)"]
+        RAP["RegistrarAuditoriaPort"]
+        ARP["AuditoriaRepositoryPort"]
+        ACH["AuditoriaContextoHolder"]
+    end
+
+    subgraph DOMAIN["Domain"]
+        A["Auditoria (root)"]
+        CA["CampoAlterado"]
+        EA["EventoAuditoria"]
+        VO["AuditoriaId / DadosAuditoria<br/>EnderecoIp / ReferenciaId<br/>TipoEventoAuditoria / TipoEntidade"]
+    end
+
+    SVC -->|"intercepted by"| AI
+    AI --> ACH
+    AI --> RAP --> RAA --> PROXY
+    PROXY --> SF --> S1 & S2 & S3 & S4 & S5
+    RAA --> ARP --> ARA --> AE
+    RAA --> A & CA & EA & VO

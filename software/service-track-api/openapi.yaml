@@ -1,103 +1,68 @@
 openapi: 3.0.3
 info:
-  title: Service Track API
+  title: ServiceTrack API
   version: 1.0.0
-  description: API para gerenciamento do Service Track
-
-paths:
-  /users:
-    post:
-      summary: Cria um novo usuário
-      operationId: createUser
-      tags:
-        - Users
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateUserRequest'
-      responses:
-        '201':
-          description: Usuário criado com sucesso
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserResponse'
-        '400':
-          description: Dados inválidos enviados pelo cliente
+  description: API para gerenciamento do sistema de atendimento da oficina mecânica
 
 components:
-  schemas:
-    CreateUserRequest:
-      type: object
-      required:
-        - name
-        - email
-        - password
-        - dateOfBirth
-        - phoneNumber
-        - cpf
-        - role
-      properties:
-        name:
-          type: string
-          example: "João da Silva"
-        email:
-          type: string
-          format: email
-          example: "joao@email.com"
-        password:
-          type: string
-          format: password
-          example: "SenhaForte123!"
-        dateOfBirth:
-          type: string
-          format: date
-          example: "1990-05-15"
-        phoneNumber:
-          type: string
-          example: "+5511999999999"
-        cpf:
-          type: string
-          example: "12345678900"
-        role:
-          type: string
-          enum: [ ADMIN, MANAGER, USER ] # Ajuste conforme seu br.com.servicetrack.domain.enums.UserRole
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 
-    # DTO de SAÍDA: O que a API devolve.
-    # Inclui o ID gerado, datas de controle, mas NUNCA a senha.
-    UserResponse:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 1
-        name:
-          type: string
-          example: "João da Silva"
-        email:
-          type: string
-          format: email
-          example: "joao@email.com"
-        dateOfBirth:
-          type: string
-          format: date
-          example: "1990-05-15"
-        phoneNumber:
-          type: string
-          example: "+5511999999999"
-        cpf:
-          type: string
-          example: "12345678900"
-        role:
-          type: string
-          example: "USER"
-        enabled:
-          type: boolean
-          example: true
-        createdAt:
-          type: string
-          format: date-time
-          example: "2026-03-21T10:00:00Z"
+paths:
+  /clientes:
+    $ref: './openApi/clientes/clientes.yaml'
+  /clientes/{id}:
+    $ref: './openApi/clientes/cliente_id.yaml'
+  /mecanicos:
+    $ref: './openApi/mecanicos/mecanicos.yaml'
+  /mecanicos/{id}:
+    $ref: './openApi/mecanicos/mecanico_id.yaml'
+  /autenticacao:
+    $ref: './openApi/autenticacao/login.yaml'
+  /autenticacao/reset-senha:
+    $ref: './openApi/autenticacao/reset_senha.yaml'
+  /veiculos:
+    $ref: './openApi/veiculo/veiculo.yaml'
+  /veiculos/{id}:
+    $ref: './openApi/veiculo/veiculo_id.yaml'
+  /servicos:
+    $ref: './openApi/servicos/servicos.yaml'
+  /servicos/{id}:
+    $ref: './openApi/servicos/servico_id.yaml'
+  /servicos/{id}/tempo-medio-conclusao:
+    $ref: './openApi/servicos/servico_tempo_medio.yaml'
+  /insumos:
+    $ref: './openApi/insumos/insumos.yaml'
+  /insumos/{id}:
+    $ref: './openApi/insumos/insumo_id.yaml'
+  /catalogo/servicos:
+    $ref: './openApi/catalogo/catalogo_servicos.yaml'
+  /catalogo/insumos:
+    $ref: './openApi/catalogo/catalogo_insumos.yaml'
+  /ordem-servico:
+    $ref: './openApi/ordemServico/ordemServico.yaml'
+  /ordem-servico/lista:
+    $ref: './openApi/ordemServico/ordemServico_lista.yaml'
+  /ordem-servico/{id}:
+    $ref: './openApi/ordemServico/ordemServico_id.yaml'
+  /ordem-servico/{id}/diagnostico:
+    $ref: './openApi/ordemServico/ordemServico_diagnostico.yaml'
+  /ordem-servico/{id}/diagnostico/itens:
+    $ref: './openApi/ordemServico/ordemServico_diagnostico_itens.yaml'
+  /ordem-servico/{id}/orcamento:
+    $ref: './openApi/ordemServico/ordemServico_orcamento.yaml'
+  /ordem-servico/{id}/orcamento/aprovacao:
+    $ref: './openApi/ordemServico/ordemServico_orcamento_aprovacao.yaml'
+  /ordem-servico/{id}/orcamento/reprovacao:
+    $ref: './openApi/ordemServico/ordemServico_orcamento_reprovacao.yaml'
+  /ordem-servico/{id}/cancelamento:
+    $ref: './openApi/ordemServico/ordemServico_cancelamento.yaml'
+  /ordem-servico/{id}/finalizacao:
+    $ref: './openApi/ordemServico/ordemServico_finalizacao.yaml'
+  /ordem-servico/{id}/entrega:
+    $ref: './openApi/ordemServico/ordemServico_entrega.yaml'
+  /ordem-servico/{id}/itens/{itemId}/concluir:
+    $ref: './openApi/ordemServico/ordemServico_item_concluir.yaml'

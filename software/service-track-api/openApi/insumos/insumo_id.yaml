@@ -1,0 +1,106 @@
+get:
+  summary: Buscar insumo por ID. Exclusivo para mecânicos.
+  operationId: buscarInsumo
+  tags:
+    - Insumos
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Insumo encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/insumo/InsumoResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Insumo não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+
+put:
+  summary: Atualizar insumo. Exclusivo para mecânicos.
+  operationId: atualizarInsumo
+  tags:
+    - Insumos
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/insumo/AtualizarInsumoRequest.yaml'
+  responses:
+    '200':
+      description: Insumo atualizado com sucesso
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/insumo/InsumoResponse.yaml'
+    '400':
+      description: Dados inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Insumo não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+
+delete:
+  summary: Remover insumo. Exclusivo para mecânicos.
+  operationId: removerInsumo
+  tags:
+    - Insumos
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '204':
+      description: Insumo removido com sucesso
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Insumo não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

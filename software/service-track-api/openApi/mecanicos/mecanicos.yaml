@@ -1,0 +1,62 @@
+get:
+  summary: Listar todos os mecânicos. Requer autenticação.
+  operationId: listarMecanicos
+  tags:
+    - Mecânicos
+  security:
+    - bearerAuth: []
+  responses:
+    '200':
+      description: Lista de mecânicos
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '../components/schemas/mecanico/MecanicoResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+
+post:
+  summary: Realiza o cadastro de um novo mecânico. Não requer autenticação.
+  operationId: criarMecanico
+  tags:
+    - Mecânicos
+  security: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/mecanico/CadastrarMecanicoRequest.yaml'
+  responses:
+    '201':
+      description: Mecânico cadastrado com sucesso
+      headers:
+        Location:
+          description: URI do recurso criado
+          schema:
+            type: string
+            example: "/mecanicos/550e8400-e29b-41d4-a716-446655440000"
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/mecanico/MecanicoResponse.yaml'
+    '400':
+      description: Dados de entrada inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '409':
+      description: Email ou CPF já cadastrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '500':
+      description: Erro interno do servidor

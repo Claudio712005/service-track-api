@@ -1,0 +1,12 @@
+type: object
+properties:
+  nomeServico:
+    type: string
+    example: "Troca de Óleo Sintético"
+  descricaoServico:
+    type: string
+    example: "Substituição completa do óleo e filtro"
+  valorReferencia:
+    type: number
+    format: double
+    example: 180.00

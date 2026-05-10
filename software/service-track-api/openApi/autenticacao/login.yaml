@@ -1,0 +1,35 @@
+post:
+  summary: Realiza o login de um cliente/mecânico e retorna um token JWT e informações básicas do usuário. Não requer autenticação.
+  operationId: login
+  tags:
+    - Login
+
+  security: []
+
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/autenticacao/LoginRequest.yaml'
+  responses:
+    '200':
+      description: Login bem-sucedido, token JWT e informações do usuário retornados
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/autenticacao/LoginResponse.yaml'
+    '400':
+      description: Dados de entrada inválidos (falha de validação)
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Credenciais inválidas (email ou senha incorretos)
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '500':
+      description: Erro interno do servidor

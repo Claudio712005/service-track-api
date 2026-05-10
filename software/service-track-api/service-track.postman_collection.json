@@ -1,0 +1,1474 @@
+{
+  "info": {
+    "_postman_id": "fe4109bc-8aea-4c36-a471-eb194bfd7cb4",
+    "name": "ServiceTrack API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "30809359"
+  },
+  "item": [
+    {
+      "name": "clientes",
+      "item": [
+        {
+          "name": "criar cliente",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Cláudio da Silva Araújo\",\n  \"email\": \"claudio11@email.com\",\n  \"senha\": \"Senha@123\",\n  \"dataNascimento\": \"1990-01-15\",\n  \"telefone\": \"11987654321\",\n  \"cpf\": \"54927170063\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/clientes",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "clientes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "buscar cliente por id",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"clienteId\": \"4d32c6ae-46d1-403d-8e65-d9527126d093\",\n    \"mecanicoId\": \"4d32c6ae-46d1-403d-8e65-d9527126d093\",\n    \"veiculoId\": \"02beb900-34bf-48d2-b9d9-ba76213642fc\",\n    \"motivo\": \"teste motivo\",\n    \"observacao\": null\n}"
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/clientes/4d32c6ae-46d1-403d-8e65-d9527126d093",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "clientes",
+                "4d32c6ae-46d1-403d-8e65-d9527126d093"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "atualizar cliente",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Cláudio da Silva Araújo\",\n  \"email\": \"claudioaraujo@email.com\",\n  \"telefone\": \"11987654333\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/clientes/db68eb0b-516c-475f-82d5-95be728b1b07",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "clientes",
+                "db68eb0b-516c-475f-82d5-95be728b1b07"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "remover",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/clientes/f4668215-45d5-40d5-94dd-979b36b4f873",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "clientes",
+                "f4668215-45d5-40d5-94dd-979b36b4f873"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "autenticação",
+      "item": [
+        {
+          "name": "login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "",
+                  "    pm.collectionVariables.set(\"ACCESS_TOKEN\", response.token);",
+                  "    pm.collectionVariables.set(\"USER_TOKEN_ID\", response.usuarioId);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "// Mecânico Sr.\n{\n    \"email\": \"joao11@mecanica.com\",\n    \"senha\": \"Senha@123\"\n}\n\n// Mecânico PL\n// {\n//     \"email\": \"joao@mecanica.com\",\n//     \"senha\": \"Senha@123\"\n// }\n\n// Cliente\n// {\n//     \"email\": \"claudio11@email.com\",\n//     \"senha\": \"Senha@123\"\n// }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/autenticacao",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "autenticacao"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "resetar senha",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "veiculo",
+      "item": [
+        {
+          "name": "criar veículo",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"placa\": \"AAB1B24\",\n  \"modelo\": \"modelo novo 1234534\",\n  \"marca\": \"testemarca 1\",\n  \"ano\": 2005,\n  \"proprietarioId\": \"db68eb0b-516c-475f-82d5-95be728b1b07\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/veiculos",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "veiculos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "excluir veículo",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/veiculos/149ac70c-856f-4198-9962-869ccfb9a3db",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "veiculos",
+                "149ac70c-856f-4198-9962-869ccfb9a3db"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "atualizar veículo",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"placa\": null,\n  \"modelo\": \"modelo novo 1234534\",\n  \"marca\": \"testemarca 2\",\n  \"ano\": 2020\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/veiculos/02beb900-34bf-48d2-b9d9-ba76213642fc",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "veiculos",
+                "02beb900-34bf-48d2-b9d9-ba76213642fc"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "listar veículos",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/veiculos",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "veiculos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "buscar veículo Id",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"clienteId\": \"4d32c6ae-46d1-403d-8e65-d9527126d093\",\n    \"mecanicoId\": \"4d32c6ae-46d1-403d-8e65-d9527126d093\",\n    \"veiculoId\": \"02beb900-34bf-48d2-b9d9-ba76213642fc\",\n    \"motivo\": \"teste motivo\",\n    \"observacao\": null\n}"
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/veiculos/02beb900-34bf-48d2-b9d9-ba76213642fc",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "veiculos",
+                "02beb900-34bf-48d2-b9d9-ba76213642fc"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "mecânico",
+      "item": [
+        {
+          "name": "criar mecânico",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"João da Silva\",\n  \"email\": \"joao@mecanica.com\",\n  \"senha\": \"Senha@123\",\n  \"dataNascimento\": \"1985-03-20\",\n  \"telefone\": \"11987654322\",\n  \"cpf\": \"944.205.190-37\",\n  \"nivel\": \"SENIOR\",\n  \"valorHora\": 250\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/mecanicos",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "mecanicos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "buscar mecânico",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"joao@mecanica.com\",\n    \"senha\": \"Senha@123\"\n}"
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/mecanicos/1773f224-1bf2-466e-ba6f-f441e9081d50",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "mecanicos",
+                "1773f224-1bf2-466e-ba6f-f441e9081d50"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "listar mecânicos",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"joao@mecanica.com\",\n    \"senha\": \"Senha@123\"\n}"
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/mecanicos",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "mecanicos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "atualizar mecânico",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nivel\": \"SENIOR\",\n    \"valorHora\": \"500\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/mecanicos/ff734223-2b95-4618-abea-7144d68d8c86",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "mecanicos",
+                "ff734223-2b95-4618-abea-7144d68d8c86"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "insumos",
+      "item": [
+        {
+          "name": "criar insumo",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Óleo de Motor 5W30\",\n  \"descricao\": \"Óleo sintético para motores a gasolina e flex\",\n  \"custo\": 35,\n  \"qtdEstoqueInicial\": 10,\n  \"estoqueMinimo\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/insumos",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "insumos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "buscar insumo por id",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/insumos/02beb900-34bf-48d2-b9d9-ba76213642fc",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "insumos",
+                "02beb900-34bf-48d2-b9d9-ba76213642fc"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "buscar insumos",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/insumos",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "insumos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "atualizar insumos",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Óleo de Motor 10W40\",\n  \"descricao\": \"Óleo mineral para motores mais antigos\",\n  \"custo\": 40,\n  \"estoqueMinimo\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/insumos/7cc6cdf2-d276-48aa-bb68-8c27d0731567",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "insumos",
+                "7cc6cdf2-d276-48aa-bb68-8c27d0731567"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "excluir insumo",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/insumos/02beb900-34bf-48d2-b9d9-ba76213642fc",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "insumos",
+                "02beb900-34bf-48d2-b9d9-ba76213642fc"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ordem serviço",
+      "item": [
+        {
+          "name": "criar os.",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"clienteId\": \"d6802fad-2d26-4c68-87a4-1d610530ad5f\",\n    \"mecanicoId\": \"1d175bf8-86c4-4a55-af3a-1d2da9e65af9\",\n    \"veiculoId\": \"cf9b2a9d-a585-430b-b1dc-2c91117c5677\",\n    \"motivo\": \"teste motivo grav. teste\",\n    \"observacao\": \"Falha no motor\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/ordem-servico",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "ordem-servico"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "listar ordens de serviço",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/ordem-servico/lista",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "ordem-servico",
+                "lista"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "buscar ordem de serviço por ID",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/ordem-servico/4a89d185-b2f9-4d35-8b12-843b7653f759",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "ordem-servico",
+                "4a89d185-b2f9-4d35-8b12-843b7653f759"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "enviar para diagnóstico",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/ordem-servico/a84ca495-9233-4e14-92de-93600e6d7534/diagnostico",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "ordem-servico",
+                "a84ca495-9233-4e14-92de-93600e6d7534",
+                "diagnostico"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "gerar orçamento",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"prazoEntrega\": \"2026-05-10\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/ordem-servico/746a8267-37ab-4e51-bdb2-ec9a03e9fda1/orcamento",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "ordem-servico",
+                "746a8267-37ab-4e51-bdb2-ec9a03e9fda1",
+                "orcamento"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "aprovar orçamento",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/ordem-servico/746a8267-37ab-4e51-bdb2-ec9a03e9fda1/orcamento/aprovacao",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "ordem-servico",
+                "746a8267-37ab-4e51-bdb2-ec9a03e9fda1",
+                "orcamento",
+                "aprovacao"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "reprovar orçamento",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/ordem-servico/746a8267-37ab-4e51-bdb2-ec9a03e9fda1/orcamento/reprovacao",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "ordem-servico",
+                "746a8267-37ab-4e51-bdb2-ec9a03e9fda1",
+                "orcamento",
+                "reprovacao"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "cancelar ordem de serviço",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo\": \"Vou levar o veículo para outra oficina\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/ordem-servico/45448741-96d7-47af-9bb2-f70ab331e427/cancelamento",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "ordem-servico",
+                "45448741-96d7-47af-9bb2-f70ab331e427",
+                "cancelamento"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "finalizar ordem de serviço",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/ordem-servico/4a89d185-b2f9-4d35-8b12-843b7653f759/finalizacao",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "ordem-servico",
+                "4a89d185-b2f9-4d35-8b12-843b7653f759",
+                "finalizacao"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "entregar ordem de serviço",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/ordem-servico/4a89d185-b2f9-4d35-8b12-843b7653f759/entrega",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "ordem-servico",
+                "4a89d185-b2f9-4d35-8b12-843b7653f759",
+                "entrega"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "associar itens",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"servicos\": [\n    {\n      \"servicoId\": \"c506f220-ff57-4d80-8212-1f91ac10dece\",\n      \"valorCobrado\": 300\n    }\n  ],\n  \"insumos\": [\n    {\n      \"insumoId\": \"855d4c6a-8c30-4505-be84-3815a1a572e8\",\n      \"quantidade\": 2\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/ordem-servico/746a8267-37ab-4e51-bdb2-ec9a03e9fda1/diagnostico/itens",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "ordem-servico",
+                "746a8267-37ab-4e51-bdb2-ec9a03e9fda1",
+                "diagnostico",
+                "itens"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "concluir item serviço",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observacao\": \"Troca de óleo realizada conforme especificação do fabricante\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/ordem-servico/746a8267-37ab-4e51-bdb2-ec9a03e9fda1/itens/be8b3f0d-9283-445e-8525-a9eeaac83d73/concluir",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "ordem-servico",
+                "746a8267-37ab-4e51-bdb2-ec9a03e9fda1",
+                "itens",
+                "be8b3f0d-9283-445e-8525-a9eeaac83d73",
+                "concluir"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "serviço",
+      "item": [
+        {
+          "name": "listar serviços",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/servicos",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "servicos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "buscar serviço por id",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/servicos/02beb900-34bf-48d2-b9d9-ba76213642fc",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "servicos",
+                "02beb900-34bf-48d2-b9d9-ba76213642fc"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "atualizar serviço",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeServico\": \"Troca de Óleo Sintético\",\n  \"descricaoServico\": \"Substituição completa do óleo e filtro\",\n  \"valorReferencia\": 180\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/servicos/02beb900-34bf-48d2-b9d9-ba76213642fc",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "servicos",
+                "02beb900-34bf-48d2-b9d9-ba76213642fc"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "excluir serviço",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/servicos/02beb900-34bf-48d2-b9d9-ba76213642fc",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "servicos",
+                "02beb900-34bf-48d2-b9d9-ba76213642fc"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "criar serviço",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeServico\": \"Troca de Óleo\",\n  \"descricaoServico\": \"Substituição do óleo do motor e filtro\",\n  \"valorReferencia\": 150\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/servicos",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "servicos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "tempo médio serviço",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/servicos/29b77389-db42-403d-bc96-ee4a4596c8e1/tempo-medio-conclusao?unidade=HORAS",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "servicos",
+                "29b77389-db42-403d-bc96-ee4a4596c8e1",
+                "tempo-medio-conclusao"
+              ],
+              "query": [
+                {
+                  "key": "unidade",
+                  "value": "HORAS"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "catálogo",
+      "item": [
+        {
+          "name": "catálogo de serviços",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/catalogo/servicos",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "catalogo",
+                "servicos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "catálogo de insumos",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{LOCAL_URL}}/catalogo/insumos",
+              "host": [
+                "{{LOCAL_URL}}"
+              ],
+              "path": [
+                "catalogo",
+                "insumos"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "LOCAL_URL",
+      "value": ""
+    },
+    {
+      "key": "USER_TOKEN_ID",
+      "value": ""
+    },
+    {
+      "key": "ACCESS_TOKEN",
+      "value": ""
+    }
+  ]
+}

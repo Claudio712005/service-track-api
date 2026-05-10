@@ -1,0 +1,56 @@
+get:
+  summary: Retorna o tempo médio de conclusão de um serviço, calculado sobre todos os itens concluídos.
+  operationId: buscarTempoMedioConclusao
+  tags:
+    - Servicos
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: unidade
+      in: query
+      required: true
+      schema:
+        type: string
+        enum: [SEGUNDOS, MINUTOS, HORAS, DIAS]
+      description: Unidade de tempo para expressar o resultado
+  responses:
+    '200':
+      description: Tempo médio calculado com sucesso
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              servicoId:
+                type: string
+              tempoMedio:
+                type: number
+                format: double
+              unidade:
+                type: string
+                enum: [SEGUNDOS, MINUTOS, HORAS, DIAS]
+              totalAmostras:
+                type: integer
+    '400':
+      description: Unidade de tempo inválida
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Serviço não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

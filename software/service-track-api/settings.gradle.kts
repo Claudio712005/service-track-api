@@ -1,5 +1,10 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
 rootProject.name = "service-track-api"
 
-include("_domain")
-include("_application")
-include("_infrastructure")
+include(":_domain", ":_application", ":_infrastructure")

@@ -1,0 +1,89 @@
+classDiagram
+    direction TB
+
+    namespace Infrastructure_REST {
+        class OrdemServicoResourceImpl {
+            +concluirItemServico(ordemServicoId, itemServicoId, ConcluirItemServicoReqDTO) Response
+        }
+    }
+
+    namespace Infrastructure_CrossCutting {
+        class AuditoriaProxy {
+            <<cross-cutting>>
+            +envolver(T, Class~T~, RegistrarAuditoriaPort) T
+            -interceptar(method, args) Any
+        }
+    }
+
+    namespace Application_Ports_In {
+        class ConcluirItemServicoUseCase {
+            <<interface>>
+            +concluirItemServico(ordemServicoId, itemServicoId, ConcluirItemServicoReqDTO) OrdemServicoResDTO
+        }
+    }
+
+    namespace Application_Service {
+        class ConcluirItemServicoService {
+            +concluirItemServico(ordemServicoId, itemServicoId, ConcluirItemServicoReqDTO) OrdemServicoResDTO
+            -validarMecanicoVinculado(os, mecanicoId)
+        }
+    }
+
+    namespace Application_Ports_Out {
+        class JwtPort {
+            <<interface>>
+            +getUsuarioId() UsuarioId
+        }
+        class OrdemServicoRepositoryPort {
+            <<interface>>
+            +buscarPorId(OrdemServicoId) OrdemServico?
+            +atualizar(OrdemServico) OrdemServico
+        }
+        class RegistrarAuditoriaPort {
+            <<interface>>
+            +registrar(TipoEntidade, TipoEventoAuditoria, String, Any?, Any?)
+        }
+    }
+
+    namespace Domain {
+        class OrdemServico {
+            <<aggregate root>>
+            +status StatusOrdemServico
+            +obterMecanicoId() UsuarioId
+            +concluirItemServico(itemId, mecanicoId, observacao)
+        }
+        class ItemOrdemServico {
+            +feito Boolean
+            +mecanicoId UsuarioId
+            +observacao String
+        }
+    }
+
+    namespace Infrastructure_Adapters {
+        class JwtAdapter {
+            +getUsuarioId() UsuarioId
+        }
+        class OrdemServicoRepositoryAdapter {
+            +buscarPorId(OrdemServicoId) OrdemServico?
+            +atualizar(OrdemServico) OrdemServico
+        }
+        class AuditoriaRepositoryAdapter {
+            +registrar(TipoEntidade, TipoEventoAuditoria, String, Any?, Any?)
+        }
+    }
+
+    OrdemServicoResourceImpl --> ConcluirItemServicoUseCase : invoca
+
+    AuditoriaProxy ..|> ConcluirItemServicoUseCase : wrap (Java Proxy)
+    AuditoriaProxy --> ConcluirItemServicoService : delega execução
+    AuditoriaProxy --> RegistrarAuditoriaPort : notifica após @Auditavel
+
+    ConcluirItemServicoService ..|> ConcluirItemServicoUseCase : implementa
+    ConcluirItemServicoService --> JwtPort : getUsuarioId()
+    ConcluirItemServicoService --> OrdemServicoRepositoryPort : buscarPorId() atualizar()
+    ConcluirItemServicoService --> OrdemServico : concluirItemServico()
+    OrdemServico --> ItemOrdemServico : localiza e marca como feito
+
+    JwtAdapter ..|> JwtPort : implementa
+    OrdemServicoRepositoryAdapter ..|> OrdemServicoRepositoryPort : implementa
+    AuditoriaRepositoryAdapter ..|> RegistrarAuditoriaPort : implementa

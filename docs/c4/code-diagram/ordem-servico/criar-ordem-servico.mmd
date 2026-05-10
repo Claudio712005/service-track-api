@@ -1,0 +1,98 @@
+classDiagram
+    direction TB
+
+    namespace Infrastructure_REST {
+        class OrdemServicoResourceImpl {
+            +criarOrdemServico(OrdemServicoRequest) Response
+        }
+    }
+
+    namespace Infrastructure_CrossCutting {
+        class AuditoriaProxy {
+            <<cross-cutting>>
+            +envolver(T, Class~T~, RegistrarAuditoriaPort) T
+            -interceptar(method, args) Any
+        }
+    }
+
+    namespace Application_Ports_In {
+        class CriarOrdemServicoUseCase {
+            <<interface>>
+            +criarOrdemServico(OrdemServicoReqDTO) ResumoOrdemServicoResDTO
+        }
+    }
+
+    namespace Application_Service {
+        class CriarOrdemServicoService {
+            +criarOrdemServico(OrdemServicoReqDTO) ResumoOrdemServicoResDTO
+            -validarSolicitante(usuarioLogado, req)
+            -validarCliente(cliente)
+            -validarMecanico(mecanico)
+            -validarOsAberta(clienteId, veiculoId)
+        }
+    }
+
+    namespace Application_Ports_Out {
+        class JwtPort {
+            <<interface>>
+            +getUsuarioId() UsuarioId
+        }
+        class UsuarioRepositoryPort {
+            <<interface>>
+            +buscarPorId(UsuarioId) Usuario?
+        }
+        class OrdemServicoRepositoryPort {
+            <<interface>>
+            +contarOsAbertaPorIdVeiculoEIdCliente(UsuarioId, VeiculoId) Long
+            +salvar(OrdemServico) OrdemServico
+        }
+        class RegistrarAuditoriaPort {
+            <<interface>>
+            +registrar(TipoEntidade, TipoEventoAuditoria, String, Any?, Any?)
+        }
+    }
+
+    namespace Domain {
+        class OrdemServico {
+            <<aggregate root>>
+            +id OrdemServicoId
+            +clienteId UsuarioId
+            +mecanicoId UsuarioId
+            +veiculoId VeiculoId
+            +status StatusOrdemServico
+            +abrir(motivo, clienteId, mecanicoId, veiculoId, observacao)$ OrdemServico
+        }
+    }
+
+    namespace Infrastructure_Adapters {
+        class JwtAdapter {
+            +getUsuarioId() UsuarioId
+        }
+        class UsuarioRepositoryAdapter {
+            +buscarPorId(UsuarioId) Usuario?
+        }
+        class OrdemServicoRepositoryAdapter {
+            +contarOsAbertaPorIdVeiculoEIdCliente(UsuarioId, VeiculoId) Long
+            +salvar(OrdemServico) OrdemServico
+        }
+        class AuditoriaRepositoryAdapter {
+            +registrar(TipoEntidade, TipoEventoAuditoria, String, Any?, Any?)
+        }
+    }
+
+    OrdemServicoResourceImpl --> CriarOrdemServicoUseCase : invoca
+
+    AuditoriaProxy ..|> CriarOrdemServicoUseCase : wrap (Java Proxy)
+    AuditoriaProxy --> CriarOrdemServicoService : delega execução
+    AuditoriaProxy --> RegistrarAuditoriaPort : notifica após @Auditavel
+
+    CriarOrdemServicoService ..|> CriarOrdemServicoUseCase : implementa
+    CriarOrdemServicoService --> JwtPort : getUsuarioId()
+    CriarOrdemServicoService --> UsuarioRepositoryPort : buscarPorId() x3
+    CriarOrdemServicoService --> OrdemServicoRepositoryPort : contarOsAbertas() salvar()
+    CriarOrdemServicoService --> OrdemServico : abrir()
+
+    JwtAdapter ..|> JwtPort : implementa
+    UsuarioRepositoryAdapter ..|> UsuarioRepositoryPort : implementa
+    OrdemServicoRepositoryAdapter ..|> OrdemServicoRepositoryPort : implementa
+    AuditoriaRepositoryAdapter ..|> RegistrarAuditoriaPort : implementa

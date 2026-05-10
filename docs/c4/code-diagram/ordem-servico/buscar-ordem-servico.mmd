@@ -1,0 +1,70 @@
+classDiagram
+    direction TB
+
+    namespace Infrastructure_REST {
+        class OrdemServicoResourceImpl {
+            +buscarOrdemServico(ordemServicoId) Response
+        }
+    }
+
+    namespace Application_Ports_In {
+        class BuscarOrdemServicoUseCase {
+            <<interface>>
+            +buscarOrdemServico(ordemServicoId) OrdemServicoResDTO
+        }
+    }
+
+    namespace Application_Service {
+        class BuscarOrdemServicoService {
+            +buscarOrdemServico(ordemServicoId) OrdemServicoResDTO
+            -validarAcessoCliente(solicitante, os)
+        }
+    }
+
+    namespace Application_Ports_Out {
+        class JwtPort {
+            <<interface>>
+            +getUsuarioId() UsuarioId
+        }
+        class UsuarioRepositoryPort {
+            <<interface>>
+            +buscarPorId(UsuarioId) Usuario?
+        }
+        class OrdemServicoRepositoryPort {
+            <<interface>>
+            +buscarPorId(OrdemServicoId) OrdemServico?
+        }
+    }
+
+    namespace Domain {
+        class OrdemServico {
+            <<aggregate root>>
+            +clienteId UsuarioId
+            +status StatusOrdemServico
+            +itens List~ItemOrdemServico~
+        }
+    }
+
+    namespace Infrastructure_Adapters {
+        class JwtAdapter {
+            +getUsuarioId() UsuarioId
+        }
+        class UsuarioRepositoryAdapter {
+            +buscarPorId(UsuarioId) Usuario?
+        }
+        class OrdemServicoRepositoryAdapter {
+            +buscarPorId(OrdemServicoId) OrdemServico?
+        }
+    }
+
+    OrdemServicoResourceImpl --> BuscarOrdemServicoUseCase : invoca
+
+    BuscarOrdemServicoService ..|> BuscarOrdemServicoUseCase : implementa
+    BuscarOrdemServicoService --> JwtPort : getUsuarioId()
+    BuscarOrdemServicoService --> UsuarioRepositoryPort : buscarPorId()
+    BuscarOrdemServicoService --> OrdemServicoRepositoryPort : buscarPorId()
+    BuscarOrdemServicoService --> OrdemServico : lê clienteId para autorização
+
+    JwtAdapter ..|> JwtPort : implementa
+    UsuarioRepositoryAdapter ..|> UsuarioRepositoryPort : implementa
+    OrdemServicoRepositoryAdapter ..|> OrdemServicoRepositoryPort : implementa

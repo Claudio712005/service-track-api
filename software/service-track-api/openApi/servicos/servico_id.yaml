@@ -1,0 +1,106 @@
+get:
+  summary: Buscar serviço por ID. Exclusivo para mecânicos.
+  operationId: buscarServico
+  tags:
+    - Servicos
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Serviço encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/servico/ServicoResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Serviço não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+
+put:
+  summary: Atualizar serviço. Exclusivo para mecânicos.
+  operationId: atualizarServico
+  tags:
+    - Servicos
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/servico/AtualizarServicoRequest.yaml'
+  responses:
+    '200':
+      description: Serviço atualizado com sucesso
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/servico/ServicoResponse.yaml'
+    '400':
+      description: Dados inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Serviço não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+
+delete:
+  summary: Remover serviço. Exclusivo para mecânicos.
+  operationId: removerServico
+  tags:
+    - Servicos
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '204':
+      description: Serviço removido com sucesso
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Serviço não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

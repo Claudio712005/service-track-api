@@ -1,49 +1,81 @@
 plugins {
     kotlin("jvm")
-    kotlin("plugin.spring")
-    id("org.springframework.boot")
-    id("io.spring.dependency-management")
+    kotlin("plugin.allopen")
+    id("io.quarkus")
     id("org.openapi.generator")
 }
 
+val qGroupId = rootProject.extra["quarkusPlatformGroupId"] as String
+val qArtifactId = rootProject.extra["quarkusPlatformArtifactId"] as String
+val qVersion = rootProject.extra["quarkusPlatformVersion"] as String
+
 dependencies {
+    implementation(project(":_domain"))
     implementation(project(":_application"))
 
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation(enforcedPlatform("$qGroupId:$qArtifactId:$qVersion"))
 
-    compileOnly("jakarta.servlet:jakarta.servlet-api:6.0.0")
-    implementation("jakarta.validation:jakarta.validation-api:3.0.2")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
-    implementation("io.swagger.core.v3:swagger-annotations-jakarta:2.2.19")
+    implementation("io.quarkus:quarkus-rest")
+    implementation("io.quarkus:quarkus-rest-jackson")
+    implementation("io.quarkus:quarkus-hibernate-orm-panache-kotlin")
+    implementation("io.quarkus:quarkus-jdbc-postgresql")
+    implementation("io.quarkus:quarkus-arc")
+    implementation("io.quarkus:quarkus-hibernate-validator")
+    implementation("io.quarkus:quarkus-smallrye-openapi")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    implementation("org.mindrot:jbcrypt:0.4")
+    implementation("io.quarkus:quarkus-jdbc-h2")
+    implementation("io.quarkus:quarkus-smallrye-jwt")
+    implementation("io.quarkus:quarkus-smallrye-jwt-build")
+    testImplementation("io.mockk:mockk:1.13.10")
+
+    testImplementation("io.quarkus:quarkus-junit5")
+    testImplementation("io.rest-assured:rest-assured")
+    testImplementation("io.quarkus:quarkus-jacoco")
+}
+
+allOpen {
+    annotation("jakarta.ws.rs.Path")
+    annotation("jakarta.enterprise.context.ApplicationScoped")
+    annotation("jakarta.persistence.Entity")
+    annotation("jakarta.persistence.MappedSuperclass")
+    annotation("jakarta.persistence.Embeddable")
 }
 
 openApiGenerate {
-    generatorName.set("kotlin-spring")
-    inputSpec.set("${rootProject.rootDir}/openapi.yaml")
-    outputDir.set("${project.layout.buildDirectory.get()}/generated/openapi")
-
+    inputSpec.set(rootProject.file("openapi.yaml").absolutePath)
+    outputDir.set(layout.buildDirectory.dir("generated/openapi").get().asFile.absolutePath)
     apiPackage.set("br.com.servicetrack.infrastructure.api")
     modelPackage.set("br.com.servicetrack.infrastructure.api.dto")
-
-    configOptions.set(mapOf(
-        "interfaceOnly" to "true",
-        "useSpringBoot3" to "true",
-        "documentationProvider" to "none",
-        "annotationLibrary" to "none",
-        "serializationLibrary" to "jackson"
-    ))
+    generatorName.set("jaxrs-spec")
+    configOptions.set(
+        mapOf(
+            "interfaceOnly" to "true",
+            "useJakartaEe" to "true",
+            "dateLibrary" to "java8",
+            "returnResponse" to "true",
+            "useSwaggerAnnotations" to "false"
+        )
+    )
 }
 
 sourceSets {
     main {
-        kotlin {
-            srcDir("${layout.buildDirectory.get()}/generated/openapi/src/main/kotlin")
+        java {
+            srcDir(layout.buildDirectory.dir("generated/openapi/src/gen/java"))
         }
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+tasks.named("compileKotlin") {
     dependsOn("openApiGenerate")
+    inputs.dir(layout.buildDirectory.dir("generated/openapi"))
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+        freeCompilerArgs.add("-java-parameters")
+    }
 }

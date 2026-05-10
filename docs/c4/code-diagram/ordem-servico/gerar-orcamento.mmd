@@ -1,0 +1,107 @@
+classDiagram
+    direction TB
+
+    namespace Infrastructure_REST {
+        class OrdemServicoResourceImpl {
+            +gerarOrcamento(ordemServicoId, prazoConclusao) Response
+        }
+    }
+
+    namespace Infrastructure_CrossCutting {
+        class AuditoriaProxy {
+            <<cross-cutting>>
+            +envolver(T, Class~T~, RegistrarAuditoriaPort) T
+            -interceptar(method, args) Any
+        }
+    }
+
+    namespace Application_Ports_In {
+        class GerarOrcamentoUseCase {
+            <<interface>>
+            +gerarOrcamento(ordemServicoId, prazoConclusao) OrdemServicoResDTO
+        }
+    }
+
+    namespace Application_Service {
+        class GerarOrcamentoService {
+            +gerarOrcamento(ordemServicoId, prazoConclusao) OrdemServicoResDTO
+            -validarMecanicoVinculado(os, solicitanteId)
+            -validarStatusEmDiagnostico(os)
+            -calcularCustoMaoDeObra(itens) ValorMonetario
+            -calcularCustoInsumos(insumos) ValorMonetario
+            -reservarInsumos(insumos)
+        }
+    }
+
+    namespace Application_Ports_Out {
+        class JwtPort {
+            <<interface>>
+            +getUsuarioId() UsuarioId
+        }
+        class OrdemServicoRepositoryPort {
+            <<interface>>
+            +buscarPorId(OrdemServicoId) OrdemServico?
+            +atualizar(OrdemServico) OrdemServico
+        }
+        class InsumoRepositoryPort {
+            <<interface>>
+            +buscarPorId(InsumoId) Insumo?
+            +atualizar(Insumo) Insumo
+        }
+        class RegistrarAuditoriaPort {
+            <<interface>>
+            +registrar(TipoEntidade, TipoEventoAuditoria, String, Any?, Any?)
+        }
+    }
+
+    namespace Domain {
+        class OrdemServico {
+            <<aggregate root>>
+            +status StatusOrdemServico
+            +obterMecanicoId() UsuarioId
+            +obterStatus() StatusOrdemServicoEnum
+            +listarServicos() List~ItemOrdemServico~
+            +listarInsumos() List~InsumoId~
+            +definirPrazoConclusao(LocalDateTime)
+            +gerarOrcamento(custoMaoDeObra, custoInsumos)
+        }
+        class Insumo {
+            +calcularCusto(quantidade) ValorMonetario
+            +reservar(quantidade)
+        }
+    }
+
+    namespace Infrastructure_Adapters {
+        class JwtAdapter {
+            +getUsuarioId() UsuarioId
+        }
+        class OrdemServicoRepositoryAdapter {
+            +buscarPorId(OrdemServicoId) OrdemServico?
+            +atualizar(OrdemServico) OrdemServico
+        }
+        class InsumoRepositoryAdapter {
+            +buscarPorId(InsumoId) Insumo?
+            +atualizar(Insumo) Insumo
+        }
+        class AuditoriaRepositoryAdapter {
+            +registrar(TipoEntidade, TipoEventoAuditoria, String, Any?, Any?)
+        }
+    }
+
+    OrdemServicoResourceImpl --> GerarOrcamentoUseCase : invoca
+
+    AuditoriaProxy ..|> GerarOrcamentoUseCase : wrap (Java Proxy)
+    AuditoriaProxy --> GerarOrcamentoService : delega execução
+    AuditoriaProxy --> RegistrarAuditoriaPort : notifica após @Auditavel
+
+    GerarOrcamentoService ..|> GerarOrcamentoUseCase : implementa
+    GerarOrcamentoService --> JwtPort : getUsuarioId()
+    GerarOrcamentoService --> OrdemServicoRepositoryPort : buscarPorId() atualizar()
+    GerarOrcamentoService --> InsumoRepositoryPort : buscarPorId() atualizar()
+    GerarOrcamentoService --> OrdemServico : definirPrazoConclusao() gerarOrcamento()
+    GerarOrcamentoService --> Insumo : calcularCusto() reservar()
+
+    JwtAdapter ..|> JwtPort : implementa
+    OrdemServicoRepositoryAdapter ..|> OrdemServicoRepositoryPort : implementa
+    InsumoRepositoryAdapter ..|> InsumoRepositoryPort : implementa
+    AuditoriaRepositoryAdapter ..|> RegistrarAuditoriaPort : implementa

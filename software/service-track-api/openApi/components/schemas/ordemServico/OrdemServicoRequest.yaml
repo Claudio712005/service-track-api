@@ -1,0 +1,22 @@
+type: object
+required:
+  - motivo
+  - clienteId
+  - mecanicoId
+  - veiculoId
+properties:
+    motivo:
+      type: string
+      description: Motivo da ordem de serviço
+    clienteId:
+      type: string
+      description: ID do cliente associado à ordem de serviço
+    mecanicoId:
+      type: string
+      description: ID do mecânico associado à ordem de serviço
+    veiculoId:
+      type: string
+      description: ID do veículo associado à ordem de serviço
+    observacao:
+      type: string
+      description: Observação adicional sobre a ordem de serviço

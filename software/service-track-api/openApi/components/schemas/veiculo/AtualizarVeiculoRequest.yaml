@@ -1,0 +1,15 @@
+type: object
+properties:
+    placa:
+        type: string
+        example: "ABC-1234"
+    modelo:
+        type: string
+        example: "Civic"
+    marca:
+        type: string
+        example: "Honda"
+    ano:
+        type: integer
+        minimum: 1886
+        example: 2020

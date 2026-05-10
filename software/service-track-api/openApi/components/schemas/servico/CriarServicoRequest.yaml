@@ -1,0 +1,15 @@
+type: object
+required:
+  - nomeServico
+  - descricaoServico
+properties:
+  nomeServico:
+    type: string
+    example: "Troca de Óleo"
+  descricaoServico:
+    type: string
+    example: "Substituição do óleo do motor e filtro"
+  valorReferencia:
+    type: number
+    format: double
+    example: 150.00

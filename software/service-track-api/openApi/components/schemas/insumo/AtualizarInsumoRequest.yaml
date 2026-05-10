@@ -1,0 +1,16 @@
+type: object
+properties:
+  nome:
+    type: string
+    example: "Óleo de Motor 10W40"
+  descricao:
+    type: string
+    example: "Óleo mineral para motores mais antigos"
+  custo:
+    type: number
+    format: double
+    example: 28.00
+  estoqueMinimo:
+    type: integer
+    minimum: 0
+    example: 3

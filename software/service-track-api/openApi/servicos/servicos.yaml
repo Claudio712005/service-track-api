@@ -1,0 +1,67 @@
+get:
+  summary: Listar todos os serviços. Exclusivo para mecânicos.
+  operationId: listarServicos
+  tags:
+    - Servicos
+  security:
+    - bearerAuth: []
+  responses:
+    '200':
+      description: Lista de serviços
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '../components/schemas/servico/ServicoResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Acesso restrito a mecânicos
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+
+post:
+  summary: Criar um novo serviço. Exclusivo para mecânicos.
+  operationId: criarServico
+  tags:
+    - Servicos
+  security:
+    - bearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/servico/CriarServicoRequest.yaml'
+  responses:
+    '201':
+      description: Serviço criado com sucesso
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/servico/ServicoResponse.yaml'
+    '400':
+      description: Dados inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Acesso restrito a mecânicos
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
