@@ -2,6 +2,7 @@ package br.com.servicetrack.application.veiculo.service
 
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
+import br.com.servicetrack.application.exception.MarcaInvalidaFipeException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.exception.VeiculoJaExisteException
 import br.com.servicetrack.application.usuario.ports.`out`.JwtPort
@@ -10,7 +11,8 @@ import br.com.servicetrack.application.veiculo.dto.request.CadastrarVeiculoReqDT
 import br.com.servicetrack.application.veiculo.dto.response.DadosveiculoResDTO
 import br.com.servicetrack.application.veiculo.mapper.toDomain
 import br.com.servicetrack.application.veiculo.ports.`in`.CadastrarVeiculoUseCase
-import br.com.servicetrack.application.veiculo.ports.`out`.VeiculoRepositoryPort
+import br.com.servicetrack.application.veiculo.ports.out.FipePort
+import br.com.servicetrack.application.veiculo.ports.out.VeiculoRepositoryPort
 import br.com.servicetrack.domain.auditoria.enums.TipoEntidade
 import br.com.servicetrack.domain.auditoria.enums.TipoEventoAuditoria
 import br.com.servicetrack.domain.usuario.Usuario
@@ -19,11 +21,14 @@ import br.com.servicetrack.domain.usuario.vo.UsuarioId
 class CadastrarVeiculoService(
     private val repository: VeiculoRepositoryPort,
     private val usuarioRepository: UsuarioRepositoryPort,
-    private val jwt: JwtPort
-): CadastrarVeiculoUseCase {
+    private val jwt: JwtPort,
+    private val fipe: FipePort
+) : CadastrarVeiculoUseCase {
 
     @Auditavel(entidade = TipoEntidade.VEICULO, evento = TipoEventoAuditoria.CRIADO)
     override fun cadastrarVeiculo(req: CadastrarVeiculoReqDTO): DadosveiculoResDTO {
+
+        validarMarcaFipe(req.marca)
 
         val veiculoInativo = repository.buscarInativoPorPlaca(req.placa)
         if (veiculoInativo != null) {
@@ -44,7 +49,10 @@ class CadastrarVeiculoService(
 
         if (usuarioToken.id != proprietario.id) {
             if (!usuarioToken.ehMecanico()) {
-                throw OperacaoNegadaException("cadastro de veículo", "Um cliente não pode cadastrar um veículo para outro cliente, apenas um mecânico pode realizar esse tipo de operação")
+                throw OperacaoNegadaException(
+                    "cadastro de veículo",
+                    "Um cliente não pode cadastrar um veículo para outro cliente, apenas um mecânico pode realizar esse tipo de operação"
+                )
             }
         }
 
@@ -52,6 +60,12 @@ class CadastrarVeiculoService(
         repository.salvar(veiculo)
 
         return DadosveiculoResDTO.de(veiculo)
+    }
+
+    private fun validarMarcaFipe(marca: String) {
+        val marcas = fipe.listarMarcasCarros()
+        val encontrada = marcas.any { it.nome.equals(marca, ignoreCase = true) }
+        if (!encontrada) throw MarcaInvalidaFipeException(marca)
     }
 
     private fun reativarVeiculo(id: br.com.servicetrack.domain.veiculo.vo.VeiculoId, req: CadastrarVeiculoReqDTO): DadosveiculoResDTO {
@@ -62,5 +76,4 @@ class CadastrarVeiculoService(
         repository.atualizar(reativado)
         return DadosveiculoResDTO.de(reativado)
     }
-
 }

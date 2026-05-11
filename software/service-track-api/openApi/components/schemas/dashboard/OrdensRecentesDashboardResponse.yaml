@@ -1,0 +1,114 @@
+type: array
+description: Lista das 10 ordens de serviço mais recentes (concluídas e ativas)
+items:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Identificador único da ordem de serviço
+      example: '550e8400-e29b-41d4-a716-446655880003'
+    
+    motivo:
+      type: string
+      maxLength: 500
+      description: Motivo/problema da ordem
+      example: 'Troca de pneus e alinhamento'
+    
+    status:
+      type: string
+      enum:
+        - RECEBIDA
+        - DIAGNOSTICO
+        - ORCAMENTO_GERADO
+        - APROVADO
+        - ENTREGUE
+        - FINALIZADA
+        - CANCELADA
+      description: Status atual da ordem
+      example: 'FINALIZADA'
+    
+    veiculo_id:
+      type: string
+      format: uuid
+      description: ID do veículo
+      example: '660e8400-e29b-41d4-a716-446655550003'
+    
+    veiculo_placa:
+      type: string
+      maxLength: 20
+      description: Placa do veículo
+      example: 'DEF-5678'
+    
+    veiculo_modelo:
+      type: string
+      maxLength: 150
+      description: Modelo e ano do veículo
+      example: 'Corolla 2021'
+    
+    data_criacao:
+      type: string
+      format: date-time
+      description: Data de criação (ISO 8601)
+      example: '2024-10-20T08:00:00Z'
+    
+    data_conclusao:
+      type: string
+      format: date-time
+      description: Data de conclusão/entrega (ISO 8601)
+      example: '2024-10-22T17:30:00Z'
+      nullable: true
+    
+    dias_para_conclusao:
+      type: integer
+      description: Dias levados para concluir a ordem
+      example: 2
+      nullable: true
+    
+    valor_total:
+      type: number
+      format: decimal
+      minimum: 0
+      pattern: '^\d+(\.\d{2})?$'
+      description: Valor final da ordem
+      example: 520.00
+      nullable: true
+    
+    mecanico_nome:
+      type: string
+      maxLength: 255
+      description: Nome do mecânico que finalizou
+      example: 'Especialista Diego'
+      nullable: true
+
+  required:
+    - id
+    - motivo
+    - status
+    - veiculo_id
+    - data_criacao
+
+example:
+  - id: '550e8400-e29b-41d4-a716-446655880003'
+    motivo: 'Troca de pneus e alinhamento'
+    status: 'FINALIZADA'
+    veiculo_id: '660e8400-e29b-41d4-a716-446655550003'
+    veiculo_placa: 'DEF-5678'
+    veiculo_modelo: 'Corolla 2021'
+    data_criacao: '2024-10-20T08:00:00Z'
+    data_conclusao: '2024-10-22T17:30:00Z'
+    dias_para_conclusao: 2
+    valor_total: 520.00
+    mecanico_nome: 'Especialista Diego'
+  
+  - id: '550e8400-e29b-41d4-a716-446655880004'
+    motivo: 'Revisão anual'
+    status: 'FINALIZADA'
+    veiculo_id: '660e8400-e29b-41d4-a716-446655550004'
+    veiculo_placa: 'GHI-3456'
+    veiculo_modelo: 'Onix 2022'
+    data_criacao: '2024-11-01T10:15:00Z'
+    data_conclusao: '2024-11-03T16:00:00Z'
+    dias_para_conclusao: 2
+    valor_total: 350.00
+    mecanico_nome: 'Mestre Rafael'

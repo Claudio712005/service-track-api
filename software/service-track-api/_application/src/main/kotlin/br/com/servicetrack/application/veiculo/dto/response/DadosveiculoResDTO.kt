@@ -8,7 +8,10 @@ data class DadosveiculoResDTO(
     val placa: String,
     val modelo: String,
     val marca: String,
-    val ano: Int){
+    val ano: Int,
+    val urlImagem: String? = null,
+    val codigoFipe: String? = null
+) {
 
     companion object {
         fun de(veiculo: Veiculo): DadosveiculoResDTO {
@@ -19,7 +22,9 @@ data class DadosveiculoResDTO(
                 placa = dados.placa.valor,
                 modelo = dados.modelo,
                 marca = dados.marca,
-                ano = dados.ano
+                ano = dados.ano,
+                urlImagem = dados.imagemUrl?.url,
+                codigoFipe = dados.codigoFipe
             )
         }
     }

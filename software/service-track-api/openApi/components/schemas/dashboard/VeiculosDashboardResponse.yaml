@@ -1,0 +1,131 @@
+type: array
+description: Lista de todos os veículos cadastrados pelo cliente
+items:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Identificador único do veículo
+      example: '660e8400-e29b-41d4-a716-446655550001'
+
+    placa:
+      type: string
+      maxLength: 20
+      pattern: '^[A-Z0-9-]{5,20}$'
+      description: Placa do veículo (formato brasileiro)
+      example: 'ABC-1234'
+
+    marca:
+      type: string
+      maxLength: 100
+      description: Marca/fabricante do veículo
+      example: 'Honda'
+
+    modelo:
+      type: string
+      maxLength: 150
+      description: Modelo do veículo
+      example: 'Civic'
+
+    ano:
+      type: integer
+      minimum: 1900
+      maximum: 2100
+      description: Ano de fabricação do veículo
+      example: 2020
+
+    imagem_url:
+      type: string
+      format: uri
+      maxLength: 2048
+      description: URL da imagem do veículo (thumbnail)
+      example: 'https://images.unsplash.com/photo-1464219414232-fdb7452e77ca?w=400&h=300&fit=crop'
+      nullable: true
+
+    codigo_fipe:
+      type: string
+      maxLength: 20
+      description: Código FIPE do veículo para consulta de preço
+      example: '221143-5'
+      nullable: true
+
+    ativo:
+      type: boolean
+      description: Status de atividade do veículo (S/N)
+      example: true
+
+    total_ordens:
+      type: integer
+      minimum: 0
+      description: Número total de ordens de serviço para este veículo
+      example: 5
+
+    total_gasto:
+      type: number
+      format: decimal
+      minimum: 0
+      pattern: '^\d+(\.\d{2})?$'
+      description: Valor total gasto em manutenções deste veículo
+      example: 1850.50
+
+    proxima_manutencao:
+      type: string
+      format: date
+      description: Data recomendada para próxima manutenção
+      example: '2024-12-15'
+      nullable: true
+
+    data_criacao:
+      type: string
+      format: date-time
+      description: Data de cadastro do veículo
+      example: '2024-09-10T14:20:00Z'
+
+  required:
+    - id
+    - placa
+    - marca
+    - modelo
+    - ano
+    - ativo
+
+example:
+  - id: '660e8400-e29b-41d4-a716-446655550001'
+    placa: 'ABC-1234'
+    marca: 'Honda'
+    modelo: 'Civic'
+    ano: 2020
+    imagem_url: 'https://images.unsplash.com/photo-1464219414232-fdb7452e77ca?w=400&h=300&fit=crop'
+    codigo_fipe: '221143-5'
+    ativo: true
+    total_ordens: 5
+    total_gasto: 1850.50
+    proxima_manutencao: '2024-12-15'
+    data_criacao: '2024-09-10T14:20:00Z'
+
+  - id: '660e8400-e29b-41d4-a716-446655550002'
+    placa: 'XYZ-9876'
+    marca: 'Volkswagen'
+    modelo: 'Gol'
+    ano: 2019
+    imagem_url: 'https://images.unsplash.com/photo-1562162192-3c90c1c1b1fa?w=400&h=300&fit=crop'
+    codigo_fipe: '203206-4'
+    ativo: true
+    total_ordens: 3
+    total_gasto: 650.00
+    proxima_manutencao: '2024-12-20'
+    data_criacao: '2024-08-05T10:15:00Z'
+
+  - id: '660e8400-e29b-41d4-a716-446655550003'
+    placa: 'DEF-5678'
+    marca: 'Toyota'
+    modelo: 'Corolla'
+    ano: 2021
+    imagem_url: 'https://images.unsplash.com/photo-1605559424843-9e4c3ca4b7f1?w=400&h=300&fit=crop'
+    codigo_fipe: '214240-1'
+    ativo: true
+    total_ordens: 2
+    total_gasto: 520.00
+    proxima_manutencao: null
+    data_criacao: '2024-09-15T09:30:00Z'

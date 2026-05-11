@@ -1,0 +1,127 @@
+type: array
+description: Lista de ordens de serviço em andamento (máximo 10 mais recentes)
+items:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Identificador único da ordem de serviço
+      example: '550e8400-e29b-41d4-a716-446655880001'
+
+    motivo:
+      type: string
+      maxLength: 500
+      description: Descrição do motivo/problema relatado pelo cliente
+      example: 'Barulho estranho ao acelerar'
+
+    status:
+      type: string
+      enum:
+        - RECEBIDA
+        - DIAGNOSTICO
+        - ORCAMENTO_GERADO
+        - APROVADO
+        - ENTREGUE
+      description: Estado atual da ordem de serviço
+      example: 'DIAGNOSTICO'
+
+    veiculo_id:
+      type: string
+      format: uuid
+      description: ID do veículo associado à ordem
+      example: '660e8400-e29b-41d4-a716-446655550001'
+
+    veiculo_placa:
+      type: string
+      maxLength: 20
+      description: Placa do veículo para referência rápida
+      example: 'ABC-1234'
+
+    veiculo_modelo:
+      type: string
+      maxLength: 150
+      description: Modelo do veículo
+      example: 'Civic 2020'
+
+    mecanico_id:
+      type: string
+      format: uuid
+      description: ID do mecânico responsável
+      example: '550e8400-e29b-41d4-a716-446655440101'
+
+    mecanico_nome:
+      type: string
+      maxLength: 255
+      description: Nome do mecânico responsável
+      example: 'Mário Máquina'
+
+    data_criacao:
+      type: string
+      format: date-time
+      description: Data e hora de criação da ordem (ISO 8601)
+      example: '2024-11-15T10:30:00Z'
+
+    data_atualizacao:
+      type: string
+      format: date-time
+      description: Última data de atualização (ISO 8601)
+      example: '2024-11-16T14:45:00Z'
+
+    dias_em_andamento:
+      type: integer
+      minimum: 0
+      description: Número de dias desde a criação da ordem
+      example: 2
+
+    valor_orcado:
+      type: number
+      format: decimal
+      minimum: 0
+      pattern: '^\d+(\.\d{2})?$'
+      description: Valor total estimado (orçamento)
+      example: 450.00
+      nullable: true
+
+    prazo_conclusao:
+      type: string
+      format: date-time
+      description: Data prevista para conclusão (ISO 8601)
+      example: '2024-11-18T18:00:00Z'
+      nullable: true
+
+  required:
+    - id
+    - motivo
+    - status
+    - veiculo_id
+    - data_criacao
+
+example:
+  - id: '550e8400-e29b-41d4-a716-446655880001'
+    motivo: 'Barulho estranho ao acelerar'
+    status: 'DIAGNOSTICO'
+    veiculo_id: '660e8400-e29b-41d4-a716-446655550001'
+    veiculo_placa: 'ABC-1234'
+    veiculo_modelo: 'Civic 2020'
+    mecanico_id: '550e8400-e29b-41d4-a716-446655440101'
+    mecanico_nome: 'Mário Máquina'
+    data_criacao: '2024-11-15T10:30:00Z'
+    data_atualizacao: '2024-11-16T14:45:00Z'
+    dias_em_andamento: 2
+    valor_orcado: null
+    prazo_conclusao: null
+
+  - id: '550e8400-e29b-41d4-a716-446655880002'
+    motivo: 'Troca de pneus'
+    status: 'APROVADO'
+    veiculo_id: '660e8400-e29b-41d4-a716-446655550002'
+    veiculo_placa: 'XYZ-9876'
+    veiculo_modelo: 'Gol 2019'
+    mecanico_id: '550e8400-e29b-41d4-a716-446655440102'
+    mecanico_nome: 'Técnico João'
+    data_criacao: '2024-11-14T09:15:00Z'
+    data_atualizacao: '2024-11-15T16:30:00Z'
+    dias_em_andamento: 3
+    valor_orcado: 400.00
+    prazo_conclusao: '2024-11-17T18:00:00Z'

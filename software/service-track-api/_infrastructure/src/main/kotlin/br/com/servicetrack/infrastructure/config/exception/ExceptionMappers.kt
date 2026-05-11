@@ -2,6 +2,8 @@ package br.com.servicetrack.infrastructure.config.exception
 
 import br.com.servicetrack.application.exception.CredenciaisInvalidasException
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
+import br.com.servicetrack.application.exception.IntegracaoExternaException
+import br.com.servicetrack.application.exception.MarcaInvalidaFipeException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.exception.UsuarioJaExisteException
 import br.com.servicetrack.application.exception.VeiculoJaExisteException
@@ -63,6 +65,24 @@ class DomainExceptionMapper : ExceptionMapper<DomainException> {
         Response.status(Response.Status.BAD_REQUEST)
             .type(MediaType.APPLICATION_JSON)
             .entity(ErroResponse(mensagem = "Dados inválidos", detalhe = exception.message))
+            .build()
+}
+
+@Provider
+class MarcaInvalidaFipeExceptionMapper : ExceptionMapper<MarcaInvalidaFipeException> {
+    override fun toResponse(exception: MarcaInvalidaFipeException): Response =
+        Response.status(422)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(ErroResponse(mensagem = "Marca inválida", detalhe = exception.message))
+            .build()
+}
+
+@Provider
+class IntegracaoExternaExceptionMapper : ExceptionMapper<IntegracaoExternaException> {
+    override fun toResponse(exception: IntegracaoExternaException): Response =
+        Response.status(Response.Status.SERVICE_UNAVAILABLE)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(ErroResponse(mensagem = "Serviço externo indisponível", detalhe = exception.message))
             .build()
 }
 

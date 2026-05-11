@@ -1,11 +1,14 @@
 package br.com.servicetrack.application.veiculo.service
 
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
+import br.com.servicetrack.application.exception.MarcaInvalidaFipeException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.exception.VeiculoJaExisteException
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
+import br.com.servicetrack.application.veiculo.dto.fipe.MarcaFipeDTO
 import br.com.servicetrack.application.veiculo.dto.request.CadastrarVeiculoReqDTO
+import br.com.servicetrack.application.veiculo.ports.out.FipePort
 import br.com.servicetrack.application.veiculo.ports.out.VeiculoRepositoryPort
 import br.com.servicetrack.domain.shared.enums.IndicativoSimNao
 import br.com.servicetrack.domain.shared.enums.Role
@@ -33,11 +36,17 @@ class CadastrarVeiculoServiceTest {
     private val veiculoRepository = mockk<VeiculoRepositoryPort>()
     private val usuarioRepository = mockk<UsuarioRepositoryPort>()
     private val jwt = mockk<JwtPort>()
+    private val fipe = mockk<FipePort>()
 
-    private val service = CadastrarVeiculoService(veiculoRepository, usuarioRepository, jwt)
+    private val service = CadastrarVeiculoService(veiculoRepository, usuarioRepository, jwt, fipe)
 
     private val proprietarioId = UsuarioId.gerar()
     private val tokenUsuarioId = proprietarioId
+
+    private val marcasFipe = listOf(
+        MarcaFipeDTO(codigo = "23", nome = "Honda"),
+        MarcaFipeDTO(codigo = "59", nome = "Toyota")
+    )
 
     private val requisicao = CadastrarVeiculoReqDTO(
         placa = "ABC1D23",
@@ -92,6 +101,7 @@ class CadastrarVeiculoServiceTest {
     fun `deve cadastrar veiculo com sucesso quando proprietario e usuario token sao o mesmo`() {
         val proprietario = buildCliente(proprietarioId)
 
+        every { fipe.listarMarcasCarros() } returns marcasFipe
         every { veiculoRepository.buscarInativoPorPlaca(requisicao.placa) } returns null
         every { veiculoRepository.existeVeiculoPorPlaca(requisicao.placa) } returns false
         every { usuarioRepository.buscarPorId(proprietarioId) } returns proprietario
@@ -106,6 +116,7 @@ class CadastrarVeiculoServiceTest {
         assertEquals("Civic", response.modelo)
         assertEquals(2020, response.ano)
         verify(exactly = 1) { veiculoRepository.salvar(any()) }
+        verify(exactly = 1) { fipe.listarMarcasCarros() }
     }
 
     @Test
@@ -114,6 +125,7 @@ class CadastrarVeiculoServiceTest {
         val mecanico = buildMecanico(mecanicoId)
         val proprietario = buildCliente(proprietarioId)
 
+        every { fipe.listarMarcasCarros() } returns marcasFipe
         every { veiculoRepository.buscarInativoPorPlaca(requisicao.placa) } returns null
         every { veiculoRepository.existeVeiculoPorPlaca(requisicao.placa) } returns false
         every { usuarioRepository.buscarPorId(proprietarioId) } returns proprietario
@@ -128,7 +140,21 @@ class CadastrarVeiculoServiceTest {
     }
 
     @Test
+    fun `deve lancar MarcaInvalidaFipeException quando marca nao existe na FIPE`() {
+        val requisicaoMarcaInvalida = requisicao.copy(marca = "MarcaInexistente")
+
+        every { fipe.listarMarcasCarros() } returns marcasFipe
+
+        assertThrows<MarcaInvalidaFipeException> {
+            service.cadastrarVeiculo(requisicaoMarcaInvalida)
+        }
+
+        verify(exactly = 0) { veiculoRepository.salvar(any()) }
+    }
+
+    @Test
     fun `deve lançar excecao quando placa ja existe`() {
+        every { fipe.listarMarcasCarros() } returns marcasFipe
         every { veiculoRepository.buscarInativoPorPlaca(requisicao.placa) } returns null
         every { veiculoRepository.existeVeiculoPorPlaca(requisicao.placa) } returns true
 
@@ -141,6 +167,7 @@ class CadastrarVeiculoServiceTest {
 
     @Test
     fun `deve lançar excecao quando proprietario nao encontrado`() {
+        every { fipe.listarMarcasCarros() } returns marcasFipe
         every { veiculoRepository.buscarInativoPorPlaca(requisicao.placa) } returns null
         every { veiculoRepository.existeVeiculoPorPlaca(requisicao.placa) } returns false
         every { usuarioRepository.buscarPorId(proprietarioId) } returns null
@@ -157,6 +184,7 @@ class CadastrarVeiculoServiceTest {
         val outroId = UsuarioId.gerar()
         val proprietario = buildCliente(proprietarioId)
 
+        every { fipe.listarMarcasCarros() } returns marcasFipe
         every { veiculoRepository.buscarInativoPorPlaca(requisicao.placa) } returns null
         every { veiculoRepository.existeVeiculoPorPlaca(requisicao.placa) } returns false
         every { usuarioRepository.buscarPorId(proprietarioId) } returns proprietario
@@ -176,6 +204,7 @@ class CadastrarVeiculoServiceTest {
         val outroCliente = buildCliente(outroClienteId)
         val proprietario = buildCliente(proprietarioId)
 
+        every { fipe.listarMarcasCarros() } returns marcasFipe
         every { veiculoRepository.buscarInativoPorPlaca(requisicao.placa) } returns null
         every { veiculoRepository.existeVeiculoPorPlaca(requisicao.placa) } returns false
         every { usuarioRepository.buscarPorId(proprietarioId) } returns proprietario
@@ -205,6 +234,7 @@ class CadastrarVeiculoServiceTest {
             ativo = IndicativoSimNao.S
         )
 
+        every { fipe.listarMarcasCarros() } returns marcasFipe
         every { veiculoRepository.buscarInativoPorPlaca(requisicao.placa) } returns veiculoInativo
         every { veiculoRepository.reativar(veiculoId) } returns Unit
         every { veiculoRepository.buscarPorId(veiculoId) } returns veiculoReativado

@@ -1,6 +1,7 @@
 package br.com.servicetrack.domain.veiculo
 
 import br.com.servicetrack.domain.shared.exception.DomainException
+import br.com.servicetrack.domain.shared.vo.ImagemUrl
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import br.com.servicetrack.domain.veiculo.vo.Placa
 import org.junit.jupiter.api.Test
@@ -243,6 +244,76 @@ class VeiculoTest {
             veiculo.atualizarProprietario(UsuarioId.gerar())
         }
         assertTrue(exception.message!!.equals("Veículo inativo não pode ter o proprietário alterado"))
+    }
+
+    @Test
+    fun `deve criar veiculo com imagemUrl`() {
+        val imagemUrl = ImagemUrl.criar("https://images.unsplash.com/photo-abc")
+        val veiculo = Veiculo.criar(
+            proprietarioId = UsuarioId.gerar(),
+            placa = Placa("ABC1D23"),
+            modelo = "Civic",
+            marca = "Honda",
+            ano = 2020,
+            imagemUrl = imagemUrl
+        )
+        assertEquals("https://images.unsplash.com/photo-abc", veiculo.obterDados().imagemUrl?.url)
+    }
+
+    @Test
+    fun `deve definir imagemUrl em veiculo ativo`() {
+        val veiculo = buildVeiculo()
+        val imagemUrl = ImagemUrl.criar("https://images.unsplash.com/photo-xyz")
+
+        veiculo.definirImagemUrl(imagemUrl)
+
+        assertEquals("https://images.unsplash.com/photo-xyz", veiculo.obterDados().imagemUrl?.url)
+    }
+
+    @Test
+    fun `deve definir imagemUrl como nula em veiculo ativo`() {
+        val veiculo = buildVeiculo()
+
+        veiculo.definirImagemUrl(null)
+
+        assertNull(veiculo.obterDados().imagemUrl)
+    }
+
+    @Test
+    fun `deve lançar exceção ao definir imagemUrl em veiculo desativado`() {
+        val veiculo = buildVeiculo()
+        veiculo.desativarVeiculo()
+
+        val exception = assertThrows<DomainException> {
+            veiculo.definirImagemUrl(ImagemUrl.criar("https://images.unsplash.com/photo-xyz"))
+        }
+        assertEquals("Veículo desativado não pode ter a imagem alterada", exception.message)
+    }
+
+    @Test
+    fun `deve reconstituir veiculo com imagemUrl e codigoFipe`() {
+        val id = br.com.servicetrack.domain.veiculo.vo.VeiculoId.gerar()
+        val proprietarioId = UsuarioId.gerar()
+        val agora = java.time.LocalDateTime.now()
+        val imagemUrl = ImagemUrl.criar("https://images.unsplash.com/photo-abc")
+
+        val veiculo = Veiculo.reconstituir(
+            id = id,
+            marca = "Toyota",
+            placa = Placa("XYZ1A23"),
+            ano = 2022,
+            proprietarioId = proprietarioId,
+            modelo = "Corolla",
+            dataCriacao = agora,
+            dataAtualizacao = agora,
+            ativo = br.com.servicetrack.domain.shared.enums.IndicativoSimNao.S,
+            imagemUrl = imagemUrl,
+            codigoFipe = "006009-1"
+        )
+
+        val dados = veiculo.obterDados()
+        assertEquals("https://images.unsplash.com/photo-abc", dados.imagemUrl?.url)
+        assertEquals("006009-1", dados.codigoFipe)
     }
 
     @Test

@@ -1,0 +1,55 @@
+type: object
+description: Resumo estatístico do dashboard do cliente
+properties:
+  ordens_ativas:
+    type: integer
+    minimum: 0
+    description: Número de ordens de serviço em andamento (estados RECEBIDA, DIAGNOSTICO, ORCAMENTO_GERADO, APROVADO, ENTREGUE)
+    example: 3
+    x-column: 'Ordens Ativas'
+    x-icon: 'hourglass-active'
+
+  ordens_concluidas:
+    type: integer
+    minimum: 0
+    description: Número de ordens de serviço finalizadas com sucesso (FINALIZADA)
+    example: 12
+    x-column: 'Ordens Concluídas'
+    x-icon: 'check-circle'
+
+  ordens_canceladas:
+    type: integer
+    minimum: 0
+    description: Número de ordens de serviço canceladas (CANCELADA)
+    example: 1
+    x-column: 'Canceladas'
+    x-icon: 'x-circle'
+
+  total_ordens:
+    type: integer
+    minimum: 0
+    description: Quantidade total de ordens de serviço (ativas + concluídas + canceladas)
+    example: 16
+    x-column: 'Total'
+    x-icon: 'list'
+
+  veiculos_cadastrados:
+    type: integer
+    minimum: 0
+    description: Número total de veículos cadastrados pelo cliente
+    example: 3
+    x-column: 'Veículos'
+    x-icon: 'car'
+
+required:
+  - ordens_ativas
+  - ordens_concluidas
+  - total_ordens
+  - veiculos_cadastrados
+
+example:
+  ordens_ativas: 3
+  ordens_concluidas: 12
+  ordens_canceladas: 1
+  total_ordens: 16
+  veiculos_cadastrados: 3

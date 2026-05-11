@@ -17,6 +17,8 @@ dependencies {
 
     implementation("io.quarkus:quarkus-rest")
     implementation("io.quarkus:quarkus-rest-jackson")
+    implementation("io.quarkus:quarkus-rest-client-reactive-jackson")
+    implementation("io.quarkus:quarkus-cache")
     implementation("io.quarkus:quarkus-hibernate-orm-panache-kotlin")
     implementation("io.quarkus:quarkus-jdbc-postgresql")
     implementation("io.quarkus:quarkus-arc")
@@ -55,7 +57,8 @@ openApiGenerate {
             "useJakartaEe" to "true",
             "dateLibrary" to "java8",
             "returnResponse" to "true",
-            "useSwaggerAnnotations" to "false"
+            "useSwaggerAnnotations" to "false",
+            "openApiNullable" to "false"
         )
     )
 }

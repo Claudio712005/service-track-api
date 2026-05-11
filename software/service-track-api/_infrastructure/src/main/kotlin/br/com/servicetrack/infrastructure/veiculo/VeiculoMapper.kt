@@ -13,7 +13,8 @@ internal fun CadastrarVeiculoRequest.toApplicationDTO() = CadastrarVeiculoReqDTO
     modelo = modelo,
     marca = marca,
     ano = ano,
-    proprietarioId = proprietarioId,
+    proprietarioId = proprietarioId.toString(),
+    urlImagem = urlImagem
 )
 
 internal fun AtualizarVeiculoRequest.toApplicationDTO() = AtualizarVeiculoReqDTO(
@@ -21,6 +22,7 @@ internal fun AtualizarVeiculoRequest.toApplicationDTO() = AtualizarVeiculoReqDTO
     modelo = modelo,
     marca = marca,
     ano = ano,
+    urlImagem = urlImagem
 )
 
 internal fun DadosveiculoResDTO.toDadosVeiculoResponse(): DadosVeiculoResponse = DadosVeiculoResponse()
@@ -30,3 +32,5 @@ internal fun DadosveiculoResDTO.toDadosVeiculoResponse(): DadosVeiculoResponse =
     .marca(marca)
     .ano(ano)
     .proprietarioId(UUID.fromString(proprietarioId))
+    .urlImagem(urlImagem)
+    .codigoFipe(codigoFipe)

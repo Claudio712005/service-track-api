@@ -6,4 +6,5 @@ data class CadastrarVeiculoReqDTO(
     val modelo: String,
     val ano: Int,
     val proprietarioId: String,
+    val urlImagem: String? = null
 )

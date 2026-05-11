@@ -1,15 +1,19 @@
 type: object
 properties:
-    placa:
-        type: string
-        example: "ABC-1234"
-    modelo:
-        type: string
-        example: "Civic"
-    marca:
-        type: string
-        example: "Honda"
-    ano:
-        type: integer
-        minimum: 1886
-        example: 2020
+  placa:
+    type: string
+    example: "ABC1D23"
+  modelo:
+    type: string
+    example: "Corolla"
+  marca:
+    type: string
+    example: "Toyota"
+  ano:
+    type: integer
+    minimum: 1886
+    example: 2022
+  urlImagem:
+    type: string
+    nullable: true
+    example: "https://images.unsplash.com/photo-abc123"

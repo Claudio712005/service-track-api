@@ -1,6 +1,7 @@
 package br.com.servicetrack.infrastructure.veiculo
 
 import br.com.servicetrack.application.veiculo.ports.`in`.AtualizarVeiculoUseCase
+import br.com.servicetrack.application.veiculo.ports.`in`.BuscarSugestoesImagensUseCase
 import br.com.servicetrack.application.veiculo.ports.`in`.BuscarVeiculoUseCase
 import br.com.servicetrack.application.veiculo.ports.`in`.CadastrarVeiculoUseCase
 import br.com.servicetrack.application.veiculo.ports.`in`.ListarVeiculosUseCase
@@ -15,6 +16,7 @@ import jakarta.transaction.Transactional
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
 import jakarta.ws.rs.PathParam
+import jakarta.ws.rs.QueryParam
 import jakarta.ws.rs.core.Response
 import java.net.URI
 
@@ -24,7 +26,8 @@ class VeiculoResourceImpl(
     private val removerVeiculoUseCase: RemoverVeiculoUseCase,
     private val buscarVeiculoUseCase: BuscarVeiculoUseCase,
     private val listarVeiculosUseCase: ListarVeiculosUseCase,
-    private val atualizarVeiculoUseCase: AtualizarVeiculoUseCase
+    private val atualizarVeiculoUseCase: AtualizarVeiculoUseCase,
+    private val buscarSugestoesImagensUseCase: BuscarSugestoesImagensUseCase
 ) : VeiculosApi {
 
     @Transactional
@@ -34,7 +37,7 @@ class VeiculoResourceImpl(
         val veiculoResponse = cadastrarVeiculoUseCase.cadastrarVeiculo(dto)
         val location = URI.create("/veiculos/${veiculoResponse.id}")
         return Response.created(location)
-            .entity(veiculoResponse)
+            .entity(veiculoResponse.toDadosVeiculoResponse())
             .build()
     }
 
@@ -64,5 +67,14 @@ class VeiculoResourceImpl(
         val dto = atualizarVeiculoRequest.toApplicationDTO()
         val veiculo = atualizarVeiculoUseCase.atualizarVeiculo(VeiculoId(id), dto)
         return Response.ok(veiculo.toDadosVeiculoResponse()).build()
+    }
+
+    @RolesAllowed("CLIENTE", "MECANICO")
+    override fun buscarSugestoesImagens(
+        @QueryParam("marca") marca: String,
+        @QueryParam("modelo") modelo: String
+    ): Response {
+        val sugestoes = buscarSugestoesImagensUseCase.buscarSugestoes(marca, modelo)
+        return Response.ok(sugestoes).build()
     }
 }

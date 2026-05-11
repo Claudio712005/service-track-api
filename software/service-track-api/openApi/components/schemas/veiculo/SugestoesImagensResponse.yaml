@@ -1,0 +1,10 @@
+type: object
+properties:
+  imagens:
+    type: array
+    items:
+      type: string
+      format: uri
+    example:
+      - "https://images.unsplash.com/photo-abc123"
+      - "https://images.unsplash.com/photo-def456"

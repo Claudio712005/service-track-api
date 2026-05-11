@@ -66,12 +66,12 @@ class VeiculoRepositoryAdapter : VeiculoRepositoryPort {
         entity.modelo = dados.modelo
         entity.marca = dados.marca
         entity.ano = dados.ano
+        entity.imagemUrl = dados.imagemUrl?.url
+        entity.codigoFipe = dados.codigoFipe
     }
 
     override fun listarTodos(): List<Veiculo> {
-        return VeiculoEntity.list("ativo"
-            , IndicativoSimNao.S
-        ).map { it.toDomain() }
+        return VeiculoEntity.list("ativo", IndicativoSimNao.S).map { it.toDomain() }
     }
 
     override fun listarPorProprietario(proprietarioId: UsuarioId): List<Veiculo> {
