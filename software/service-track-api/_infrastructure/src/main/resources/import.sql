@@ -1,21 +1,60 @@
+-- SERVICETRACK API - Rich Initial Data Population Script
+-- Populated with realistic data across all tables
+
+-- ============================================================================
+-- INSERT USUARIOS (30 clientes + 10 mecânicos = 40 total)
+-- ============================================================================
+
 INSERT INTO usuarios (id, nome, email, senha_hash, data_criacao, data_atualizacao, data_nascimento, telefone, cpf, ativo)
 VALUES
-('550e8400-e29b-41d4-a716-446655440001', 'João Silva', 'joao.silva@example.com', '$2a$10$QjHYDvLyL5p5xWxBm1VYWe/NnLCFNVdF.VbiP5U7kRfXQ4pHZRziy', NOW(), NOW(), '1990-05-15', '11987654321', '12345678901', true),
-('550e8400-e29b-41d4-a716-446655440002', 'Maria Santos', 'maria.santos@example.com', '$2a$10$QjHYDvLyL5p5xWxBm1VYWe/NnLCFNVdF.VbiP5U7kRfXQ4pHZRziy', NOW(), NOW(), '1985-03-20', '11987654322', '12345678902', true),
-('550e8400-e29b-41d4-a716-446655440003', 'Pedro Oliveira', 'pedro.oliveira@example.com', '$2a$10$QjHYDvLyL5p5xWxBm1VYWe/NnLCFNVdF.VbiP5U7kRfXQ4pHZRziy', NOW(), NOW(), '1992-07-08', '11987654323', '12345678903', true),
-('550e8400-e29b-41d4-a716-446655440004', 'Ana Costa', 'ana.costa@example.com', '$2a$10$QjHYDvLyL5p5xWxBm1VYWe/NnLCFNVdF.VbiP5U7kRfXQ4pHZRziy', NOW(), NOW(), '1988-09-12', '11987654324', '12345678904', true),
-('550e8400-e29b-41d4-a716-446655440005', 'Lucas Ferreira', 'lucas.ferreira@example.com', '$2a$10$QjHYDvLyL5p5xWxBm1VYWe/NnLCFNVdF.VbiP5U7kRfXQ4pHZRziy', NOW(), NOW(), '1995-11-25', '11987654325', '12345678905', true),
-('550e8400-e29b-41d4-a716-446655440006', 'Fernanda Gomes', 'fernanda.gomes@example.com', '$2a$10$QjHYDvLyL5p5xWxBm1VYWe/NnLCFNVdF.VbiP5U7kRfXQ4pHZRziy', NOW(), NOW(), '1991-04-30', '11987654326', '12345678906', true),
-('550e8400-e29b-41d4-a716-446655440007', 'Carlos Alberto', 'carlos.alberto@example.com', '$2a$10$QjHYDvLyL5p5xWxBm1VYWe/NnLCFNVdF.VbiP5U7kRfXQ4pHZRziy', NOW(), NOW(), '1986-01-18', '11987654327', '12345678907', true),
-('550e8400-e29b-41d4-a716-446655440008', 'Juliana Martins', 'juliana.martins@example.com', '$2a$10$QjHYDvLyL5p5xWxBm1VYWe/NnLCFNVdF.VbiP5U7kRfXQ4pHZRziy', NOW(), NOW(), '1993-06-22', '11987654328', '12345678908', true),
-('550e8400-e29b-41d4-a716-446655440009', 'Roberto Pereira', 'roberto.pereira@example.com', '$2a$10$QjHYDvLyL5p5xWxBm1VYWe/NnLCFNVdF.VbiP5U7kRfXQ4pHZRziy', NOW(), NOW(), '1980-10-05', '11987654329', '12345678909', true),
-('550e8400-e29b-41d4-a716-446655440010', 'Camila Souza', 'camila.souza@example.com', '$2a$10$QjHYDvLyL5p5xWxBm1VYWe/NnLCFNVdF.VbiP5U7kRfXQ4pHZRziy', NOW(), NOW(), '1994-02-14', '11987654330', '12345678910', true),
-('550e8400-e29b-41d4-a716-446655440101', 'Mário Máquina', 'mario.maquina@example.com', '$2a$10$QjHYDvLyL5p5xWxBm1VYWe/NnLCFNVdF.VbiP5U7kRfXQ4pHZRziy', NOW(), NOW(), '1975-08-10', '11999999001', '98765432101', true),
-('550e8400-e29b-41d4-a716-446655440102', 'Técnico João', 'tecnico.joao@example.com', '$2a$10$QjHYDvLyL5p5xWxBm1VYWe/NnLCFNVdF.VbiP5U7kRfXQ4pHZRziy', NOW(), NOW(), '1982-12-03', '11999999002', '98765432102', true),
-('550e8400-e29b-41d4-a716-446655440103', 'Especialista Diego', 'diego.especialista@example.com', '$2a$10$QjHYDvLyL5p5xWxBm1VYWe/NnLCFNVdF.VbiP5U7kRfXQ4pHZRziy', NOW(), NOW(), '1979-03-15', '11999999003', '98765432103', true),
-('550e8400-e29b-41d4-a716-446655440104', 'Mestre Rafael', 'rafael.mestre@example.com', '$2a$10$QjHYDvLyL5p5xWxBm1VYWe/NnLCFNVdF.VbiP5U7kRfXQ4pHZRziy', NOW(), NOW(), '1977-07-22', '11999999004', '98765432104', true),
-('550e8400-e29b-41d4-a716-446655440105', 'Profissional Anderson', 'anderson.prof@example.com', '$2a$10$QjHYDvLyL5p5xWxBm1VYWe/NnLCFNVdF.VbiP5U7kRfXQ4pHZRziy', NOW(), NOW(), '1984-11-08', '11999999005', '98765432105', true)
+-- 30 Clientes
+('550e8400-e29b-41d4-a716-446655440001', 'João Silva', 'joao.silva@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1990-05-15', '11987654321', '13646633093', true),
+('550e8400-e29b-41d4-a716-446655440002', 'Maria Santos', 'maria.santos@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1985-03-20', '11987654322', '05027475012', true),
+('550e8400-e29b-41d4-a716-446655440003', 'Pedro Oliveira', 'pedro.oliveira@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1992-07-08', '11987654323', '32944503030', true),
+('550e8400-e29b-41d4-a716-446655440004', 'Ana Costa', 'ana.costa@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1988-09-12', '11987654324', '18905370047', true),
+('550e8400-e29b-41d4-a716-446655440005', 'Lucas Ferreira', 'lucas.ferreira@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1995-11-25', '11987654325', '85916125070', true),
+('550e8400-e29b-41d4-a716-446655440006', 'Fernanda Gomes', 'fernanda.gomes@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1991-04-30', '11987654326', '25896737017', true),
+('550e8400-e29b-41d4-a716-446655440007', 'Carlos Alberto', 'carlos.alberto@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1986-01-18', '11987654327', '18093165029', true),
+('550e8400-e29b-41d4-a716-446655440008', 'Juliana Martins', 'juliana.martins@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1993-06-22', '11987654328', '66430677079', true),
+('550e8400-e29b-41d4-a716-446655440009', 'Roberto Pereira', 'roberto.pereira@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1980-10-05', '11987654329', '13312947030', true),
+('550e8400-e29b-41d4-a716-446655440010', 'Camila Souza', 'camila.souza@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1994-02-14', '11987654330', '72302686055', true),
+('550e8400-e29b-41d4-a716-446655440011', 'Bruno Costa', 'bruno.costa@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1989-01-25', '11987654331', '11144477088', true),
+('550e8400-e29b-41d4-a716-446655440012', 'Lucia Ribeiro', 'lucia.ribeiro@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1987-08-12', '11987654332', '29916255036', true),
+('550e8400-e29b-41d4-a716-446655440013', 'Angelo Rossi', 'angelo.rossi@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1993-11-30', '11987654333', '40628337084', true),
+('550e8400-e29b-41d4-a716-446655440014', 'Beatriz Silva', 'beatriz.silva@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1991-04-18', '11987654334', '53908715062', true),
+('550e8400-e29b-41d4-a716-446655440015', 'Daniel Martins', 'daniel.martins@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1988-06-07', '11987654335', '61874993049', true),
+('550e8400-e29b-41d4-a716-446655440016', 'Elvira Santos', 'elvira.santos@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1992-09-21', '11987654336', '77221488097', true),
+('550e8400-e29b-41d4-a716-446655440017', 'Fabio Lima', 'fabio.lima@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1990-12-11', '11987654337', '30391785042', true),
+('550e8400-e29b-41d4-a716-446655440018', 'Gisele Torres', 'gisele.torres@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1986-03-09', '11987654338', '46793214033', true),
+('550e8400-e29b-41d4-a716-446655440019', 'Henrique Dias', 'henrique.dias@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1994-05-15', '11987654339', '68154927015', true),
+('550e8400-e29b-41d4-a716-446655440020', 'Iris Teixeira', 'iris.teixeira@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1989-07-22', '11987654340', '85271643085', true),
+('550e8400-e29b-41d4-a716-446655440021', 'Jaiton Freitas', 'jaiton.freitas@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1991-10-03', '11987654341', '94682517063', true),
+('550e8400-e29b-41d4-a716-446655440022', 'Karina Moura', 'karina.moura@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1993-02-14', '11987654342', '11847092058', true),
+('550e8400-e29b-41d4-a716-446655440023', 'Leonardo Russo', 'leonardo.russo@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1987-04-28', '11987654343', '27369855086', true),
+('550e8400-e29b-41d4-a716-446655440024', 'Mariana Neves', 'mariana.neves@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1990-08-05', '11987654344', '33791627040', true),
+('550e8400-e29b-41d4-a716-446655440025', 'Nathan Sousa', 'nathan.sousa@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1992-11-17', '11987654345', '58426713091', true),
+('550e8400-e29b-41d4-a716-446655440026', 'Olivia Barbosa', 'olivia.barbosa@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1988-12-25', '11987654346', '74183269012', true),
+('550e8400-e29b-41d4-a716-446655440027', 'Paulo Dutra', 'paulo.dutra@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1985-02-19', '11987654347', '95614782046', true),
+('550e8400-e29b-41d4-a716-446655440028', 'Queila Matos', 'queila.matos@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1991-06-10', '11987654348', '38062459071', true),
+('550e8400-e29b-41d4-a716-446655440029', 'Ricardo Alves', 'ricardo.alves@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1989-09-08', '11987654349', '61739284051', true),
+('550e8400-e29b-41d4-a716-446655440030', 'Sabrina Campos', 'sabrina.campos@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1993-03-03', '11987654350', '82641795023', true),
+
+-- 10 Mecânicos
+('550e8400-e29b-41d4-a716-446655440101', 'Mário Máquina', 'mario.maquina@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1975-08-10', '11999999001', '98124421030', true),
+('550e8400-e29b-41d4-a716-446655440102', 'Técnico João', 'tecnico.joao@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1982-12-03', '11999999002', '61530469082', true),
+('550e8400-e29b-41d4-a716-446655440103', 'Especialista Diego', 'diego.especialista@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1979-03-15', '11999999003', '63594433099', true),
+('550e8400-e29b-41d4-a716-446655440104', 'Mestre Rafael', 'rafael.mestre@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1977-07-22', '11999999004', '98086936015', true),
+('550e8400-e29b-41d4-a716-446655440105', 'Profissional Anderson', 'anderson.prof@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1984-11-08', '11999999005', '24656981095', true),
+('550e8400-e29b-41d4-a716-446655440106', 'Maestro Cesar', 'maestro.cesar@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1980-05-20', '11999999006', '37429116053', true),
+('550e8400-e29b-41d4-a716-446655440107', 'Técnico Felipe', 'tecnico.felipe@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1983-09-17', '11999999007', '71605342090', true),
+('550e8400-e29b-41d4-a716-446655440108', 'Experiente Gustavo', 'gustavo.exp@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1978-11-22', '11999999008', '48971653028', true),
+('550e8400-e29b-41d4-a716-446655440109', 'Iniciante Marcos', 'marcos.init@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1995-01-14', '11999999009', '92837641015', true),
+('550e8400-e29b-41d4-a716-446655440110', 'Profissional Lucas', 'lucas.prof@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1981-07-09', '11999999010', '15628947031', true)
 ON CONFLICT DO NOTHING;
+
+-- ============================================================================
+-- INSERT USUARIO_ROLES
+-- ============================================================================
 
 INSERT INTO usuario_roles (usuario_id, role)
 VALUES
@@ -29,30 +68,84 @@ VALUES
 ('550e8400-e29b-41d4-a716-446655440008', 'CLIENTE'),
 ('550e8400-e29b-41d4-a716-446655440009', 'CLIENTE'),
 ('550e8400-e29b-41d4-a716-446655440010', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440011', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440012', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440013', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440014', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440015', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440016', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440017', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440018', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440019', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440020', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440021', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440022', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440023', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440024', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440025', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440026', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440027', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440028', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440029', 'CLIENTE'),
+('550e8400-e29b-41d4-a716-446655440030', 'CLIENTE'),
 ('550e8400-e29b-41d4-a716-446655440101', 'MECANICO'),
 ('550e8400-e29b-41d4-a716-446655440102', 'MECANICO'),
 ('550e8400-e29b-41d4-a716-446655440103', 'MECANICO'),
 ('550e8400-e29b-41d4-a716-446655440104', 'MECANICO'),
-('550e8400-e29b-41d4-a716-446655440105', 'MECANICO')
+('550e8400-e29b-41d4-a716-446655440105', 'MECANICO'),
+('550e8400-e29b-41d4-a716-446655440106', 'MECANICO'),
+('550e8400-e29b-41d4-a716-446655440107', 'MECANICO'),
+('550e8400-e29b-41d4-a716-446655440108', 'MECANICO'),
+('550e8400-e29b-41d4-a716-446655440109', 'MECANICO'),
+('550e8400-e29b-41d4-a716-446655440110', 'MECANICO')
 ON CONFLICT DO NOTHING;
+
+-- ============================================================================
+-- INSERT VEICULOS (40 vehicles com imagens reais do Unsplash)
+-- ============================================================================
 
 INSERT INTO veiculos (veiculo_id, placa, modelo, marca, ano, imagem_url, codigo_fipe, ativo, data_criacao, data_atualizacao, proprietario_id)
 VALUES
-('660e8400-e29b-41d4-a716-446655550001', 'ABC1234', 'Civic', 'Honda', 2020, 'https://images.unsplash.com/photo-1464219414232-fdb7452e77ca?w=400&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440001'),
-('660e8400-e29b-41d4-a716-446655550002', 'XYZ9876', 'Gol', 'Volkswagen', 2019, 'https://images.unsplash.com/photo-1562162192-3c90c1c1b1fa?w=400&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440002'),
-('660e8400-e29b-41d4-a716-446655550003', 'DEF5678', 'Corolla', 'Toyota', 2021, 'https://images.unsplash.com/photo-1605559424843-9e4c3ca4b7f1?w=400&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440003'),
-('660e8400-e29b-41d4-a716-446655550004', 'GHI3456', 'Onix', 'Chevrolet', 2022, 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440004'),
-('660e8400-e29b-41d4-a716-446655550005', 'JKL1111', 'HB20', 'Hyundai', 2021, 'https://images.unsplash.com/photo-1542282088-fe8426682b8f?w=400&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440005'),
-('660e8400-e29b-41d4-a716-446655550006', 'MNO2222', 'Tracker', 'Chevrolet', 2023, 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=400&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440006'),
-('660e8400-e29b-41d4-a716-446655550007', 'PQR3333', 'Creta', 'Hyundai', 2020, 'https://images.unsplash.com/photo-1533473359331-35f3a2f3a919?w=400&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440007'),
-('660e8400-e29b-41d4-a716-446655550008', 'STU4444', 'Fit', 'Honda', 2022, 'https://images.unsplash.com/photo-1552820728-8ac41f1ce891?w=400&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440008'),
-('660e8400-e29b-41d4-a716-446655550009', 'VWX5555', 'Fusca', 'Volkswagen', 2009, 'https://images.unsplash.com/photo-1506399773649-6e0ee4a59b94?w=400&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440009'),
-('660e8400-e29b-41d4-a716-446655550010', 'YZA6666', 'Gol', 'Volkswagen', 2018, 'https://images.unsplash.com/photo-1569523139394-de4798aa62b2?w=400&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440010'),
-('660e8400-e29b-41d4-a716-446655550011', 'BCD7777', 'Sandero', 'Renault', 2020, 'https://images.unsplash.com/photo-1605559424843-9e4c3ca4b7f1?w=400&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440001'),
-('660e8400-e29b-41d4-a716-446655550012', 'EFG8888', 'Hilux', 'Toyota', 2019, 'https://images.unsplash.com/photo-1552053831-71594a27c62d?w=400&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440002'),
-('660e8400-e29b-41d4-a716-446655550013', 'HIJ9999', 'Tiggo 5X', 'Chery', 2021, 'https://images.unsplash.com/photo-1552820728-8ac41f1ce891?w=400&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440003'),
-('660e8400-e29b-41d4-a716-446655550014', 'KLM0000', 'S10', 'Chevrolet', 2022, 'https://images.unsplash.com/photo-1506399773649-6e0ee4a59b94?w=400&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440004'),
-('660e8400-e29b-41d4-a716-446655550015', 'NOP1111', 'Argo', 'Fiat', 2020, 'https://images.unsplash.com/photo-1533473359331-35f3a2f3a919?w=400&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440005')
+('660e8400-e29b-41d4-a716-446655550001', 'ABC-1234', 'Civic', 'Honda', 2020, 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440001'),
+('660e8400-e29b-41d4-a716-446655550002', 'XYZ-9876', 'Gol', 'Volkswagen', 2019, 'https://images.unsplash.com/photo-1552820728-8ac41f1ce891?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440002'),
+('660e8400-e29b-41d4-a716-446655550003', 'DEF-5678', 'Corolla', 'Toyota', 2021, 'https://images.unsplash.com/photo-1552053831-71594a27c62d?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440003'),
+('660e8400-e29b-41d4-a716-446655550004', 'GHI-3456', 'Onix', 'Chevrolet', 2022, 'https://images.unsplash.com/photo-1544831608-de2147e26b88?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440004'),
+('660e8400-e29b-41d4-a716-446655550005', 'JKL-1111', 'HB20', 'Hyundai', 2021, 'https://images.unsplash.com/photo-1567818735868-e71b99932e29?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440005'),
+('660e8400-e29b-41d4-a716-446655550006', 'MNO-2222', 'Tracker', 'Chevrolet', 2023, 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440006'),
+('660e8400-e29b-41d4-a716-446655550007', 'PQR-3333', 'Creta', 'Hyundai', 2020, 'https://images.unsplash.com/photo-1533473359331-35f3a2f3a919?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440007'),
+('660e8400-e29b-41d4-a716-446655550008', 'STU-4444', 'Fit', 'Honda', 2022, 'https://images.unsplash.com/photo-1549399542-7e3f8b83ad38?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440008'),
+('660e8400-e29b-41d4-a716-446655550009', 'VWX-5555', 'Fusca', 'Volkswagen', 2009, 'https://images.unsplash.com/photo-1506399773649-6e0ee4a59b94?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440009'),
+('660e8400-e29b-41d4-a716-446655550010', 'YZA-6666', 'Gol', 'Volkswagen', 2018, 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440010'),
+('660e8400-e29b-41d4-a716-446655550011', 'BCD-7777', 'Sandero', 'Renault', 2020, 'https://images.unsplash.com/photo-1552033406-75b4a9f0ab96?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440011'),
+('660e8400-e29b-41d4-a716-446655550012', 'EFG-8888', 'Hilux', 'Toyota', 2019, 'https://images.unsplash.com/photo-1552053831-71594a27c62d?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440012'),
+('660e8400-e29b-41d4-a716-446655550013', 'HIJ-9999', 'Tiggo 5X', 'Chery', 2021, 'https://images.unsplash.com/photo-1527666473015-3b59c80e70eb?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440013'),
+('660e8400-e29b-41d4-a716-446655550014', 'KLM-0000', 'S10', 'Chevrolet', 2022, 'https://images.unsplash.com/photo-1581524046497-7ef172d76410?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440014'),
+('660e8400-e29b-41d4-a716-446655550015', 'NOP-1111', 'Argo', 'Fiat', 2020, 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440015'),
+('660e8400-e29b-41d4-a716-446655550016', 'QRS-2222', 'i30', 'Hyundai', 2021, 'https://images.unsplash.com/photo-1544831608-de2147e26b88?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440016'),
+('660e8400-e29b-41d4-a716-446655550017', 'TUV-3333', 'Prisma', 'Chevrolet', 2018, 'https://images.unsplash.com/photo-1548565528-dc9654fe23e4?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440017'),
+('660e8400-e29b-41d4-a716-446655550018', 'WXY-4444', 'Etios', 'Toyota', 2017, 'https://images.unsplash.com/photo-1558607220-2e0c4be1c27f?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440018'),
+('660e8400-e29b-41d4-a716-446655550019', 'ZAB-5555', 'Voyage', 'Volkswagen', 2016, 'https://images.unsplash.com/photo-1527666473015-3b59c80e70eb?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440019'),
+('660e8400-e29b-41d4-a716-446655550020', 'CDE-6666', 'Polo', 'Volkswagen', 2020, 'https://images.unsplash.com/photo-1552033406-75b4a9f0ab96?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440020'),
+('660e8400-e29b-41d4-a716-446655550021', 'FGH-7777', 'Accent', 'Hyundai', 2019, 'https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440021'),
+('660e8400-e29b-41d4-a716-446655550022', 'IJK-8888', 'Fiat 500', 'Fiat', 2021, 'https://images.unsplash.com/photo-1544831608-de2147e26b88?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440022'),
+('660e8400-e29b-41d4-a716-446655550023', 'LMN-9999', 'Kicks', 'Nissan', 2022, 'https://images.unsplash.com/photo-1581524046497-7ef172d76410?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440023'),
+('660e8400-e29b-41d4-a716-446655550024', 'OPQ-0000', 'Rogue', 'Nissan', 2020, 'https://images.unsplash.com/photo-1558607220-2e0c4be1c27f?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440024'),
+('660e8400-e29b-41d4-a716-446655550025', 'RST-1234', 'Jac J2', 'Jac', 2019, 'https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440025'),
+('660e8400-e29b-41d4-a716-446655550026', 'UVW-5678', 'BYD S6', 'BYD', 2021, 'https://images.unsplash.com/photo-1488758178584-6f6f10058e5e?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440026'),
+('660e8400-e29b-41d4-a716-446655550027', 'XYZ-9101', 'Citroën C3', 'Citroën', 2018, 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440027'),
+('660e8400-e29b-41d4-a716-446655550028', 'ABC-1112', 'Peugeot 208', 'Peugeot', 2020, 'https://images.unsplash.com/photo-1552820728-8ac41f1ce891?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440028'),
+('660e8400-e29b-41d4-a716-446655550029', 'DEF-3334', 'Kia Cerato', 'Kia', 2021, 'https://images.unsplash.com/photo-1544831608-de2147e26b88?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440029'),
+('660e8400-e29b-41d4-a716-446655550030', 'GHI-5556', 'Jeep Renegade', 'Jeep', 2022, 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440030'),
+('660e8400-e29b-41d4-a716-446655550031', 'JKL-7778', 'Fiat Mobi', 'Fiat', 2019, 'https://images.unsplash.com/photo-1548565528-dc9654fe23e4?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440001'),
+('660e8400-e29b-41d4-a716-446655550032', 'MNO-9999', 'Suzuki Swift', 'Suzuki', 2020, 'https://images.unsplash.com/photo-1558607220-2e0c4be1c27f?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440002'),
+('660e8400-e29b-41d4-a716-446655550033', 'PQR-1111', 'Tata Nexon', 'Tata', 2021, 'https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440003'),
+('660e8400-e29b-41d4-a716-446655550034', 'STU-2222', 'Caoa Chery Tiggo', 'Chery', 2022, 'https://images.unsplash.com/photo-1527666473015-3b59c80e70eb?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440004'),
+('660e8400-e29b-41d4-a716-446655550035', 'VWX-3333', 'Mitsubishi ASX', 'Mitsubishi', 2020, 'https://images.unsplash.com/photo-1544831608-de2147e26b88?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440005'),
+('660e8400-e29b-41d4-a716-446655550036', 'YZA-4444', 'Subaru XV', 'Subaru', 2021, 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440006'),
+('660e8400-e29b-41d4-a716-446655550037', 'BCD-5555', 'SsangYong Tivoli', 'SsangYong', 2020, 'https://images.unsplash.com/photo-1552820728-8ac41f1ce891?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440007'),
+('660e8400-e29b-41d4-a716-446655550038', 'EFG-6666', 'Haval H6', 'Haval', 2022, 'https://images.unsplash.com/photo-1544831608-de2147e26b88?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440008'),
+('660e8400-e29b-41d4-a716-446655550039', 'HIJ-7777', 'Geely Emgrand', 'Geely', 2021, 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440009'),
+('660e8400-e29b-41d4-a716-446655550040', 'KLM-8888', 'Changan Raize', 'Changan', 2022, 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=500&h=300&fit=crop', NULL, 'S', NOW(), NOW(), '550e8400-e29b-41d4-a716-446655440010')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO servicos (id, nome_servico, descricao_servico, valor_referencia, data_criacao, data_atualizacao, ativo)
@@ -66,23 +159,46 @@ VALUES
 ('770e8400-e29b-41d4-a716-446655660007', 'Limpeza do Motor', 'Limpeza interna e externa do motor', 180.00, NOW(), NOW(), true),
 ('770e8400-e29b-41d4-a716-446655660008', 'Inspeção de Segurança', 'Inspeção completa de segurança do veículo', 220.00, NOW(), NOW(), true),
 ('770e8400-e29b-41d4-a716-446655660009', 'Polimento e Enceração', 'Polimento e enceração da pintura', 350.00, NOW(), NOW(), true),
-('770e8400-e29b-41d4-a716-446655660010', 'Manutenção de Ar Condicionado', 'Revisão e limpeza do sistema de ar condicionado', 280.00, NOW(), NOW(), true)
+('770e8400-e29b-41d4-a716-446655660010', 'Manutenção de Ar Condicionado', 'Revisão e limpeza do sistema de ar condicionado', 280.00, NOW(), NOW(), true),
+('770e8400-e29b-41d4-a716-446655660011', 'Troca de Correia Dentada', 'Substituição da correia de distribuição', 600.00, NOW(), NOW(), true),
+('770e8400-e29b-41d4-a716-446655660012', 'Revisão de Suspensão', 'Inspeção e ajuste da suspensão', 350.00, NOW(), NOW(), true),
+('770e8400-e29b-41d4-a716-446655660013', 'Limpeza de Bicos Injetores', 'Limpeza do sistema de injeção', 280.00, NOW(), NOW(), true),
+('770e8400-e29b-41d4-a716-446655660014', 'Troca de Amortecedores', 'Substituição dos amortecedores', 450.00, NOW(), NOW(), true),
+('770e8400-e29b-41d4-a716-446655660015', 'Limpeza de Radiador', 'Limpeza e manutenção do sistema de refrigeração', 200.00, NOW(), NOW(), true),
+('770e8400-e29b-41d4-a716-446655660016', 'Revisão de Bateria', 'Teste e limpeza de bateria e terminais', 120.00, NOW(), NOW(), true),
+('770e8400-e29b-41d4-a716-446655660017', 'Troca de Pastilha de Freio', 'Substituição de pastilhas de freio', 350.00, NOW(), NOW(), true),
+('770e8400-e29b-41d4-a716-446655660018', 'Alinhamento Computadorizado', 'Alinhamento de 4 rodas com laser', 280.00, NOW(), NOW(), true),
+('770e8400-e29b-41d4-a716-446655660019', 'Diagnóstico de Vibração', 'Diagnóstico de problemas de vibração', 150.00, NOW(), NOW(), true),
+('770e8400-e29b-41d4-a716-446655660020', 'Revisão de Embreagem', 'Inspeção e ajuste da embreagem', 400.00, NOW(), NOW(), true)
 ON CONFLICT DO NOTHING;
 
 INSERT INTO insumos (id, nome, descricao, custo, estoque_minimo, qtd_estoque, data_criacao, data_atualizacao, ativo)
 VALUES
-('880e8400-e29b-41d4-a716-446655770001', 'Óleo Motor 5W-30', 'Óleo sintético para motor 5W-30', 45.00, 10, 50, NOW(), NOW(), true),
-('880e8400-e29b-41d4-a716-446655770002', 'Filtro de Óleo', 'Filtro de óleo original', 35.00, 5, 40, NOW(), NOW(), true),
-('880e8400-e29b-41d4-a716-446655770003', 'Pastilha de Freio', 'Pastilha de freio semi-metálica', 120.00, 3, 20, NOW(), NOW(), true),
-('880e8400-e29b-41d4-a716-446655770004', 'Pneu Aro 15', 'Pneu aro 15 para veículos populares', 350.00, 2, 15, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770001', 'Óleo Motor 5W-30', 'Óleo sintético para motor 5W-30', 45.00, 10, 100, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770002', 'Filtro de Óleo', 'Filtro de óleo original', 35.00, 5, 80, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770003', 'Pastilha de Freio', 'Pastilha de freio semi-metálica', 120.00, 3, 40, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770004', 'Pneu Aro 15', 'Pneu aro 15 para veículos populares', 350.00, 2, 30, NOW(), NOW(), true),
 ('880e8400-e29b-41d4-a716-446655770005', 'Coroa e Pinhão', 'Kit coroa e pinhão para diferencial', 800.00, 1, 8, NOW(), NOW(), true),
-('880e8400-e29b-41d4-a716-446655770006', 'Jogo de Velas', 'Jogo de velas de ignição', 80.00, 5, 25, NOW(), NOW(), true),
-('880e8400-e29b-41d4-a716-446655770007', 'Bateria 60Ah', 'Bateria automotiva 60Ah', 450.00, 2, 10, NOW(), NOW(), true),
-('880e8400-e29b-41d4-a716-446655770008', 'Filtro de Ar', 'Filtro de ar do motor', 60.00, 5, 30, NOW(), NOW(), true),
-('880e8400-e29b-41d4-a716-446655770009', 'Fluido de Freio', 'Fluido de freio DOT4', 45.00, 5, 20, NOW(), NOW(), true),
-('880e8400-e29b-41d4-a716-446655770010', 'Líquido Arrefecimento', 'Líquido de arrefecimento concentrado', 35.00, 5, 25, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770006', 'Jogo de Velas', 'Jogo de velas de ignição', 80.00, 5, 50, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770007', 'Bateria 60Ah', 'Bateria automotiva 60Ah', 450.00, 2, 15, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770008', 'Filtro de Ar', 'Filtro de ar do motor', 60.00, 5, 70, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770009', 'Fluido de Freio', 'Fluido de freio DOT4', 45.00, 5, 60, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770010', 'Líquido Arrefecimento', 'Líquido de arrefecimento concentrado', 35.00, 5, 75, NOW(), NOW(), true),
 ('880e8400-e29b-41d4-a716-446655770011', 'Corrente de Distribuição', 'Corrente de distribuição para motor', 250.00, 1, 5, NOW(), NOW(), true),
-('880e8400-e29b-41d4-a716-446655770012', 'Jogo de Cabos de Vela', 'Jogo de cabos de ignição', 120.00, 2, 12, NOW(), NOW(), true)
+('880e8400-e29b-41d4-a716-446655770012', 'Jogo de Cabos de Vela', 'Jogo de cabos de ignição', 120.00, 2, 20, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770013', 'Pneu Aro 16', 'Pneu aro 16 premium', 420.00, 2, 25, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770014', 'Disco de Freio', 'Disco de freio ventilado', 180.00, 3, 18, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770015', 'Correia Dentada', 'Correia de distribuição original', 280.00, 1, 6, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770016', 'Amortecedor Dianteiro', 'Amortecedor dianteiro com mola', 450.00, 1, 8, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770017', 'Amortecedor Traseiro', 'Amortecedor traseiro com mola', 380.00, 1, 8, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770018', 'Radiador', 'Radiador de alumínio', 350.00, 1, 4, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770019', 'Filtro de Ar Condicionado', 'Filtro de polén para ar condicionado', 85.00, 5, 40, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770020', 'Óleo de Câmbio', 'Óleo de câmbio automático', 60.00, 5, 35, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770021', 'Óleo de Direção', 'Óleo de direção hidráulica', 55.00, 5, 40, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770022', 'Pneu Aro 14', 'Pneu aro 14 econômico', 300.00, 2, 20, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770023', 'Corrente do Comando', 'Corrente do comando de válvulas', 320.00, 1, 3, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770024', 'Correia Serpentina', 'Correia serpentina do motor', 120.00, 3, 25, NOW(), NOW(), true),
+('880e8400-e29b-41d4-a716-446655770025', 'Pneu Aro 17', 'Pneu aro 17 sport', 500.00, 2, 15, NOW(), NOW(), true)
 ON CONFLICT DO NOTHING;
 
 INSERT INTO mecanicos (usuario_id, valor_hora, nivel)
@@ -91,5 +207,197 @@ VALUES
 ('550e8400-e29b-41d4-a716-446655440102', 65.00, 'JUNIOR'),
 ('550e8400-e29b-41d4-a716-446655440103', 75.00, 'PLENO'),
 ('550e8400-e29b-41d4-a716-446655440104', 95.00, 'SENIOR'),
-('550e8400-e29b-41d4-a716-446655440105', 70.00, 'PLENO')
+('550e8400-e29b-41d4-a716-446655440105', 70.00, 'PLENO'),
+('550e8400-e29b-41d4-a716-446655440106', 80.00, 'PLENO'),
+('550e8400-e29b-41d4-a716-446655440107', 60.00, 'JUNIOR'),
+('550e8400-e29b-41d4-a716-446655440108', 90.00, 'SENIOR'),
+('550e8400-e29b-41d4-a716-446655440109', 55.00, 'JUNIOR'),
+('550e8400-e29b-41d4-a716-446655440110', 75.00, 'PLENO')
 ON CONFLICT DO NOTHING;
+
+INSERT INTO ordens_servico (id, motivo, observacao, cliente_id, mecanico_id, veiculo_id, data_criacao, data_atualizacao, status, prazo_conclusao)
+VALUES
+-- FINALIZADA (20)
+('aa0e8400-e29b-41d4-a716-446655880001', 'Manutenção preventiva', 'Primeira manutenção', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440101', '660e8400-e29b-41d4-a716-446655550001', NOW() - INTERVAL '60 days', NOW() - INTERVAL '55 days', 'FINALIZADA', NOW() - INTERVAL '55 days'),
+('aa0e8400-e29b-41d4-a716-446655880002', 'Barulho no motor', 'Cliente relata ruído', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440102', '660e8400-e29b-41d4-a716-446655550002', NOW() - INTERVAL '50 days', NOW() - INTERVAL '45 days', 'FINALIZADA', NOW() - INTERVAL '45 days'),
+('aa0e8400-e29b-41d4-a716-446655880003', 'Troca de pneus', 'Pneus gastos', '550e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440103', '660e8400-e29b-41d4-a716-446655550003', NOW() - INTERVAL '40 days', NOW() - INTERVAL '38 days', 'FINALIZADA', NOW() - INTERVAL '38 days'),
+('aa0e8400-e29b-41d4-a716-446655880004', 'Revisão anual', 'Manutenção programada', '550e8400-e29b-41d4-a716-446655440004', '550e8400-e29b-41d4-a716-446655440104', '660e8400-e29b-41d4-a716-446655550004', NOW() - INTERVAL '35 days', NOW() - INTERVAL '32 days', 'FINALIZADA', NOW() - INTERVAL '32 days'),
+('aa0e8400-e29b-41d4-a716-446655880005', 'Problema ar condicionado', 'Não está gelando', '550e8400-e29b-41d4-a716-446655440005', '550e8400-e29b-41d4-a716-446655440105', '660e8400-e29b-41d4-a716-446655550005', NOW() - INTERVAL '30 days', NOW() - INTERVAL '27 days', 'FINALIZADA', NOW() - INTERVAL '27 days'),
+('aa0e8400-e29b-41d4-a716-446655880006', 'Alinhamento', 'Veículo puxando', '550e8400-e29b-41d4-a716-446655440006', '550e8400-e29b-41d4-a716-446655440106', '660e8400-e29b-41d4-a716-446655550006', NOW() - INTERVAL '25 days', NOW() - INTERVAL '23 days', 'FINALIZADA', NOW() - INTERVAL '23 days'),
+('aa0e8400-e29b-41d4-a716-446655880007', 'Troca de óleo', 'Manutenção regular', '550e8400-e29b-41d4-a716-446655440007', '550e8400-e29b-41d4-a716-446655440107', '660e8400-e29b-41d4-a716-446655550007', NOW() - INTERVAL '20 days', NOW() - INTERVAL '19 days', 'FINALIZADA', NOW() - INTERVAL '19 days'),
+('aa0e8400-e29b-41d4-a716-446655880008', 'Diagnóstico eletrônico', 'Luz de aviso acesa', '550e8400-e29b-41d4-a716-446655440008', '550e8400-e29b-41d4-a716-446655440108', '660e8400-e29b-41d4-a716-446655550008', NOW() - INTERVAL '18 days', NOW() - INTERVAL '16 days', 'FINALIZADA', NOW() - INTERVAL '16 days'),
+('aa0e8400-e29b-41d4-a716-446655880009', 'Polimento', 'Proteção da pintura', '550e8400-e29b-41d4-a716-446655440009', '550e8400-e29b-41d4-a716-446655440109', '660e8400-e29b-41d4-a716-446655550009', NOW() - INTERVAL '15 days', NOW() - INTERVAL '14 days', 'FINALIZADA', NOW() - INTERVAL '14 days'),
+('aa0e8400-e29b-41d4-a716-446655880010', 'Revisão de freios', 'Inspeção de segurança', '550e8400-e29b-41d4-a716-446655440010', '550e8400-e29b-41d4-a716-446655440110', '660e8400-e29b-41d4-a716-446655550010', NOW() - INTERVAL '12 days', NOW() - INTERVAL '11 days', 'FINALIZADA', NOW() - INTERVAL '11 days'),
+('aa0e8400-e29b-41d4-a716-446655880011', 'Limpeza motor', 'Limpeza profunda', '550e8400-e29b-41d4-a716-446655440011', '550e8400-e29b-41d4-a716-446655440101', '660e8400-e29b-41d4-a716-446655550011', NOW() - INTERVAL '10 days', NOW() - INTERVAL '9 days', 'FINALIZADA', NOW() - INTERVAL '9 days'),
+('aa0e8400-e29b-41d4-a716-446655880012', 'Balanceamento', 'Rodas desbalanceadas', '550e8400-e29b-41d4-a716-446655440012', '550e8400-e29b-41d4-a716-446655440102', '660e8400-e29b-41d4-a716-446655550012', NOW() - INTERVAL '8 days', NOW() - INTERVAL '7 days', 'FINALIZADA', NOW() - INTERVAL '7 days'),
+('aa0e8400-e29b-41d4-a716-446655880013', 'Troca amortecedor', 'Suspensão ruim', '550e8400-e29b-41d4-a716-446655440013', '550e8400-e29b-41d4-a716-446655440103', '660e8400-e29b-41d4-a716-446655550013', NOW() - INTERVAL '7 days', NOW() - INTERVAL '5 days', 'FINALIZADA', NOW() - INTERVAL '5 days'),
+('aa0e8400-e29b-41d4-a716-446655880014', 'Radiador', 'Superaquecimento', '550e8400-e29b-41d4-a716-446655440014', '550e8400-e29b-41d4-a716-446655440104', '660e8400-e29b-41d4-a716-446655550014', NOW() - INTERVAL '6 days', NOW() - INTERVAL '4 days', 'FINALIZADA', NOW() - INTERVAL '4 days'),
+('aa0e8400-e29b-41d4-a716-446655880015', 'Bateria', 'Bateria fraca', '550e8400-e29b-41d4-a716-446655440015', '550e8400-e29b-41d4-a716-446655440105', '660e8400-e29b-41d4-a716-446655550015', NOW() - INTERVAL '5 days', NOW() - INTERVAL '4 days', 'FINALIZADA', NOW() - INTERVAL '4 days'),
+('aa0e8400-e29b-41d4-a716-446655880016', 'Embreagem', 'Problema embreagem', '550e8400-e29b-41d4-a716-446655440016', '550e8400-e29b-41d4-a716-446655440106', '660e8400-e29b-41d4-a716-446655550016', NOW() - INTERVAL '4 days', NOW() - INTERVAL '2 days', 'FINALIZADA', NOW() - INTERVAL '2 days'),
+('aa0e8400-e29b-41d4-a716-446655880017', 'Injeção', 'Falha no motor', '550e8400-e29b-41d4-a716-446655440017', '550e8400-e29b-41d4-a716-446655440107', '660e8400-e29b-41d4-a716-446655550017', NOW() - INTERVAL '3 days', NOW() - INTERVAL '1 day', 'FINALIZADA', NOW() - INTERVAL '1 day'),
+('aa0e8400-e29b-41d4-a716-446655880018', 'Comando', 'Corrente gasta', '550e8400-e29b-41d4-a716-446655440018', '550e8400-e29b-41d4-a716-446655440108', '660e8400-e29b-41d4-a716-446655550018', NOW() - INTERVAL '3 days', NOW() - INTERVAL '1 day', 'FINALIZADA', NOW() - INTERVAL '1 day'),
+('aa0e8400-e29b-41d4-a716-446655880019', 'Transmissão', 'Barulho ao trocar', '550e8400-e29b-41d4-a716-446655440019', '550e8400-e29b-41d4-a716-446655440109', '660e8400-e29b-41d4-a716-446655550019', NOW() - INTERVAL '2 days', NOW(), 'FINALIZADA', NOW()),
+('aa0e8400-e29b-41d4-a716-446655880020', 'Extintor', 'Manutenção', '550e8400-e29b-41d4-a716-446655440020', '550e8400-e29b-41d4-a716-446655440110', '660e8400-e29b-41d4-a716-446655550020', NOW() - INTERVAL '1 day', NOW(), 'FINALIZADA', NOW()),
+
+-- ENTREGUE (10)
+('bb0e8400-e29b-41d4-a716-446655880021', 'Inspeção segurança', 'Revisão completa', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440101', '660e8400-e29b-41d4-a716-446655550031', NOW() - INTERVAL '5 days', NOW() - INTERVAL '3 days', 'ENTREGUE', NOW() - INTERVAL '3 days'),
+('bb0e8400-e29b-41d4-a716-446655880022', 'Corrente dentada', 'Preventivo', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440102', '660e8400-e29b-41d4-a716-446655550032', NOW() - INTERVAL '4 days', NOW() - INTERVAL '2 days', 'ENTREGUE', NOW() - INTERVAL '2 days'),
+('bb0e8400-e29b-41d4-a716-446655880023', 'Limpeza', 'Serviço  limpeza', '550e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440103', '660e8400-e29b-41d4-a716-446655550033', NOW() - INTERVAL '3 days', NOW() - INTERVAL '2 days', 'ENTREGUE', NOW() - INTERVAL '2 days'),
+('bb0e8400-e29b-41d4-a716-446655880024', 'Revisão', 'Manutenção preventiva', '550e8400-e29b-41d4-a716-446655440004', '550e8400-e29b-41d4-a716-446655440104', '660e8400-e29b-41d4-a716-446655550034', NOW() - INTERVAL '2 days', NOW(), 'ENTREGUE', NOW()),
+('bb0e8400-e29b-41d4-a716-446655880025', 'Óleo', 'Troca de óleo', '550e8400-e29b-41d4-a716-446655440005', '550e8400-e29b-41d4-a716-446655440105', '660e8400-e29b-41d4-a716-446655550035', NOW() - INTERVAL '2 days', NOW(), 'ENTREGUE', NOW()),
+('bb0e8400-e29b-41d4-a716-446655880026', 'Pneus', 'Troca de pneus', '550e8400-e29b-41d4-a716-446655440006', '550e8400-e29b-41d4-a716-446655440106', '660e8400-e29b-41d4-a716-446655550036', NOW() - INTERVAL '1 day', NOW(), 'ENTREGUE', NOW()),
+('bb0e8400-e29b-41d4-a716-446655880027', 'Freio', 'Revisão freio', '550e8400-e29b-41d4-a716-446655440007', '550e8400-e29b-41d4-a716-446655440107', '660e8400-e29b-41d4-a716-446655550037', NOW() - INTERVAL '1 day', NOW(), 'ENTREGUE', NOW()),
+('bb0e8400-e29b-41d4-a716-446655880028', 'Ar', 'Ar condicionado', '550e8400-e29b-41d4-a716-446655440008', '550e8400-e29b-41d4-a716-446655440108', '660e8400-e29b-41d4-a716-446655550038', NOW() - INTERVAL '1 day', NOW(), 'ENTREGUE', NOW()),
+('bb0e8400-e29b-41d4-a716-446655880029', 'Diagnóstico', 'Diagnóstico eletrônico', '550e8400-e29b-41d4-a716-446655440009', '550e8400-e29b-41d4-a716-446655440109', '660e8400-e29b-41d4-a716-446655550039', NOW() - INTERVAL '1 day', NOW(), 'ENTREGUE', NOW()),
+('bb0e8400-e29b-41d4-a716-446655880030', 'Suspensão', 'Suspensão', '550e8400-e29b-41d4-a716-446655440010', '550e8400-e29b-41d4-a716-446655440110', '660e8400-e29b-41d4-a716-446655550040', NOW() - INTERVAL '1 day', NOW(), 'ENTREGUE', NOW()),
+
+-- EM_DIAGNOSTICO (10)
+('cc0e8400-e29b-41d4-a716-446655880031', 'Problema ruído', 'Cliente relata barulho', '550e8400-e29b-41d4-a716-446655440011', '550e8400-e29b-41d4-a716-446655440101', '660e8400-e29b-41d4-a716-446655550001', NOW() - INTERVAL '3 days', NOW() - INTERVAL '2 days', 'EM_DIAGNOSTICO', NULL),
+('cc0e8400-e29b-41d4-a716-446655880032', 'Problema vibração', 'Vibração ao acelerar', '550e8400-e29b-41d4-a716-446655440012', '550e8400-e29b-41d4-a716-446655440102', '660e8400-e29b-41d4-a716-446655550002', NOW() - INTERVAL '2 days', NOW() - INTERVAL '1 day', 'EM_DIAGNOSTICO', NULL),
+('cc0e8400-e29b-41d4-a716-446655880033', 'Falha motor', 'Motor falhando', '550e8400-e29b-41d4-a716-446655440013', '550e8400-e29b-41d4-a716-446655440103', '660e8400-e29b-41d4-a716-446655550003', NOW() - INTERVAL '2 days', NOW(), 'EM_DIAGNOSTICO', NULL),
+('cc0e8400-e29b-41d4-a716-446655880034', 'Vazamento', 'Vazamento de óleo', '550e8400-e29b-41d4-a716-446655440014', '550e8400-e29b-41d4-a716-446655440104', '660e8400-e29b-41d4-a716-446655550004', NOW() - INTERVAL '1 day', NOW(), 'EM_DIAGNOSTICO', NULL),
+('cc0e8400-e29b-41d4-a716-446655880035', 'Problema elétrico', 'Defeito elétrico', '550e8400-e29b-41d4-a716-446655440015', '550e8400-e29b-41d4-a716-446655440105', '660e8400-e29b-41d4-a716-446655550005', NOW() - INTERVAL '1 day', NOW(), 'EM_DIAGNOSTICO', NULL),
+('cc0e8400-e29b-41d4-a716-446655880036', 'Consumo combustível', 'Consumo alto', '550e8400-e29b-41d4-a716-446655440016', '550e8400-e29b-41d4-a716-446655440106', '660e8400-e29b-41d4-a716-446655550006', NOW() - INTERVAL '1 day', NOW(), 'EM_DIAGNOSTICO', NULL),
+('cc0e8400-e29b-41d4-a716-446655880037', 'Suspensão dura', 'Suspensão com problemas', '550e8400-e29b-41d4-a716-446655440017', '550e8400-e29b-41d4-a716-446655440107', '660e8400-e29b-41d4-a716-446655550007', NOW(), NOW(), 'EM_DIAGNOSTICO', NULL),
+('cc0e8400-e29b-41d4-a716-446655880038', 'Freio mole', 'Freio muito mole', '550e8400-e29b-41d4-a716-446655440018', '550e8400-e29b-41d4-a716-446655440108', '660e8400-e29b-41d4-a716-446655550008', NOW(), NOW(), 'EM_DIAGNOSTICO', NULL),
+('cc0e8400-e29b-41d4-a716-446655880039', 'Ar não gelando', 'Ar condicionado piora', '550e8400-e29b-41d4-a716-446655440019', '550e8400-e29b-41d4-a716-446655440109', '660e8400-e29b-41d4-a716-446655550009', NOW(), NOW(), 'EM_DIAGNOSTICO', NULL),
+('cc0e8400-e29b-41d4-a716-446655880040', 'Vidro elétrico', 'Vidro preso', '550e8400-e29b-41d4-a716-446655440020', '550e8400-e29b-41d4-a716-446655440110', '660e8400-e29b-41d4-a716-446655550010', NOW(), NOW(), 'EM_DIAGNOSTICO', NULL),
+
+-- EM_EXECUCAO (10)
+('dd0e8400-e29b-41d4-a716-446655880041', 'Troca correia', 'Preventiva', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440101', '660e8400-e29b-41d4-a716-446655550011', NOW() - INTERVAL '2 days', NOW() - INTERVAL '1 day', 'EM_EXECUCAO', NULL),
+('dd0e8400-e29b-41d4-a716-446655880042', 'Revisão completa', 'Manutenção', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440102', '660e8400-e29b-41d4-a716-446655550012', NOW() - INTERVAL '1 day', NOW(), 'EM_EXECUCAO', NULL),
+('dd0e8400-e29b-41d4-a716-446655880043', 'Pastilhas freio', 'Troca pastilhas', '550e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440103', '660e8400-e29b-41d4-a716-446655550013', NOW() - INTERVAL '1 day', NOW(), 'EM_EXECUCAO', NULL),
+('dd0e8400-e29b-41d4-a716-446655880044', 'Óleo câmbio', 'Preventiva', '550e8400-e29b-41d4-a716-446655440004', '550e8400-e29b-41d4-a716-446655440104', '660e8400-e29b-41d4-a716-446655550014', NOW(), NOW(), 'EM_EXECUCAO', NULL),
+('dd0e8400-e29b-41d4-a716-446655880045', 'Alinhamento', 'Alinhamento 4 rodas', '550e8400-e29b-41d4-a716-446655440005', '550e8400-e29b-41d4-a716-446655440105', '660e8400-e29b-41d4-a716-446655550015', NOW(), NOW(), 'EM_EXECUCAO', NULL),
+('dd0e8400-e29b-41d4-a716-446655880046', 'Balanceamento', 'Balanceamento pneus', '550e8400-e29b-41d4-a716-446655440006', '550e8400-e29b-41d4-a716-446655440106', '660e8400-e29b-41d4-a716-446655550016', NOW(), NOW(), 'EM_EXECUCAO', NULL),
+('dd0e8400-e29b-41d4-a716-446655880047', 'Limpeza radiador', 'Limpeza', '550e8400-e29b-41d4-a716-446655440007', '550e8400-e29b-41d4-a716-446655440107', '660e8400-e29b-41d4-a716-446655550017', NOW(), NOW(), 'EM_EXECUCAO', NULL),
+('dd0e8400-e29b-41d4-a716-446655880048', 'Polimento', 'Polimento pintura', '550e8400-e29b-41d4-a716-446655440008', '550e8400-e29b-41d4-a716-446655440108', '660e8400-e29b-41d4-a716-446655550018', NOW(), NOW(), 'EM_EXECUCAO', NULL),
+('dd0e8400-e29b-41d4-a716-446655880049', 'Injeção', 'Limpeza injeção', '550e8400-e29b-41d4-a716-446655440009', '550e8400-e29b-41d4-a716-446655440109', '660e8400-e29b-41d4-a716-446655550019', NOW(), NOW(), 'EM_EXECUCAO', NULL),
+('dd0e8400-e29b-41d4-a716-446655880050', 'Corrente comando', 'Preventiva', '550e8400-e29b-41d4-a716-446655440010', '550e8400-e29b-41d4-a716-446655440110', '660e8400-e29b-41d4-a716-446655550020', NOW(), NOW(), 'EM_EXECUCAO', NULL),
+
+-- AGUARDANDO_APROVACAO (10)
+('ee0e8400-e29b-41d4-a716-446655880051', 'Revisão motor', 'Revisão completa', '550e8400-e29b-41d4-a716-446655440011', '550e8400-e29b-41d4-a716-446655440101', '660e8400-e29b-41d4-a716-446655550021', NOW() - INTERVAL '3 days', NOW() - INTERVAL '2 days', 'AGUARDANDO_APROVACAO', NULL),
+('ee0e8400-e29b-41d4-a716-446655880052', 'Transmissão', 'Problema transmissão', '550e8400-e29b-41d4-a716-446655440012', '550e8400-e29b-41d4-a716-446655440102', '660e8400-e29b-41d4-a716-446655550022', NOW() - INTERVAL '2 days', NOW() - INTERVAL '1 day', 'AGUARDANDO_APROVACAO', NULL),
+('ee0e8400-e29b-41d4-a716-446655880053', 'Diferencial', 'Problema diferencial', '550e8400-e29b-41d4-a716-446655440013', '550e8400-e29b-41d4-a716-446655440103', '660e8400-e29b-41d4-a716-446655550023', NOW() - INTERVAL '1 day', NOW(), 'AGUARDANDO_APROVACAO', NULL),
+('ee0e8400-e29b-41d4-a716-446655880054', 'Motor', 'Revisão completa motor', '550e8400-e29b-41d4-a716-446655440014', '550e8400-e29b-41d4-a716-446655440104', '660e8400-e29b-41d4-a716-446655550024', NOW() - INTERVAL '1 day', NOW(), 'AGUARDANDO_APROVACAO', NULL),
+('ee0e8400-e29b-41d4-a716-446655880055', 'Interior', 'Limpeza interior', '550e8400-e29b-41d4-a716-446655440015', '550e8400-e29b-41d4-a716-446655440105', '660e8400-e29b-41d4-a716-446655550025', NOW(), NOW(), 'AGUARDANDO_APROVACAO', NULL),
+('ee0e8400-e29b-41d4-a716-446655880056', 'Exterior', 'Lavagem e polimento', '550e8400-e29b-41d4-a716-446655440016', '550e8400-e29b-41d4-a716-446655440106', '660e8400-e29b-41d4-a716-446655550026', NOW(), NOW(), 'AGUARDANDO_APROVACAO', NULL),
+('ee0e8400-e29b-41d4-a716-446655880057', 'Rodas', 'Limpeza rodas', '550e8400-e29b-41d4-a716-446655440017', '550e8400-e29b-41d4-a716-446655440107', '660e8400-e29b-41d4-a716-446655550027', NOW(), NOW(), 'AGUARDANDO_APROVACAO', NULL),
+('ee0e8400-e29b-41d4-a716-446655880058', 'Vidros', 'Limpeza vidros', '550e8400-e29b-41d4-a716-446655440018', '550e8400-e29b-41d4-a716-446655440108', '660e8400-e29b-41d4-a716-446655550028', NOW(), NOW(), 'AGUARDANDO_APROVACAO', NULL),
+('ee0e8400-e29b-41d4-a716-446655880059', 'Detailing', 'Detailing completo', '550e8400-e29b-41d4-a716-446655440019', '550e8400-e29b-41d4-a716-446655440109', '660e8400-e29b-41d4-a716-446655550029', NOW(), NOW(), 'AGUARDANDO_APROVACAO', NULL),
+('ee0e8400-e29b-41d4-a716-446655880060', 'Proteção', 'Proteção ceramica', '550e8400-e29b-41d4-a716-446655440020', '550e8400-e29b-41d4-a716-446655440110', '660e8400-e29b-41d4-a716-446655550030', NOW(), NOW(), 'AGUARDANDO_APROVACAO', NULL);
+
+INSERT INTO orcamentos (id, ordem_servico_id, data_criacao, data_atualizacao, custo_mao_de_obra, custo_insumos, aprovado, observacao)
+VALUES
+('ff0e8400-e29b-41d4-a716-446655990001', 'aa0e8400-e29b-41d4-a716-446655880001', NOW() - INTERVAL '60 days', NOW() - INTERVAL '55 days', 250.00, 180.00, true, 'Orçamento aprovado'),
+('ff0e8400-e29b-41d4-a716-446655990002', 'aa0e8400-e29b-41d4-a716-446655880002', NOW() - INTERVAL '50 days', NOW() - INTERVAL '45 days', 400.00, 120.00, true, 'Aprovado'),
+('ff0e8400-e29b-41d4-a716-446655990003', 'aa0e8400-e29b-41d4-a716-446655880003', NOW() - INTERVAL '40 days', NOW() - INTERVAL '38 days', 300.00, 1400.00, true, 'Pneus premium'),
+('ff0e8400-e29b-41d4-a716-446655990004', 'aa0e8400-e29b-41d4-a716-446655880004', NOW() - INTERVAL '35 days', NOW() - INTERVAL '32 days', 350.00, 250.00, true, 'Revisão completa'),
+('ff0e8400-e29b-41d4-a716-446655990005', 'aa0e8400-e29b-41d4-a716-446655880005', NOW() - INTERVAL '30 days', NOW() - INTERVAL '27 days', 180.00, 300.00, true, 'Ar condicionado'),
+('ff0e8400-e29b-41d4-a716-446655990006', 'aa0e8400-e29b-41d4-a716-446655880006', NOW() - INTERVAL '25 days', NOW() - INTERVAL '23 days', 200.00, 100.00, true, 'Alinhamento'),
+('ff0e8400-e29b-41d4-a716-446655990007', 'aa0e8400-e29b-41d4-a716-446655880007', NOW() - INTERVAL '20 days', NOW() - INTERVAL '19 days', 150.00, 80.00, true, 'Óleo'),
+('ff0e8400-e29b-41d4-a716-446655990008', 'aa0e8400-e29b-41d4-a716-446655880008', NOW() - INTERVAL '18 days', NOW() - INTERVAL '16 days', 250.00, 50.00, true, 'Diagnóstico'),
+('ff0e8400-e29b-41d4-a716-446655990009', 'aa0e8400-e29b-41d4-a716-446655880009', NOW() - INTERVAL '15 days', NOW() - INTERVAL '14 days', 250.00, 150.00, true, 'Polimento'),
+('ff0e8400-e29b-41d4-a716-446655990010', 'aa0e8400-e29b-41d4-a716-446655880010', NOW() - INTERVAL '12 days', NOW() - INTERVAL '11 days', 300.00, 500.00, true, 'Freios'),
+('ff0e8400-e29b-41d4-a716-446655990011', 'aa0e8400-e29b-41d4-a716-446655880011', NOW() - INTERVAL '10 days', NOW() - INTERVAL '9 days', 200.00, 0.00, true, 'Limpeza'),
+('ff0e8400-e29b-41d4-a716-446655990012', 'aa0e8400-e29b-41d4-a716-446655880012', NOW() - INTERVAL '8 days', NOW() - INTERVAL '7 days', 120.00, 0.00, true, 'Balanceamento'),
+('ff0e8400-e29b-41d4-a716-446655990013', 'aa0e8400-e29b-41d4-a716-446655880013', NOW() - INTERVAL '7 days', NOW() - INTERVAL '5 days', 450.00, 800.00, true, 'Amortecedor'),
+('ff0e8400-e29b-41d4-a716-446655990014', 'aa0e8400-e29b-41d4-a716-446655880014', NOW() - INTERVAL '6 days', NOW() - INTERVAL '4 days', 400.00, 350.00, true, 'Radiador'),
+('ff0e8400-e29b-41d4-a716-446655990015', 'aa0e8400-e29b-41d4-a716-446655880015', NOW() - INTERVAL '5 days', NOW() - INTERVAL '4 days', 120.00, 450.00, true, 'Bateria'),
+('ff0e8400-e29b-41d4-a716-446655990016', 'aa0e8400-e29b-41d4-a716-446655880016', NOW() - INTERVAL '4 days', NOW() - INTERVAL '2 days', 500.00, 600.00, true, 'Embreagem'),
+('ff0e8400-e29b-41d4-a716-446655990017', 'aa0e8400-e29b-41d4-a716-446655880017', NOW() - INTERVAL '3 days', NOW() - INTERVAL '1 day', 300.00, 200.00, true, 'Injeção'),
+('ff0e8400-e29b-41d4-a716-446655990018', 'aa0e8400-e29b-41d4-a716-446655880018', NOW() - INTERVAL '3 days', NOW() - INTERVAL '1 day', 600.00, 280.00, true, 'Comando'),
+('ff0e8400-e29b-41d4-a716-446655990019', 'aa0e8400-e29b-41d4-a716-446655880019', NOW() - INTERVAL '2 days', NOW(), 400.00, 350.00, true, 'Transmissão'),
+('ff0e8400-e29b-41d4-a716-446655990020', 'aa0e8400-e29b-41d4-a716-446655880020', NOW() - INTERVAL '1 day', NOW(), 150.00, 0.00, true, 'Extintor'),
+('ff0e8400-e29b-41d4-a716-446655990021', 'bb0e8400-e29b-41d4-a716-446655880021', NOW() - INTERVAL '5 days', NOW() - INTERVAL '3 days', 220.00, 100.00, true, 'Inspeção'),
+('ff0e8400-e29b-41d4-a716-446655990022', 'bb0e8400-e29b-41d4-a716-446655880022', NOW() - INTERVAL '4 days', NOW() - INTERVAL '2 days', 600.00, 280.00, true, 'Corrente'),
+('ff0e8400-e29b-41d4-a716-446655990023', 'bb0e8400-e29b-41d4-a716-446655880023', NOW() - INTERVAL '3 days', NOW() - INTERVAL '2 days', 180.00, 0.00, true, 'Limpeza'),
+('ff0e8400-e29b-41d4-a716-446655990024', 'bb0e8400-e29b-41d4-a716-446655880024', NOW() - INTERVAL '2 days', NOW(), 350.00, 250.00, true, 'Revisão'),
+('ff0e8400-e29b-41d4-a716-446655990025', 'bb0e8400-e29b-41d4-a716-446655880025', NOW() - INTERVAL '2 days', NOW(), 150.00, 80.00, true, 'Óleo'),
+('ff0e8400-e29b-41d4-a716-446655990026', 'bb0e8400-e29b-41d4-a716-446655880026', NOW() - INTERVAL '1 day', NOW(), 300.00, 1400.00, true, 'Pneus'),
+('ff0e8400-e29b-41d4-a716-446655990027', 'bb0e8400-e29b-41d4-a716-446655880027', NOW() - INTERVAL '1 day', NOW(), 300.00, 500.00, true, 'Freio'),
+('ff0e8400-e29b-41d4-a716-446655990028', 'bb0e8400-e29b-41d4-a716-446655880028', NOW() - INTERVAL '1 day', NOW(), 180.00, 150.00, true, 'Ar'),
+('ff0e8400-e29b-41d4-a716-446655990029', 'bb0e8400-e29b-41d4-a716-446655880029', NOW() - INTERVAL '1 day', NOW(), 250.00, 0.00, true, 'Diagnóstico'),
+('ff0e8400-e29b-41d4-a716-446655990030', 'bb0e8400-e29b-41d4-a716-446655880030', NOW() - INTERVAL '1 day', NOW(), 350.00, 400.00, true, 'Suspensão'),
+('ff0e8400-e29b-41d4-a716-446655990031', 'cc0e8400-e29b-41d4-a716-446655880031', NOW() - INTERVAL '3 days', NOW() - INTERVAL '2 days', 200.00, 50.00, false, 'Aguardando aprovação'),
+('ff0e8400-e29b-41d4-a716-446655990032', 'cc0e8400-e29b-41d4-a716-446655880032', NOW() - INTERVAL '2 days', NOW() - INTERVAL '1 day', 180.00, 0.00, false, 'Aguardando aprovação'),
+('ff0e8400-e29b-41d4-a716-446655990033', 'cc0e8400-e29b-41d4-a716-446655880033', NOW() - INTERVAL '2 days', NOW(), 300.00, 100.00, false, 'Aguardando aprovação'),
+('ff0e8400-e29b-41d4-a716-446655990034', 'cc0e8400-e29b-41d4-a716-446655880034', NOW() - INTERVAL '1 day', NOW(), 150.00, 80.00, false, 'Aguardando aprovação'),
+('ff0e8400-e29b-41d4-a716-446655990035', 'cc0e8400-e29b-41d4-a716-446655880035', NOW() - INTERVAL '1 day', NOW(), 250.00, 0.00, false, 'Aguardando aprovação'),
+('ff0e8400-e29b-41d4-a716-446655990036', 'cc0e8400-e29b-41d4-a716-446655880036', NOW() - INTERVAL '1 day', NOW(), 200.00, 100.00, false, 'Aguardando aprovação'),
+('ff0e8400-e29b-41d4-a716-446655990037', 'cc0e8400-e29b-41d4-a716-446655880037', NOW(), NOW(), 180.00, 50.00, false, 'Aguardando aprovação'),
+('ff0e8400-e29b-41d4-a716-446655990038', 'cc0e8400-e29b-41d4-a716-446655880038', NOW(), NOW(), 300.00, 500.00, false, 'Aguardando aprovação'),
+('ff0e8400-e29b-41d4-a716-446655990039', 'cc0e8400-e29b-41d4-a716-446655880039', NOW(), NOW(), 180.00, 100.00, false, 'Aguardando aprovação'),
+('ff0e8400-e29b-41d4-a716-446655990040', 'cc0e8400-e29b-41d4-a716-446655880040', NOW(), NOW(), 150.00, 0.00, false, 'Aguardando aprovação');
+
+INSERT INTO itens_ordem_servico (id, ordem_servico_id, servico_id, valor, feito, mecanico_responsavel_id, data_realizacao, observacao, data_criacao, data_atualizacao)
+VALUES
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f02', 'aa0e8400-e29b-41d4-a716-446655880002', '770e8400-e29b-41d4-a716-446655660002', 200.00, true, '550e8400-e29b-41d4-a716-446655440102', NOW() - INTERVAL '45 days', 'Alinhamento completo', NOW() - INTERVAL '50 days', NOW() - INTERVAL '45 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f03', 'aa0e8400-e29b-41d4-a716-446655880003', '770e8400-e29b-41d4-a716-446655660005', 400.00, true, '550e8400-e29b-41d4-a716-446655440103', NOW() - INTERVAL '38 days', 'Pneus trocados', NOW() - INTERVAL '40 days', NOW() - INTERVAL '38 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f04', 'aa0e8400-e29b-41d4-a716-446655880004', '770e8400-e29b-41d4-a716-446655660001', 150.00, true, '550e8400-e29b-41d4-a716-446655440104', NOW() - INTERVAL '32 days', 'OK', NOW() - INTERVAL '35 days', NOW() - INTERVAL '32 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f05', 'aa0e8400-e29b-41d4-a716-446655880005', '770e8400-e29b-41d4-a716-446655660010', 280.00, true, '550e8400-e29b-41d4-a716-446655440105', NOW() - INTERVAL '27 days', 'Limpeza realizada', NOW() - INTERVAL '30 days', NOW() - INTERVAL '27 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f06', 'aa0e8400-e29b-41d4-a716-446655880006', '770e8400-e29b-41d4-a716-446655660002', 200.00, true, '550e8400-e29b-41d4-a716-446655440106', NOW() - INTERVAL '23 days', 'Alinhamento 4 rodas', NOW() - INTERVAL '25 days', NOW() - INTERVAL '23 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f07', 'aa0e8400-e29b-41d4-a716-446655880007', '770e8400-e29b-41d4-a716-446655660001', 150.00, true, '550e8400-e29b-41d4-a716-446655440107', NOW() - INTERVAL '19 days', 'Óleo trocado', NOW() - INTERVAL '20 days', NOW() - INTERVAL '19 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f08', 'aa0e8400-e29b-41d4-a716-446655880008', '770e8400-e29b-41d4-a716-446655660006', 250.00, true, '550e8400-e29b-41d4-a716-446655440108', NOW() - INTERVAL '16 days', 'Diagnóstico OK', NOW() - INTERVAL '18 days', NOW() - INTERVAL '16 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f09', 'aa0e8400-e29b-41d4-a716-446655880009', '770e8400-e29b-41d4-a716-446655660009', 350.00, true, '550e8400-e29b-41d4-a716-446655440109', NOW() - INTERVAL '14 days', 'Polimento premium', NOW() - INTERVAL '15 days', NOW() - INTERVAL '14 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f10', 'aa0e8400-e29b-41d4-a716-446655880010', '770e8400-e29b-41d4-a716-446655660004', 300.00, true, '550e8400-e29b-41d4-a716-446655440110', NOW() - INTERVAL '11 days', 'Freios OK', NOW() - INTERVAL '12 days', NOW() - INTERVAL '11 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f11', 'aa0e8400-e29b-41d4-a716-446655880011', '770e8400-e29b-41d4-a716-446655660007', 180.00, true, '550e8400-e29b-41d4-a716-446655440101', NOW() - INTERVAL '9 days', 'Motor limpo', NOW() - INTERVAL '10 days', NOW() - INTERVAL '9 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f12', 'aa0e8400-e29b-41d4-a716-446655880012', '770e8400-e29b-41d4-a716-446655660003', 120.00, true, '550e8400-e29b-41d4-a716-446655440102', NOW() - INTERVAL '7 days', 'Balanceamento OK', NOW() - INTERVAL '8 days', NOW() - INTERVAL '7 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f13', 'aa0e8400-e29b-41d4-a716-446655880013', '770e8400-e29b-41d4-a716-446655660014', 450.00, true, '550e8400-e29b-41d4-a716-446655440103', NOW() - INTERVAL '5 days', 'Trocado', NOW() - INTERVAL '7 days', NOW() - INTERVAL '5 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f14', 'aa0e8400-e29b-41d4-a716-446655880014', '770e8400-e29b-41d4-a716-446655660015', 200.00, true, '550e8400-e29b-41d4-a716-446655440104', NOW() - INTERVAL '4 days', 'Radiador limpo', NOW() - INTERVAL '6 days', NOW() - INTERVAL '4 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f15', 'aa0e8400-e29b-41d4-a716-446655880015', '770e8400-e29b-41d4-a716-446655660016', 120.00, true, '550e8400-e29b-41d4-a716-446655440105', NOW() - INTERVAL '4 days', 'Bateria OK', NOW() - INTERVAL '5 days', NOW() - INTERVAL '4 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f16', 'aa0e8400-e29b-41d4-a716-446655880016', '770e8400-e29b-41d4-a716-446655660020', 400.00, true, '550e8400-e29b-41d4-a716-446655440106', NOW() - INTERVAL '2 days', 'Revisado', NOW() - INTERVAL '4 days', NOW() - INTERVAL '2 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f17', 'aa0e8400-e29b-41d4-a716-446655880017', '770e8400-e29b-41d4-a716-446655660013', 280.00, true, '550e8400-e29b-41d4-a716-446655440107', NOW() - INTERVAL '1 day', 'Limpo', NOW() - INTERVAL '3 days', NOW() - INTERVAL '1 day'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f18', 'aa0e8400-e29b-41d4-a716-446655880018', '770e8400-e29b-41d4-a716-446655660011', 600.00, true, '550e8400-e29b-41d4-a716-446655440108', NOW() - INTERVAL '1 day', 'Trocada', NOW() - INTERVAL '3 days', NOW() - INTERVAL '1 day'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f19', 'aa0e8400-e29b-41d4-a716-446655880019', '770e8400-e29b-41d4-a716-446655660004', 300.00, true, '550e8400-e29b-41d4-a716-446655440109', NOW(), 'Revisada', NOW() - INTERVAL '2 days', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f20', 'aa0e8400-e29b-41d4-a716-446655880020', '770e8400-e29b-41d4-a716-446655660008', 220.00, true, '550e8400-e29b-41d4-a716-446655440110', NOW(), 'Revisado', NOW() - INTERVAL '1 day', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f21', 'bb0e8400-e29b-41d4-a716-446655880021', '770e8400-e29b-41d4-a716-446655660008', 220.00, true, '550e8400-e29b-41d4-a716-446655440101', NOW() - INTERVAL '3 days', 'Completa', NOW() - INTERVAL '5 days', NOW() - INTERVAL '3 days'),
+('2fd58af5-52f5-4e30-8c11-786e2de021cb', 'bb0e8400-e29b-41d4-a716-446655880022', '770e8400-e29b-41d4-a716-446655660011', 600.00, true, '550e8400-e29b-41d4-a716-446655440102', NOW() - INTERVAL '2 days', 'Trocada', NOW() - INTERVAL '4 days', NOW() - INTERVAL '2 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f73', 'bb0e8400-e29b-41d4-a716-446655880023', '770e8400-e29b-41d4-a716-446655660007', 180.00, true, '550e8400-e29b-41d4-a716-446655440103', NOW() - INTERVAL '2 days', 'OK', NOW() - INTERVAL '3 days', NOW() - INTERVAL '2 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f84', 'bb0e8400-e29b-41d4-a716-446655880024', '770e8400-e29b-41d4-a716-446655660001', 150.00, true, '550e8400-e29b-41d4-a716-446655440104', NOW(), 'OK', NOW() - INTERVAL '2 days', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f95', 'bb0e8400-e29b-41d4-a716-446655880025', '770e8400-e29b-41d4-a716-446655660001', 150.00, true, '550e8400-e29b-41d4-a716-446655440105', NOW(), 'Trocado', NOW() - INTERVAL '2 days', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f76', 'bb0e8400-e29b-41d4-a716-446655880026', '770e8400-e29b-41d4-a716-446655660005', 400.00, true, '550e8400-e29b-41d4-a716-446655440106', NOW(), 'OK', NOW() - INTERVAL '1 day', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f77', 'bb0e8400-e29b-41d4-a716-446655880027', '770e8400-e29b-41d4-a716-446655660004', 300.00, true, '550e8400-e29b-41d4-a716-446655440107', NOW(), 'OK', NOW() - INTERVAL '1 day', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f78', 'bb0e8400-e29b-41d4-a716-446655880028', '770e8400-e29b-41d4-a716-446655660010', 280.00, true, '550e8400-e29b-41d4-a716-446655440108', NOW(), 'OK', NOW() - INTERVAL '1 day', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f79', 'bb0e8400-e29b-41d4-a716-446655880029', '770e8400-e29b-41d4-a716-446655660006', 250.00, true, '550e8400-e29b-41d4-a716-446655440109', NOW(), 'OK', NOW() - INTERVAL '1 day', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f80', 'bb0e8400-e29b-41d4-a716-446655880030', '770e8400-e29b-41d4-a716-446655660012', 350.00, true, '550e8400-e29b-41d4-a716-446655440110', NOW(), 'OK', NOW() - INTERVAL '1 day', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f81', 'cc0e8400-e29b-41d4-a716-446655880031', '770e8400-e29b-41d4-a716-446655660002', 200.00, false, '550e8400-e29b-41d4-a716-446655440101', NULL, 'Aguardando conclusão', NOW() - INTERVAL '3 days', NOW() - INTERVAL '2 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f92', 'cc0e8400-e29b-41d4-a716-446655880032', '770e8400-e29b-41d4-a716-446655660003', 120.00, false, '550e8400-e29b-41d4-a716-446655440102', NULL, 'Aguardando conclusão', NOW() - INTERVAL '2 days', NOW() - INTERVAL '1 day'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f93', 'cc0e8400-e29b-41d4-a716-446655880033', '770e8400-e29b-41d4-a716-446655660006', 250.00, false, '550e8400-e29b-41d4-a716-446655440103', NULL, 'Aguardando conclusão', NOW() - INTERVAL '2 days', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f64', 'cc0e8400-e29b-41d4-a716-446655880034', '770e8400-e29b-41d4-a716-446655660001', 150.00, false, '550e8400-e29b-41d4-a716-446655440104', NULL, 'Aguardando conclusão', NOW() - INTERVAL '1 day', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f35', 'cc0e8400-e29b-41d4-a716-446655880035', '770e8400-e29b-41d4-a716-446655660013', 280.00, false, '550e8400-e29b-41d4-a716-446655440105', NULL, 'Aguardando conclusão', NOW() - INTERVAL '1 day', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f36', 'cc0e8400-e29b-41d4-a716-446655880036', '770e8400-e29b-41d4-a716-446655660019', 150.00, false, '550e8400-e29b-41d4-a716-446655440106', NULL, 'Aguardando conclusão', NOW() - INTERVAL '1 day', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f37', 'cc0e8400-e29b-41d4-a716-446655880037', '770e8400-e29b-41d4-a716-446655660012', 350.00, false, '550e8400-e29b-41d4-a716-446655440107', NULL, 'Aguardando conclusão', NOW(), NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f38', 'cc0e8400-e29b-41d4-a716-446655880038', '770e8400-e29b-41d4-a716-446655660004', 300.00, false, '550e8400-e29b-41d4-a716-446655440108', NULL, 'Aguardando conclusão', NOW(), NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f39', 'cc0e8400-e29b-41d4-a716-446655880039', '770e8400-e29b-41d4-a716-446655660010', 280.00, false, '550e8400-e29b-41d4-a716-446655440109', NULL, 'Aguardando conclusão', NOW(), NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f40', 'cc0e8400-e29b-41d4-a716-446655880040', '770e8400-e29b-41d4-a716-446655660018', 280.00, false, '550e8400-e29b-41d4-a716-446655440110', NULL, 'Aguardando conclusão', NOW(), NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f41', 'dd0e8400-e29b-41d4-a716-446655880041', '770e8400-e29b-41d4-a716-446655660011', 600.00, false, '550e8400-e29b-41d4-a716-446655440101', NULL, 'Aprovado', NOW() - INTERVAL '2 days', NOW() - INTERVAL '1 day'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f42', 'dd0e8400-e29b-41d4-a716-446655880042', '770e8400-e29b-41d4-a716-446655660001', 150.00, false, '550e8400-e29b-41d4-a716-446655440102', NULL, 'Aprovado', NOW() - INTERVAL '1 day', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f43', 'dd0e8400-e29b-41d4-a716-446655880043', '770e8400-e29b-41d4-a716-446655660017', 350.00, false, '550e8400-e29b-41d4-a716-446655440103', NULL, 'Aprovado', NOW() - INTERVAL '1 day', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f44', 'dd0e8400-e29b-41d4-a716-446655880044', '770e8400-e29b-41d4-a716-446655660001', 150.00, false, '550e8400-e29b-41d4-a716-446655440104', NULL, 'Aprovado', NOW(), NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f45', 'dd0e8400-e29b-41d4-a716-446655880045', '770e8400-e29b-41d4-a716-446655660002', 200.00, false, '550e8400-e29b-41d4-a716-446655440105', NULL, 'Aprovado', NOW(), NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f46', 'dd0e8400-e29b-41d4-a716-446655880046', '770e8400-e29b-41d4-a716-446655660003', 120.00, false, '550e8400-e29b-41d4-a716-446655440106', NULL, 'Aprovado', NOW(), NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f47', 'dd0e8400-e29b-41d4-a716-446655880047', '770e8400-e29b-41d4-a716-446655660015', 200.00, false, '550e8400-e29b-41d4-a716-446655440107', NULL, 'Aprovado', NOW(), NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f48', 'dd0e8400-e29b-41d4-a716-446655880048', '770e8400-e29b-41d4-a716-446655660009', 350.00, false, '550e8400-e29b-41d4-a716-446655440108', NULL, 'Aprovado', NOW(), NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f49', 'dd0e8400-e29b-41d4-a716-446655880049', '770e8400-e29b-41d4-a716-446655660013', 280.00, false, '550e8400-e29b-41d4-a716-446655440109', NULL, 'Aprovado', NOW(), NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f50', 'dd0e8400-e29b-41d4-a716-446655880050', '770e8400-e29b-41d4-a716-446655660020', 320.00, false, '550e8400-e29b-41d4-a716-446655440110', NULL, 'Aprovado', NOW(), NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f51', 'ee0e8400-e29b-41d4-a716-446655880051', '770e8400-e29b-41d4-a716-446655660001', 150.00, false, '550e8400-e29b-41d4-a716-446655440101', NULL, 'Orçamento gerado', NOW() - INTERVAL '3 days', NOW() - INTERVAL '2 days'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f52', 'ee0e8400-e29b-41d4-a716-446655880052', '770e8400-e29b-41d4-a716-446655660020', 400.00, false, '550e8400-e29b-41d4-a716-446655440102', NULL, 'Orçamento gerado', NOW() - INTERVAL '2 days', NOW() - INTERVAL '1 day'),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f53', 'ee0e8400-e29b-41d4-a716-446655880053', '770e8400-e29b-41d4-a716-446655660005', 400.00, false, '550e8400-e29b-41d4-a716-446655440103', NULL, 'Orçamento gerado', NOW() - INTERVAL '1 day', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f54', 'ee0e8400-e29b-41d4-a716-446655880054', '770e8400-e29b-41d4-a716-446655660001', 100.00, false, '550e8400-e29b-41d4-a716-446655440104', NULL, 'Orçamento gerado', NOW() - INTERVAL '1 day', NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f55', 'ee0e8400-e29b-41d4-a716-446655880055', '770e8400-e29b-41d4-a716-446655660007', 180.00, false, '550e8400-e29b-41d4-a716-446655440105', NULL, 'Orçamento gerado', NOW(), NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f56', 'ee0e8400-e29b-41d4-a716-446655880056', '770e8400-e29b-41d4-a716-446655660009', 350.00, false, '550e8400-e29b-41d4-a716-446655440106', NULL, 'Orçamento gerado', NOW(), NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f57', 'ee0e8400-e29b-41d4-a716-446655880057', '770e8400-e29b-41d4-a716-446655660012', 350.00, false, '550e8400-e29b-41d4-a716-446655440107', NULL, 'Orçamento gerado', NOW(), NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f58', 'ee0e8400-e29b-41d4-a716-446655880058', '770e8400-e29b-41d4-a716-446655660008', 220.00, false, '550e8400-e29b-41d4-a716-446655440108', NULL, 'Orçamento gerado', NOW(), NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f59', 'ee0e8400-e29b-41d4-a716-446655880059', '770e8400-e29b-41d4-a716-446655660018', 280.00, false, '550e8400-e29b-41d4-a716-446655440109', NULL, 'Orçamento gerado', NOW(), NOW()),
+('ce573a8e-dd9f-45d0-817c-e2c8b73e9f60', 'ee0e8400-e29b-41d4-a716-446655880060', '770e8400-e29b-41d4-a716-446655660009', 350.00, false, '550e8400-e29b-41d4-a716-446655440110', NULL, 'Orçamento gerado', NOW(), NOW());
+
+-- ============================================================================
+-- INSERT ORDEM_SERVICO_INSUMOS (Associations de insumos às ordens)
+-- COMENTADO: Será adicionado via API ou SQL manual
+-- ============================================================================
+-- FROM ABAIXO:
+-- INSERT INTO ordem_servico_insumos
+
+
+

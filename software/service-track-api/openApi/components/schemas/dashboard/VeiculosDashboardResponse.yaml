@@ -69,13 +69,6 @@ items:
       description: Valor total gasto em manutenções deste veículo
       example: 1850.50
 
-    proxima_manutencao:
-      type: string
-      format: date
-      description: Data recomendada para próxima manutenção
-      example: '2024-12-15'
-      nullable: true
-
     data_criacao:
       type: string
       format: date-time
@@ -101,7 +94,6 @@ example:
     ativo: true
     total_ordens: 5
     total_gasto: 1850.50
-    proxima_manutencao: '2024-12-15'
     data_criacao: '2024-09-10T14:20:00Z'
 
   - id: '660e8400-e29b-41d4-a716-446655550002'
@@ -114,7 +106,6 @@ example:
     ativo: true
     total_ordens: 3
     total_gasto: 650.00
-    proxima_manutencao: '2024-12-20'
     data_criacao: '2024-08-05T10:15:00Z'
 
   - id: '660e8400-e29b-41d4-a716-446655550003'
@@ -127,5 +118,4 @@ example:
     ativo: true
     total_ordens: 2
     total_gasto: 520.00
-    proxima_manutencao: null
     data_criacao: '2024-09-15T09:30:00Z'

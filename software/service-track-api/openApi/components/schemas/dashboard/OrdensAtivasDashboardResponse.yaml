@@ -19,12 +19,12 @@ items:
       type: string
       enum:
         - RECEBIDA
-        - DIAGNOSTICO
-        - ORCAMENTO_GERADO
-        - APROVADO
+        - EM_DIAGNOSTICO
+        - AGUARDANDO_APROVACAO
+        - EM_EXECUCAO
         - ENTREGUE
       description: Estado atual da ordem de serviço
-      example: 'DIAGNOSTICO'
+      example: 'EM_DIAGNOSTICO'
 
     veiculo_id:
       type: string
@@ -100,7 +100,7 @@ items:
 example:
   - id: '550e8400-e29b-41d4-a716-446655880001'
     motivo: 'Barulho estranho ao acelerar'
-    status: 'DIAGNOSTICO'
+    status: 'EM_DIAGNOSTICO'
     veiculo_id: '660e8400-e29b-41d4-a716-446655550001'
     veiculo_placa: 'ABC-1234'
     veiculo_modelo: 'Civic 2020'

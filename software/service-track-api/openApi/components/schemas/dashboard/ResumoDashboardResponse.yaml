@@ -4,7 +4,7 @@ properties:
   ordens_ativas:
     type: integer
     minimum: 0
-    description: Número de ordens de serviço em andamento (estados RECEBIDA, DIAGNOSTICO, ORCAMENTO_GERADO, APROVADO, ENTREGUE)
+    description: Número de ordens de serviço em andamento (estados RECEBIDA, EM_DIAGNOSTICO, AGUARDANDO_APROVACAO, EM_EXECUCAO, ENTREGUE)
     example: 3
     x-column: 'Ordens Ativas'
     x-icon: 'hourglass-active'
