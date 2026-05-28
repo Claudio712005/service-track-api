@@ -1,0 +1,70 @@
+---
+title: C4 Component - Notificacao (E-mail assíncrono)
+---
+flowchart TD
+    OS_SVC(["Use Cases de OS<br/>(EnviarParaDiagnostico, AprovarOrcamento,<br/>Finalizar, Entregar, Cancelar,<br/>GerarOrcamento, ReprovarOrcamento)"])
+    SCHED_TICK(["⏰ Quarkus Scheduler<br/>(@Scheduled every=30s)"])
+    REST(["HTTP Request<br/>(futuro — Fase 7)"])
+
+    subgraph INFRA["Infrastructure"]
+        ENS["EnvioNotificacaoScheduler<br/>@ApplicationScoped<br/>@Scheduled(every='30s',<br/>concurrentExecution=SKIP)"]
+        NRA["NotificacaoRepositoryAdapter<br/>(JPA + Panache + FOR UPDATE SKIP LOCKED)"]
+        NE["NotificacaoEntity<br/>+ tabela notificacao_copias"]
+        QRA["QuteTemplateRendererAdapter<br/>(Engine Qute)"]
+        QMG["QuarkusMailerEmailGatewayAdapter<br/>@Retry + @CircuitBreaker"]
+        EDR["EmailDestinatarioResolverAdapter"]
+        TRA["TransactionRunnerAdapter<br/>@Transactional(REQUIRES_NEW)"]
+        CFG["NotificacaoServiceConfig<br/>(@Produces use cases)"]
+        TPL["templates/notificacao/&lt;TIPO&gt;/<br/>{subject.txt, body.html, body.txt}"]
+    end
+
+    subgraph APP["Application"]
+        EUC["EnfileirarNotificacaoUseCase"]
+        PUC["ProcessarNotificacoesPendentesUseCase"]
+        MUC["MarcarNotificacaoVisualizadaUseCase"]
+        ES["EnfileirarNotificacaoUseCaseImpl"]
+        PS["ProcessarNotificacoesPendentesUseCaseImpl"]
+        MS["MarcarNotificacaoVisualizadaUseCaseImpl"]
+
+        subgraph EVENT["CDI Events (intra-monolito)"]
+            EVT["OrdemServicoStatusAlteradoEvent"]
+            LST["OrdemServicoStatusAlteradoListener<br/>@Observes(during=AFTER_SUCCESS)"]
+        end
+
+        subgraph PORTS_OUT["Ports OUT"]
+            NRP["NotificacaoRepositoryPort"]
+            TRP["TemplateRendererPort"]
+            EGP["EmailGatewayPort"]
+            EDRP["EmailDestinatarioResolverPort"]
+            TXR["TransactionRunnerPort<br/>(shared)"]
+            URP["UsuarioRepositoryPort<br/>(reaproveitado)"]
+        end
+    end
+
+    subgraph DOMAIN["Domain"]
+        N["Notificacao (root)<br/>+ gerar / restaurar<br/>+ marcarComoEnviada<br/>+ registrarTentativaFalha<br/>+ visualizar"]
+        ENUMS["StatusEnvio (PENDENTE, ENVIADA, FALHA_ENVIO)<br/>TipoNotificacao (EMAIL)<br/>TipoConteudoNotificacao"]
+        VO["AssuntoNotificacao / TituloNotificacao<br/>DescricaoNotificacao / VariaveisTemplate<br/>NotificacaoId"]
+    end
+
+    SMTP[("📮 SMTP<br/>(MailHog dev / Provedor prod)")]
+    DB[("🗄️ PostgreSQL")]
+
+    OS_SVC -- "event.fire(...)" --> EVT
+    EVT -- "AFTER_SUCCESS" --> LST
+    LST --> EUC --> ES
+    ES --> NRP --> NRA --> NE --> DB
+    ES --> N & VO & ENUMS
+
+    SCHED_TICK --> ENS --> PUC --> PS
+    PS --> NRP
+    PS --> TXR --> TRA
+    PS --> EDRP --> EDR --> URP
+    PS --> TRP --> QRA --> TPL
+    PS --> EGP --> QMG --> SMTP
+    PS --> N
+
+    REST -.->|"Fase 7"| MUC --> MS --> NRP
+
+    CFG -.->|"@Produces"| EUC & PUC & MUC
+    LST --> URP

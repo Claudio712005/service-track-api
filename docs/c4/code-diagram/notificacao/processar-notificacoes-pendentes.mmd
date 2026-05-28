@@ -1,0 +1,127 @@
+classDiagram
+    direction TB
+
+    namespace Infrastructure_Scheduler {
+        class EnvioNotificacaoScheduler {
+            <<@ApplicationScoped>>
+            <<@Scheduled every=30s>>
+            +executar()
+        }
+    }
+
+    namespace Application_Ports_In {
+        class ProcessarNotificacoesPendentesUseCase {
+            <<interface>>
+            +executar() ResultadoLote
+        }
+    }
+
+    namespace Application_Service {
+        class ProcessarNotificacoesPendentesUseCaseImpl {
+            -TAMANHO_LOTE = 50
+            -MAX_TENTATIVAS = 3
+            +executar() ResultadoLote
+            -processarUma(Notificacao) ResultadoEnvio
+        }
+    }
+
+    namespace Application_DTO {
+        class ResultadoLote {
+            +totalProcessado Int
+            +enviadas Int
+            +falhas Int
+        }
+        class EmailMensagem {
+            +destinatario Email
+            +copias List~Email~
+            +assunto String
+            +corpoHtml String
+            +corpoTexto String
+        }
+        class ResultadoEnvio {
+            <<sealed>>
+        }
+        class ConteudoRenderizado {
+            +assunto String
+            +corpoHtml String
+            +corpoTexto String
+        }
+    }
+
+    namespace Application_Ports_Out {
+        class NotificacaoRepositoryPort {
+            <<interface>>
+            +buscarPendentesParaEnvio(limite) List~Notificacao~
+            +atualizar(Notificacao)
+        }
+        class EmailDestinatarioResolverPort {
+            <<interface>>
+            +resolverEmail(UsuarioId) Email
+        }
+        class TemplateRendererPort {
+            <<interface>>
+            +renderizar(TipoConteudoNotificacao, VariaveisTemplate) ConteudoRenderizado
+        }
+        class EmailGatewayPort {
+            <<interface>>
+            +enviar(EmailMensagem) ResultadoEnvio
+        }
+        class TransactionRunnerPort {
+            <<interface>>
+            +executarEmNovaTransacao(block) T
+        }
+    }
+
+    namespace Domain {
+        class Notificacao {
+            +marcarComoEnviada()
+            +registrarTentativaFalha(erro, maxTentativas)
+            +statusEnvio StatusEnvio
+            +tentativasEnvio Int
+            +ultimoErro String?
+        }
+    }
+
+    namespace Infrastructure_Adapters {
+        class NotificacaoRepositoryAdapter {
+            <<@ApplicationScoped>>
+            +buscarPendentesParaEnvio(limite) List~Notificacao~
+            +atualizar(Notificacao)
+        }
+        class EmailDestinatarioResolverAdapter {
+            <<@ApplicationScoped>>
+            +resolverEmail(UsuarioId) Email
+        }
+        class QuteTemplateRendererAdapter {
+            <<@ApplicationScoped>>
+            +renderizar(TipoConteudoNotificacao, VariaveisTemplate) ConteudoRenderizado
+        }
+        class QuarkusMailerEmailGatewayAdapter {
+            <<@ApplicationScoped>>
+            <<@Retry>>
+            <<@CircuitBreaker>>
+            +enviar(EmailMensagem) ResultadoEnvio
+        }
+        class TransactionRunnerAdapter {
+            <<@ApplicationScoped>>
+            <<@Transactional(REQUIRES_NEW)>>
+            +executarEmNovaTransacao(block) T
+        }
+    }
+
+    EnvioNotificacaoScheduler --> ProcessarNotificacoesPendentesUseCase : executar()
+
+    ProcessarNotificacoesPendentesUseCaseImpl ..|> ProcessarNotificacoesPendentesUseCase
+    ProcessarNotificacoesPendentesUseCaseImpl --> NotificacaoRepositoryPort : buscarPendentes / atualizar
+    ProcessarNotificacoesPendentesUseCaseImpl --> TransactionRunnerPort : por item REQUIRES_NEW
+    ProcessarNotificacoesPendentesUseCaseImpl --> EmailDestinatarioResolverPort : resolverEmail
+    ProcessarNotificacoesPendentesUseCaseImpl --> TemplateRendererPort : renderizar
+    ProcessarNotificacoesPendentesUseCaseImpl --> EmailGatewayPort : enviar
+    ProcessarNotificacoesPendentesUseCaseImpl --> Notificacao : marcarComoEnviada / registrarTentativaFalha
+    ProcessarNotificacoesPendentesUseCaseImpl --> ResultadoLote : retorna
+
+    NotificacaoRepositoryAdapter ..|> NotificacaoRepositoryPort
+    EmailDestinatarioResolverAdapter ..|> EmailDestinatarioResolverPort
+    QuteTemplateRendererAdapter ..|> TemplateRendererPort
+    QuarkusMailerEmailGatewayAdapter ..|> EmailGatewayPort
+    TransactionRunnerAdapter ..|> TransactionRunnerPort
