@@ -1,9 +1,4 @@
--- SERVICETRACK API - Rich Initial Data Population Script
--- Populated with realistic data across all tables
-
--- ============================================================================
 -- INSERT USUARIOS (30 clientes + 10 mecânicos = 40 total)
--- ============================================================================
 
 INSERT INTO usuarios (id, nome, email, senha_hash, data_criacao, data_atualizacao, data_nascimento, telefone, cpf, ativo)
 VALUES
@@ -52,9 +47,7 @@ VALUES
 ('550e8400-e29b-41d4-a716-446655440110', 'Profissional Lucas', 'lucas.prof@example.com', '$2a$10$To15vnw3EabKHxKm04e79udp984.VQzkcnC.qX/2F9KK2C833EGBS', NOW(), NOW(), '1981-07-09', '11999999010', '15628947031', true)
 ON CONFLICT DO NOTHING;
 
--- ============================================================================
 -- INSERT USUARIO_ROLES
--- ============================================================================
 
 INSERT INTO usuario_roles (usuario_id, role)
 VALUES
@@ -100,9 +93,7 @@ VALUES
 ('550e8400-e29b-41d4-a716-446655440110', 'MECANICO')
 ON CONFLICT DO NOTHING;
 
--- ============================================================================
--- INSERT VEICULOS (40 vehicles com imagens reais do Unsplash)
--- ============================================================================
+-- INSERT VEICULOS
 
 INSERT INTO veiculos (veiculo_id, placa, modelo, marca, ano, imagem_url, codigo_fipe, ativo, data_criacao, data_atualizacao, proprietario_id)
 VALUES
@@ -275,6 +266,13 @@ VALUES
 ('dd0e8400-e29b-41d4-a716-446655880049', 'Injeção', 'Limpeza injeção', '550e8400-e29b-41d4-a716-446655440009', '550e8400-e29b-41d4-a716-446655440109', '660e8400-e29b-41d4-a716-446655550019', NOW(), NOW(), 'EM_EXECUCAO', NULL),
 ('dd0e8400-e29b-41d4-a716-446655880050', 'Corrente comando', 'Preventiva', '550e8400-e29b-41d4-a716-446655440010', '550e8400-e29b-41d4-a716-446655440110', '660e8400-e29b-41d4-a716-446655550020', NOW(), NOW(), 'EM_EXECUCAO', NULL),
 
+-- RECEBIDA (5) — para testar EnviarParaDiagnostico (mecânico → notificação para cliente)
+('11111111-1111-1111-1111-000000000001', 'Ruído estranho ao acelerar', 'Cliente reporta barulho', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440101', '660e8400-e29b-41d4-a716-446655550001', NOW(), NOW(), 'RECEBIDA', NULL),
+('11111111-1111-1111-1111-000000000002', 'Check engine acesa', 'Luz acesa há 3 dias', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440102', '660e8400-e29b-41d4-a716-446655550002', NOW(), NOW(), 'RECEBIDA', NULL),
+('11111111-1111-1111-1111-000000000003', 'Vibração no volante', 'Acima de 80km/h', '550e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440103', '660e8400-e29b-41d4-a716-446655550003', NOW(), NOW(), 'RECEBIDA', NULL),
+('11111111-1111-1111-1111-000000000004', 'Freio puxando para direita', 'Frenagem desigual', '550e8400-e29b-41d4-a716-446655440004', '550e8400-e29b-41d4-a716-446655440104', '660e8400-e29b-41d4-a716-446655550004', NOW(), NOW(), 'RECEBIDA', NULL),
+('11111111-1111-1111-1111-000000000005', 'Ar não está gelando', 'Soprando ar morno', '550e8400-e29b-41d4-a716-446655440005', '550e8400-e29b-41d4-a716-446655440105', '660e8400-e29b-41d4-a716-446655550005', NOW(), NOW(), 'RECEBIDA', NULL),
+
 -- AGUARDANDO_APROVACAO (10)
 ('ee0e8400-e29b-41d4-a716-446655880051', 'Revisão motor', 'Revisão completa', '550e8400-e29b-41d4-a716-446655440011', '550e8400-e29b-41d4-a716-446655440101', '660e8400-e29b-41d4-a716-446655550021', NOW() - INTERVAL '3 days', NOW() - INTERVAL '2 days', 'AGUARDANDO_APROVACAO', NULL),
 ('ee0e8400-e29b-41d4-a716-446655880052', 'Transmissão', 'Problema transmissão', '550e8400-e29b-41d4-a716-446655440012', '550e8400-e29b-41d4-a716-446655440102', '660e8400-e29b-41d4-a716-446655550022', NOW() - INTERVAL '2 days', NOW() - INTERVAL '1 day', 'AGUARDANDO_APROVACAO', NULL),
@@ -285,7 +283,14 @@ VALUES
 ('ee0e8400-e29b-41d4-a716-446655880057', 'Rodas', 'Limpeza rodas', '550e8400-e29b-41d4-a716-446655440017', '550e8400-e29b-41d4-a716-446655440107', '660e8400-e29b-41d4-a716-446655550027', NOW(), NOW(), 'AGUARDANDO_APROVACAO', NULL),
 ('ee0e8400-e29b-41d4-a716-446655880058', 'Vidros', 'Limpeza vidros', '550e8400-e29b-41d4-a716-446655440018', '550e8400-e29b-41d4-a716-446655440108', '660e8400-e29b-41d4-a716-446655550028', NOW(), NOW(), 'AGUARDANDO_APROVACAO', NULL),
 ('ee0e8400-e29b-41d4-a716-446655880059', 'Detailing', 'Detailing completo', '550e8400-e29b-41d4-a716-446655440019', '550e8400-e29b-41d4-a716-446655440109', '660e8400-e29b-41d4-a716-446655550029', NOW(), NOW(), 'AGUARDANDO_APROVACAO', NULL),
-('ee0e8400-e29b-41d4-a716-446655880060', 'Proteção', 'Proteção ceramica', '550e8400-e29b-41d4-a716-446655440020', '550e8400-e29b-41d4-a716-446655440110', '660e8400-e29b-41d4-a716-446655550030', NOW(), NOW(), 'AGUARDANDO_APROVACAO', NULL);
+('ee0e8400-e29b-41d4-a716-446655880060', 'Proteção', 'Proteção ceramica', '550e8400-e29b-41d4-a716-446655440020', '550e8400-e29b-41d4-a716-446655440110', '660e8400-e29b-41d4-a716-446655550030', NOW(), NOW(), 'AGUARDANDO_APROVACAO', NULL),
+
+-- CANCELADA (5) — para testar listagem por status e fluxo de cancelamento histórico
+('22222222-2222-2222-2222-000000000001', 'OS cancelada por desistência', 'Cliente desistiu do reparo', '550e8400-e29b-41d4-a716-446655440006', '550e8400-e29b-41d4-a716-446655440106', '660e8400-e29b-41d4-a716-446655550006', NOW() - INTERVAL '10 days', NOW() - INTERVAL '9 days', 'CANCELADA', NULL),
+('22222222-2222-2222-2222-000000000002', 'OS cancelada por orçamento alto', 'Orçamento reprovado pelo cliente', '550e8400-e29b-41d4-a716-446655440007', '550e8400-e29b-41d4-a716-446655440107', '660e8400-e29b-41d4-a716-446655550007', NOW() - INTERVAL '8 days', NOW() - INTERVAL '7 days', 'CANCELADA', NULL),
+('22222222-2222-2222-2222-000000000003', 'OS cancelada por prazo', 'Cliente buscou outro serviço', '550e8400-e29b-41d4-a716-446655440008', '550e8400-e29b-41d4-a716-446655440108', '660e8400-e29b-41d4-a716-446655550008', NOW() - INTERVAL '5 days', NOW() - INTERVAL '4 days', 'CANCELADA', NULL),
+('22222222-2222-2222-2222-000000000004', 'OS cancelada por veículo vendido', 'Cliente vendeu o veículo', '550e8400-e29b-41d4-a716-446655440009', '550e8400-e29b-41d4-a716-446655440109', '660e8400-e29b-41d4-a716-446655550009', NOW() - INTERVAL '3 days', NOW() - INTERVAL '2 days', 'CANCELADA', NULL),
+('22222222-2222-2222-2222-000000000005', 'OS cancelada por reprovação de orçamento', 'Reprovado: muito caro', '550e8400-e29b-41d4-a716-446655440010', '550e8400-e29b-41d4-a716-446655440110', '660e8400-e29b-41d4-a716-446655550010', NOW() - INTERVAL '2 days', NOW() - INTERVAL '1 day', 'CANCELADA', NULL);
 
 INSERT INTO orcamentos (id, ordem_servico_id, data_criacao, data_atualizacao, custo_mao_de_obra, custo_insumos, aprovado, observacao)
 VALUES
@@ -392,12 +397,198 @@ VALUES
 ('ce573a8e-dd9f-45d0-817c-e2c8b73e9f59', 'ee0e8400-e29b-41d4-a716-446655880059', '770e8400-e29b-41d4-a716-446655660018', 280.00, false, '550e8400-e29b-41d4-a716-446655440109', NULL, 'Orçamento gerado', NOW(), NOW()),
 ('ce573a8e-dd9f-45d0-817c-e2c8b73e9f60', 'ee0e8400-e29b-41d4-a716-446655880060', '770e8400-e29b-41d4-a716-446655660009', 350.00, false, '550e8400-e29b-41d4-a716-446655440110', NULL, 'Orçamento gerado', NOW(), NOW());
 
--- ============================================================================
--- INSERT ORDEM_SERVICO_INSUMOS (Associations de insumos às ordens)
--- COMENTADO: Será adicionado via API ou SQL manual
--- ============================================================================
--- FROM ABAIXO:
--- INSERT INTO ordem_servico_insumos
+-- INSERT ORDEM_SERVICO_INSUMOS
 
+INSERT INTO ordem_servico_insumos (ordem_servico_id, insumo_id)
+VALUES
+-- FINALIZADA (20) — 1-2 insumos por OS
+('aa0e8400-e29b-41d4-a716-446655880001', '880e8400-e29b-41d4-a716-446655770001'),
+('aa0e8400-e29b-41d4-a716-446655880001', '880e8400-e29b-41d4-a716-446655770002'),
+('aa0e8400-e29b-41d4-a716-446655880002', '880e8400-e29b-41d4-a716-446655770004'),
+('aa0e8400-e29b-41d4-a716-446655880003', '880e8400-e29b-41d4-a716-446655770004'),
+('aa0e8400-e29b-41d4-a716-446655880003', '880e8400-e29b-41d4-a716-446655770013'),
+('aa0e8400-e29b-41d4-a716-446655880004', '880e8400-e29b-41d4-a716-446655770001'),
+('aa0e8400-e29b-41d4-a716-446655880005', '880e8400-e29b-41d4-a716-446655770019'),
+('aa0e8400-e29b-41d4-a716-446655880006', '880e8400-e29b-41d4-a716-446655770024'),
+('aa0e8400-e29b-41d4-a716-446655880007', '880e8400-e29b-41d4-a716-446655770001'),
+('aa0e8400-e29b-41d4-a716-446655880008', '880e8400-e29b-41d4-a716-446655770006'),
+('aa0e8400-e29b-41d4-a716-446655880009', '880e8400-e29b-41d4-a716-446655770010'),
+('aa0e8400-e29b-41d4-a716-446655880010', '880e8400-e29b-41d4-a716-446655770003'),
+('aa0e8400-e29b-41d4-a716-446655880010', '880e8400-e29b-41d4-a716-446655770014'),
+('aa0e8400-e29b-41d4-a716-446655880011', '880e8400-e29b-41d4-a716-446655770010'),
+('aa0e8400-e29b-41d4-a716-446655880012', '880e8400-e29b-41d4-a716-446655770013'),
+('aa0e8400-e29b-41d4-a716-446655880013', '880e8400-e29b-41d4-a716-446655770016'),
+('aa0e8400-e29b-41d4-a716-446655880013', '880e8400-e29b-41d4-a716-446655770017'),
+('aa0e8400-e29b-41d4-a716-446655880014', '880e8400-e29b-41d4-a716-446655770018'),
+('aa0e8400-e29b-41d4-a716-446655880015', '880e8400-e29b-41d4-a716-446655770007'),
+('aa0e8400-e29b-41d4-a716-446655880016', '880e8400-e29b-41d4-a716-446655770024'),
+('aa0e8400-e29b-41d4-a716-446655880017', '880e8400-e29b-41d4-a716-446655770006'),
+('aa0e8400-e29b-41d4-a716-446655880018', '880e8400-e29b-41d4-a716-446655770015'),
+('aa0e8400-e29b-41d4-a716-446655880019', '880e8400-e29b-41d4-a716-446655770020'),
+('aa0e8400-e29b-41d4-a716-446655880020', '880e8400-e29b-41d4-a716-446655770009'),
+
+-- ENTREGUE (10)
+('bb0e8400-e29b-41d4-a716-446655880021', '880e8400-e29b-41d4-a716-446655770008'),
+('bb0e8400-e29b-41d4-a716-446655880022', '880e8400-e29b-41d4-a716-446655770015'),
+('bb0e8400-e29b-41d4-a716-446655880022', '880e8400-e29b-41d4-a716-446655770023'),
+('bb0e8400-e29b-41d4-a716-446655880023', '880e8400-e29b-41d4-a716-446655770010'),
+('bb0e8400-e29b-41d4-a716-446655880024', '880e8400-e29b-41d4-a716-446655770001'),
+('bb0e8400-e29b-41d4-a716-446655880025', '880e8400-e29b-41d4-a716-446655770001'),
+('bb0e8400-e29b-41d4-a716-446655880026', '880e8400-e29b-41d4-a716-446655770013'),
+('bb0e8400-e29b-41d4-a716-446655880026', '880e8400-e29b-41d4-a716-446655770025'),
+('bb0e8400-e29b-41d4-a716-446655880027', '880e8400-e29b-41d4-a716-446655770003'),
+('bb0e8400-e29b-41d4-a716-446655880028', '880e8400-e29b-41d4-a716-446655770019'),
+('bb0e8400-e29b-41d4-a716-446655880029', '880e8400-e29b-41d4-a716-446655770006'),
+('bb0e8400-e29b-41d4-a716-446655880030', '880e8400-e29b-41d4-a716-446655770016'),
+
+-- EM_DIAGNOSTICO (10) — insumos já levantados pelo mecânico, prontos para orçar
+('cc0e8400-e29b-41d4-a716-446655880031', '880e8400-e29b-41d4-a716-446655770024'),
+('cc0e8400-e29b-41d4-a716-446655880032', '880e8400-e29b-41d4-a716-446655770013'),
+('cc0e8400-e29b-41d4-a716-446655880033', '880e8400-e29b-41d4-a716-446655770006'),
+('cc0e8400-e29b-41d4-a716-446655880034', '880e8400-e29b-41d4-a716-446655770001'),
+('cc0e8400-e29b-41d4-a716-446655880035', '880e8400-e29b-41d4-a716-446655770007'),
+('cc0e8400-e29b-41d4-a716-446655880036', '880e8400-e29b-41d4-a716-446655770006'),
+('cc0e8400-e29b-41d4-a716-446655880037', '880e8400-e29b-41d4-a716-446655770016'),
+('cc0e8400-e29b-41d4-a716-446655880038', '880e8400-e29b-41d4-a716-446655770003'),
+('cc0e8400-e29b-41d4-a716-446655880039', '880e8400-e29b-41d4-a716-446655770019'),
+('cc0e8400-e29b-41d4-a716-446655880040', '880e8400-e29b-41d4-a716-446655770010'),
+
+-- EM_EXECUCAO (10) — insumos reservados
+('dd0e8400-e29b-41d4-a716-446655880041', '880e8400-e29b-41d4-a716-446655770015'),
+('dd0e8400-e29b-41d4-a716-446655880042', '880e8400-e29b-41d4-a716-446655770001'),
+('dd0e8400-e29b-41d4-a716-446655880043', '880e8400-e29b-41d4-a716-446655770003'),
+('dd0e8400-e29b-41d4-a716-446655880044', '880e8400-e29b-41d4-a716-446655770020'),
+('dd0e8400-e29b-41d4-a716-446655880045', '880e8400-e29b-41d4-a716-446655770024'),
+('dd0e8400-e29b-41d4-a716-446655880046', '880e8400-e29b-41d4-a716-446655770013'),
+('dd0e8400-e29b-41d4-a716-446655880047', '880e8400-e29b-41d4-a716-446655770010'),
+('dd0e8400-e29b-41d4-a716-446655880048', '880e8400-e29b-41d4-a716-446655770009'),
+('dd0e8400-e29b-41d4-a716-446655880049', '880e8400-e29b-41d4-a716-446655770006'),
+('dd0e8400-e29b-41d4-a716-446655880050', '880e8400-e29b-41d4-a716-446655770023'),
+
+-- AGUARDANDO_APROVACAO (10) — orçamento gerado, insumos reservados aguardando aprovação
+('ee0e8400-e29b-41d4-a716-446655880051', '880e8400-e29b-41d4-a716-446655770001'),
+('ee0e8400-e29b-41d4-a716-446655880051', '880e8400-e29b-41d4-a716-446655770002'),
+('ee0e8400-e29b-41d4-a716-446655880052', '880e8400-e29b-41d4-a716-446655770020'),
+('ee0e8400-e29b-41d4-a716-446655880053', '880e8400-e29b-41d4-a716-446655770005'),
+('ee0e8400-e29b-41d4-a716-446655880054', '880e8400-e29b-41d4-a716-446655770001'),
+('ee0e8400-e29b-41d4-a716-446655880054', '880e8400-e29b-41d4-a716-446655770024'),
+('ee0e8400-e29b-41d4-a716-446655880055', '880e8400-e29b-41d4-a716-446655770010'),
+('ee0e8400-e29b-41d4-a716-446655880056', '880e8400-e29b-41d4-a716-446655770010'),
+('ee0e8400-e29b-41d4-a716-446655880057', '880e8400-e29b-41d4-a716-446655770013'),
+('ee0e8400-e29b-41d4-a716-446655880058', '880e8400-e29b-41d4-a716-446655770019'),
+('ee0e8400-e29b-41d4-a716-446655880059', '880e8400-e29b-41d4-a716-446655770010'),
+('ee0e8400-e29b-41d4-a716-446655880060', '880e8400-e29b-41d4-a716-446655770010'),
+
+-- CANCELADA (5)
+('22222222-2222-2222-2222-000000000001', '880e8400-e29b-41d4-a716-446655770001'),
+('22222222-2222-2222-2222-000000000002', '880e8400-e29b-41d4-a716-446655770003'),
+('22222222-2222-2222-2222-000000000003', '880e8400-e29b-41d4-a716-446655770006'),
+('22222222-2222-2222-2222-000000000004', '880e8400-e29b-41d4-a716-446655770013'),
+('22222222-2222-2222-2222-000000000005', '880e8400-e29b-41d4-a716-446655770020')
+ON CONFLICT DO NOTHING;
+
+-- INSERT ORCAMENTOS CANCELADA (aprovado=false para AGUARDANDO_APROVACAO+CANCELADA)
+INSERT INTO orcamentos (id, ordem_servico_id, data_criacao, data_atualizacao, custo_mao_de_obra, custo_insumos, aprovado, observacao)
+VALUES
+('ff0e8400-e29b-41d4-a716-446655990041', '22222222-2222-2222-2222-000000000002', NOW() - INTERVAL '9 days', NOW() - INTERVAL '7 days', 800.00, 350.00, false, 'Reprovado pelo cliente'),
+('ff0e8400-e29b-41d4-a716-446655990042', '22222222-2222-2222-2222-000000000005', NOW() - INTERVAL '3 days', NOW() - INTERVAL '1 day', 1200.00, 800.00, false, 'Reprovado: muito caro')
+ON CONFLICT DO NOTHING;
+
+-- INSERT NOTIFICACOES
+
+INSERT INTO notificacoes (id, assunto, titulo, descricao, variaveis_json, tipo_notificacao, tipo_conteudo_notificacao, destinatario_id, data_criacao, status_envio, data_envio, visualizada, data_visualizacao, tentativas_envio, ultimo_erro)
+VALUES
+-- PENDENTE — worker vai processar e enviar via MailHog em até 30s
+('99999999-9999-9999-9999-000000000001',
+ 'Atualização da sua OS 11111111-1111-1111-1111-000000000001',
+ 'Sua Ordem de serviço acabou de receber uma alteração!',
+ 'Status atualizado para Em Diagnóstico',
+ '{"os":"11111111-1111-1111-1111-000000000001","novoStatus":"Em Diagnóstico","nomeCliente":"João Silva"}',
+ 'EMAIL',
+ 'MUDANCA_STATUS_OS',
+ '550e8400-e29b-41d4-a716-446655440001',
+ NOW(),
+ 'PENDENTE',
+ NULL,
+ false,
+ NULL,
+ 0,
+ NULL),
+
+-- ENVIADA — para testar visualização (Fase 7)
+('99999999-9999-9999-9999-000000000002',
+ 'Atualização da sua OS aa0e8400-e29b-41d4-a716-446655880001',
+ 'Sua Ordem de serviço acabou de receber uma alteração!',
+ 'Status atualizado para Finalizada',
+ '{"os":"aa0e8400-e29b-41d4-a716-446655880001","novoStatus":"Finalizada","nomeCliente":"João Silva"}',
+ 'EMAIL',
+ 'MUDANCA_STATUS_OS',
+ '550e8400-e29b-41d4-a716-446655440001',
+ NOW() - INTERVAL '1 hour',
+ 'ENVIADA',
+ NOW() - INTERVAL '59 minutes',
+ false,
+ NULL,
+ 1,
+ NULL),
+
+-- FALHA_ENVIO — exemplo com ultimo_erro para troubleshooting
+('99999999-9999-9999-9999-000000000003',
+ 'Atualização da sua OS bb0e8400-e29b-41d4-a716-446655880021',
+ 'Sua Ordem de serviço acabou de receber uma alteração!',
+ 'Status atualizado para Entregue',
+ '{"os":"bb0e8400-e29b-41d4-a716-446655880021","novoStatus":"Entregue","nomeCliente":"João Silva"}',
+ 'EMAIL',
+ 'MUDANCA_STATUS_OS',
+ '550e8400-e29b-41d4-a716-446655440001',
+ NOW() - INTERVAL '2 hours',
+ 'FALHA_ENVIO',
+ NULL,
+ false,
+ NULL,
+ 3,
+ 'Connection refused: smtp.example.com:587'),
+
+-- ENVIADA + VISUALIZADA — caminho completo (cliente abriu o e-mail e clicou no link)
+('99999999-9999-9999-9999-000000000004',
+ 'Atualização da sua OS aa0e8400-e29b-41d4-a716-446655880002',
+ 'Sua Ordem de serviço acabou de receber uma alteração!',
+ 'Status atualizado para Finalizada',
+ '{"os":"aa0e8400-e29b-41d4-a716-446655880002","novoStatus":"Finalizada","nomeCliente":"Maria Santos"}',
+ 'EMAIL',
+ 'MUDANCA_STATUS_OS',
+ '550e8400-e29b-41d4-a716-446655440002',
+ NOW() - INTERVAL '3 hours',
+ 'ENVIADA',
+ NOW() - INTERVAL '179 minutes',
+ true,
+ NOW() - INTERVAL '2 hours',
+ 1,
+ NULL),
+
+-- PENDENTE com tentativa anterior falha (retry em andamento)
+('99999999-9999-9999-9999-000000000005',
+ 'Atualização da sua OS cc0e8400-e29b-41d4-a716-446655880031',
+ 'Sua Ordem de serviço acabou de receber uma alteração!',
+ 'Status atualizado para Em Diagnóstico',
+ '{"os":"cc0e8400-e29b-41d4-a716-446655880031","novoStatus":"Em Diagnóstico","nomeCliente":"Bruno Costa"}',
+ 'EMAIL',
+ 'MUDANCA_STATUS_OS',
+ '550e8400-e29b-41d4-a716-446655440011',
+ NOW() - INTERVAL '10 minutes',
+ 'PENDENTE',
+ NULL,
+ false,
+ NULL,
+ 1,
+ 'SMTP timeout temporário')
+ON CONFLICT DO NOTHING;
+
+-- INSERT NOTIFICACAO_COPIAS
+INSERT INTO notificacao_copias (notificacao_id, usuario_id)
+VALUES
+-- Notificação 0001 (PENDENTE) com cópia para mecânico Mário Máquina
+('99999999-9999-9999-9999-000000000001', '550e8400-e29b-41d4-a716-446655440101')
+ON CONFLICT DO NOTHING;
 
 

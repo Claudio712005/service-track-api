@@ -1,0 +1,30 @@
+==============================================
+    ServiceTrack — Atualização da sua OS
+==============================================
+
+Olá, {nomeCliente}!
+
+Temos uma atualização sobre sua ordem de serviço.
+
+  Ordem de Serviço : #{os}{#if veiculo} ({veiculo}){/if}
+  Novo status      : {novoStatus}
+{#if dataAtualizacao}  Atualizado em    : {dataAtualizacao}
+{/if}
+{#if observacao}
+----------------------------------------------
+Observação:
+{observacao}
+----------------------------------------------
+{/if}
+{#if linkAcompanhamento}
+Acompanhe sua OS em:
+{linkAcompanhamento}
+{/if}
+
+Em caso de dúvidas, entre em contato com a oficina responsável.
+Agradecemos a confiança!
+
+--
+Este é um e-mail automático enviado pelo ServiceTrack.
+Por favor, não responda a esta mensagem.
+© ServiceTrack — Todos os direitos reservados

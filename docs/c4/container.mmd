@@ -10,14 +10,25 @@ flowchart TD
         JWT["🔐 JWT Provider | SmallRye JWT | RS256 (RSA keys)"]
         BCRYPT["🔒 Bcrypt Adapter | jBCrypt | Password hashing"]
         AUDIT["📋 Audit Interceptor | CDI Interceptor | Strategy Pattern"]
+        EVT["📣 CDI Event Bus | Outbox semântico via AFTER_SUCCESS"]
+        SCHED["⏰ Notificação Scheduler | Quarkus Scheduler (every=30s) | SKIP LOCKED"]
+        QUTE["🎨 Qute Renderer | templates/notificacao/&lt;TIPO&gt;/"]
+        MAILER["✉️ Mailer Gateway | Quarkus Mailer | @Retry + @CircuitBreaker"]
     end
 
-    DB[("🗄️ PostgreSQL<br/>Hibernate ORM<br/>+ Panache")]
+    DB[("🗄️ PostgreSQL<br/>Hibernate ORM<br/>+ Panache<br/>(tabela notificacao)")]
+    SMTP[("📮 SMTP<br/>MailHog (dev)<br/>Provedor (prod)")]
 
     Cliente -->|"HTTPS/JSON"| API
     Mecanico -->|"HTTPS/JSON"| API
     API --> JWT
     API --> BCRYPT
     API --> AUDIT
+    API -- "fire(StatusAlteradoEvent)" --> EVT
+    EVT -- "AFTER_SUCCESS" --> API
+    SCHED -- "buscarPendentes FOR UPDATE SKIP LOCKED" --> DB
+    SCHED --> QUTE
+    SCHED --> MAILER
     API -->|"JDBC"| DB
     AUDIT -->|"persiste eventos"| DB
+    MAILER -->|"SMTP"| SMTP

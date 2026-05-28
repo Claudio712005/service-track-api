@@ -5,11 +5,19 @@ flowchart TD
     Cliente(["👤 Cliente (usuário final)"])
     Mecanico(["🔧 Mecânico (usuário interno)"])
 
-    ST["🖥️ Service Track API | Gestão de Ordens de Serviço, Orçamentos, Veículos e Mecânicos"]
+    ST["🖥️ Service Track API | Gestão de Ordens de Serviço, Orçamentos, Veículos, Mecânicos e Notificações"]
 
-    DB[("🗄️ PostgreSQL 
+    DB[("🗄️ PostgreSQL
     Banco de dados relacional")]
+
+    SMTP[("📮 Servidor SMTP
+    MailHog (dev) / Provedor (prod)")]
+
+    InboxCliente(["📥 Caixa de e-mail
+    do cliente"])
 
     Cliente -->|"Cria OS, aprova/reprova orçamento, acompanha status"| ST
     Mecanico -->|"Executa diagnóstico, associação de itens, conclusão de serviços"| ST
-    ST -->|"Persiste todos os dados"| DB
+    ST -->|"Persiste dados (OS, usuários, notificações)"| DB
+    ST -->|"Entrega notificações de mudança de status"| SMTP
+    SMTP -->|"Encaminha e-mail"| InboxCliente

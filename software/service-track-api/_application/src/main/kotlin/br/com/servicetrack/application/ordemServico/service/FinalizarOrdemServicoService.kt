@@ -4,6 +4,7 @@ import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.auditoria.context.AuditoriaContextoHolder
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
 import br.com.servicetrack.application.ordemServico.dto.response.ResumoOrdemServicoResDTO
 import br.com.servicetrack.application.ordemServico.ports.`in`.FinalizarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`out`.OrdemServicoRepositoryPort
@@ -13,11 +14,13 @@ import br.com.servicetrack.domain.auditoria.enums.TipoEntidade
 import br.com.servicetrack.domain.auditoria.enums.TipoEventoAuditoria
 import br.com.servicetrack.domain.ordemServico.vo.OrdemServicoId
 import br.com.servicetrack.domain.shared.exception.DomainException
+import jakarta.enterprise.event.Event
 
 class FinalizarOrdemServicoService(
     private val osRepository: OrdemServicoRepositoryPort,
     private val usuarioRepository: UsuarioRepositoryPort,
     private val jwt: JwtPort,
+    private val statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
 ) : FinalizarOrdemServicoUseCase {
 
     @Auditavel(entidade = TipoEntidade.ORDEM_SERVICO, evento = TipoEventoAuditoria.ATUALIZADO)
@@ -48,6 +51,16 @@ class FinalizarOrdemServicoService(
 
         os.finalizar()
 
-        return ResumoOrdemServicoResDTO.de(osRepository.atualizar(os))
+        val atualizada = osRepository.atualizar(os)
+
+        statusAlteradoEvent.fire(
+            OrdemServicoStatusAlteradoEvent(
+                ordemServicoId = atualizada.id,
+                clienteId = atualizada.clienteId,
+                novoStatus = atualizada.obterStatus(),
+            )
+        )
+
+        return ResumoOrdemServicoResDTO.de(atualizada)
     }
 }

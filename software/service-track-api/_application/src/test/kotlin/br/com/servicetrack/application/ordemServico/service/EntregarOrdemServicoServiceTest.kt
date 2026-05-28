@@ -2,9 +2,11 @@ package br.com.servicetrack.application.ordemServico.service
 
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
 import br.com.servicetrack.application.ordemServico.ports.out.OrdemServicoRepositoryPort
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
+import jakarta.enterprise.event.Event
 import br.com.servicetrack.domain.ordemServico.OrdemServico
 import br.com.servicetrack.domain.ordemServico.StatusOrdemServicoEnum
 import br.com.servicetrack.domain.ordemServico.vo.OrdemServicoId
@@ -31,8 +33,9 @@ class EntregarOrdemServicoServiceTest {
     private val osRepository = mockk<OrdemServicoRepositoryPort>()
     private val usuarioRepository = mockk<UsuarioRepositoryPort>()
     private val jwt = mockk<JwtPort>()
+    private val statusEvent = mockk<Event<OrdemServicoStatusAlteradoEvent>>(relaxed = true)
 
-    private val service = EntregarOrdemServicoService(osRepository, usuarioRepository, jwt)
+    private val service = EntregarOrdemServicoService(osRepository, usuarioRepository, jwt, statusEvent)
 
     private val mecanicoId = UsuarioId.gerar()
     private val clienteId = UsuarioId.gerar()

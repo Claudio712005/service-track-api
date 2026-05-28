@@ -45,6 +45,23 @@ classDiagram
         }
     }
 
+    namespace Application_Event {
+        class OrdemServicoStatusAlteradoEvent {
+            <<event>>
+            +ordemServicoId OrdemServicoId
+            +clienteId UsuarioId
+            +novoStatus StatusOrdemServicoEnum
+        }
+        class OrdemServicoStatusAlteradoListener {
+            <<@ApplicationScoped>>
+            +aoAlterarStatus(@Observes AFTER_SUCCESS evento)
+        }
+        class EnfileirarNotificacaoUseCase {
+            <<interface>>
+            +executar(EnfileirarNotificacaoCommand) NotificacaoId
+        }
+    }
+
     namespace Domain {
         class OrdemServico {
             <<aggregate root>>
@@ -77,6 +94,10 @@ classDiagram
     EnviarParaDiagnosticoService --> JwtPort : getUsuarioId()
     EnviarParaDiagnosticoService --> OrdemServicoRepositoryPort : buscarPorId() atualizar()
     EnviarParaDiagnosticoService --> OrdemServico : iniciarDiagnostico()
+    EnviarParaDiagnosticoService --> OrdemServicoStatusAlteradoEvent : event.fire(...)
+
+    OrdemServicoStatusAlteradoEvent ..> OrdemServicoStatusAlteradoListener : @Observes(AFTER_SUCCESS)
+    OrdemServicoStatusAlteradoListener --> EnfileirarNotificacaoUseCase : executar(command)
 
     JwtAdapter ..|> JwtPort : implementa
     OrdemServicoRepositoryAdapter ..|> OrdemServicoRepositoryPort : implementa

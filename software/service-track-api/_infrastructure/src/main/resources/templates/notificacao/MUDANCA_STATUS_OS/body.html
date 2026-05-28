@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Atualização da OS #{os}</title>
+  <style type="text/css">
+    table, td, div, h1, p { font-family: Arial, sans-serif; }
+  </style>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f6f8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color:#1f2937;">
+  <div style="display:none; max-height:0; overflow:hidden; mso-hide:all; font-size:1px; line-height:1px; color:#f4f6f8;">
+    Sua OS #{os} foi atualizada para {novoStatus}. Confira os detalhes.
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f6f8; padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; width:100%; background-color:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(15,23,42,0.06);">
+
+          <tr>
+            <td style="background: linear-gradient(135deg,#1d4ed8 0%,#2563eb 100%); background-color:#1d4ed8; padding:28px 32px; text-align:left;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="color:#ffffff; font-size:20px; font-weight:700; letter-spacing:0.3px;">
+                    🛠️ ServiceTrack
+                  </td>
+                  <td align="right" style="color:#dbeafe; font-size:12px; font-weight:500;">
+                    {dataAtualizacao ?: ''}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:36px 32px 8px 32px;">
+              <h1 style="margin:0 0 8px 0; font-size:22px; line-height:1.3; color:#111827; font-weight:700;">
+                Olá, {nomeCliente}!
+              </h1>
+              <p style="margin:0 0 24px 0; font-size:15px; line-height:1.6; color:#4b5563;">
+                Temos uma atualização sobre sua ordem de serviço.
+              </p>
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; margin:0 0 24px 0;">
+                <tr>
+                  <td style="padding:20px 24px;">
+                    <p style="margin:0 0 6px 0; font-size:12px; color:#6b7280; text-transform:uppercase; letter-spacing:0.8px; font-weight:600;">
+                      Ordem de Serviço
+                    </p>
+                    <p style="margin:0 0 16px 0; font-size:18px; color:#111827; font-weight:700;">
+                      #{os}
+                      {#if veiculo}
+                      <span style="font-size:14px; color:#6b7280; font-weight:500;"> &middot; {veiculo}</span>
+                      {/if}
+                    </p>
+
+                    <p style="margin:0 0 6px 0; font-size:12px; color:#6b7280; text-transform:uppercase; letter-spacing:0.8px; font-weight:600;">
+                      Novo Status
+                    </p>
+                    <span style="display:inline-block; background-color:#dbeafe; color:#1e40af; font-size:13px; font-weight:700; padding:6px 14px; border-radius:999px; letter-spacing:0.4px;">
+                      {novoStatus}
+                    </span>
+                  </td>
+                </tr>
+              </table>
+
+              {#if observacao}
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#fffbeb; border-left:4px solid #f59e0b; border-radius:4px; margin:0 0 24px 0;">
+                <tr>
+                  <td style="padding:14px 18px;">
+                    <p style="margin:0 0 4px 0; font-size:12px; color:#92400e; font-weight:700; text-transform:uppercase; letter-spacing:0.6px;">
+                      Observação
+                    </p>
+                    <p style="margin:0; font-size:14px; line-height:1.5; color:#78350f;">
+                      {observacao}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              {/if}
+
+              {#if linkAcompanhamento}
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 24px 0;">
+                <tr>
+                  <td align="center" style="border-radius:8px; background-color:#2563eb;">
+                    <a href="{linkAcompanhamento}" target="_blank" style="display:inline-block; padding:12px 28px; font-size:15px; font-weight:600; color:#ffffff; text-decoration:none; border-radius:8px;">
+                      Acompanhar minha OS →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              {/if}
+
+              <p style="margin:24px 0 0 0; font-size:14px; line-height:1.6; color:#4b5563;">
+                Em caso de dúvidas, entre em contato com a oficina responsável.<br>
+                Agradecemos a confiança! 🙌
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:24px 32px 28px 32px; border-top:1px solid #e5e7eb; background-color:#f9fafb;">
+              <p style="margin:0 0 6px 0; font-size:12px; line-height:1.5; color:#6b7280; text-align:center;">
+                Este é um e-mail automático enviado pelo <strong style="color:#374151;">ServiceTrack</strong>.<br>
+                Por favor, não responda a esta mensagem.
+              </p>
+              <p style="margin:8px 0 0 0; font-size:11px; color:#9ca3af; text-align:center;">
+                © ServiceTrack &middot; Todos os direitos reservados
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

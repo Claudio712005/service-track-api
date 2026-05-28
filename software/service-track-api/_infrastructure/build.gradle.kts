@@ -14,7 +14,10 @@ dependencies {
     implementation(project(":_application"))
 
     implementation(enforcedPlatform("$qGroupId:$qArtifactId:$qVersion"))
-
+    implementation("io.quarkus:quarkus-qute")
+    implementation("io.quarkus:quarkus-mailer")
+    implementation("io.quarkus:quarkus-scheduler")
+    implementation("io.quarkus:quarkus-smallrye-fault-tolerance")
     implementation("io.quarkus:quarkus-rest")
     implementation("io.quarkus:quarkus-rest-jackson")
     implementation("io.quarkus:quarkus-rest-client-reactive-jackson")
