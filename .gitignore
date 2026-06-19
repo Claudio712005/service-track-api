@@ -55,3 +55,8 @@ Thumbs.db
 reports/
 *.sarif
 *.json
+
+### Terraform ###
+**/.terraform/
+**/terraform.tfstate
+**/.terraform.lock.hcl
