@@ -5,20 +5,20 @@ classDiagram
         class NotificacaoResourceImpl {
             <<@ApplicationScoped>>
             <<@RolesAllowed CLIENTE, MECANICO>>
-            +marcarNotificacaoVisualizada(UUID) Response
+            +buscarNotificacao(UUID) Response
         }
     }
 
     namespace Application_Ports_In {
-        class MarcarNotificacaoVisualizadaUseCase {
+        class BuscarNotificacaoUseCase {
             <<interface>>
-            +executar(NotificacaoId)
+            +executar(String) NotificacaoResDTO
         }
     }
 
     namespace Application_Service {
-        class MarcarNotificacaoVisualizadaUseCaseImpl {
-            +executar(NotificacaoId)
+        class BuscarNotificacaoUseCaseImpl {
+            +executar(String) NotificacaoResDTO
         }
     }
 
@@ -26,7 +26,6 @@ classDiagram
         class NotificacaoRepositoryPort {
             <<interface>>
             +buscarPorId(NotificacaoId) Notificacao?
-            +atualizar(Notificacao)
         }
         class JwtPort {
             <<interface>>
@@ -36,10 +35,6 @@ classDiagram
 
     namespace Domain {
         class Notificacao {
-            +visualizar()
-            +visualizada Boolean
-            +dataVisualizacao LocalDateTime?
-            +statusEnvio StatusEnvio
             +destinatario UsuarioId
         }
     }
@@ -48,15 +43,14 @@ classDiagram
         class NotificacaoRepositoryAdapter {
             <<@ApplicationScoped>>
             +buscarPorId(NotificacaoId) Notificacao?
-            +atualizar(Notificacao)
         }
     }
 
-    NotificacaoResourceImpl --> MarcarNotificacaoVisualizadaUseCase : invoca
+    NotificacaoResourceImpl --> BuscarNotificacaoUseCase : invoca
 
-    MarcarNotificacaoVisualizadaUseCaseImpl ..|> MarcarNotificacaoVisualizadaUseCase
-    MarcarNotificacaoVisualizadaUseCaseImpl --> JwtPort : getUsuarioId (ownership check)
-    MarcarNotificacaoVisualizadaUseCaseImpl --> NotificacaoRepositoryPort : buscarPorId / atualizar
-    MarcarNotificacaoVisualizadaUseCaseImpl --> Notificacao : visualizar()
+    BuscarNotificacaoUseCaseImpl ..|> BuscarNotificacaoUseCase
+    BuscarNotificacaoUseCaseImpl --> JwtPort : getUsuarioId (ownership check)
+    BuscarNotificacaoUseCaseImpl --> NotificacaoRepositoryPort : buscarPorId
+    BuscarNotificacaoUseCaseImpl --> Notificacao : verifica destinatario
 
     NotificacaoRepositoryAdapter ..|> NotificacaoRepositoryPort

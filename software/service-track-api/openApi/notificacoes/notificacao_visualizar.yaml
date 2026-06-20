@@ -1,0 +1,35 @@
+patch:
+  summary: Marcar notificação como visualizada. Usuário só pode marcar as suas.
+  operationId: marcarNotificacaoVisualizada
+  tags:
+    - Notificacao
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    '204':
+      description: Notificação marcada como visualizada
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Notificação não pertence ao usuário
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Notificação não encontrada
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

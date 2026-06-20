@@ -70,3 +70,11 @@ paths:
     $ref: './openApi/ordemServico/ordemServico_item_concluir.yaml'
   /dashboard/clientes/{id}:
     $ref: './openApi/dashboard/dashboard_id_cliente.yaml'
+  /notificacoes:
+    $ref: './openApi/notificacoes/notificacoes.yaml'
+  /notificacoes/{id}:
+    $ref: './openApi/notificacoes/notificacao_id.yaml'
+  /notificacoes/{id}/visualizar:
+    $ref: './openApi/notificacoes/notificacao_visualizar.yaml'
+  /notificacoes/nao-lidas/contagem:
+    $ref: './openApi/notificacoes/notificacao_nao_lidas_contagem.yaml'

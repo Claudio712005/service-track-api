@@ -1,0 +1,7 @@
+type: object
+properties:
+  total:
+    type: integer
+    format: int64
+    example: 3
+    description: Quantidade de notificações não lidas do usuário

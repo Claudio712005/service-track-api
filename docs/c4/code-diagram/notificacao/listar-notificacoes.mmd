@@ -1,0 +1,73 @@
+classDiagram
+    direction TB
+
+    namespace Infrastructure_REST {
+        class NotificacaoResourceImpl {
+            <<@ApplicationScoped>>
+            <<@RolesAllowed CLIENTE, MECANICO>>
+            +listarNotificacoes(Boolean?, Int?, Int?) Response
+        }
+    }
+
+    namespace Application_Ports_In {
+        class ListarNotificacoesUseCase {
+            <<interface>>
+            +executar(Boolean?, Int, Int) PageResDTO~NotificacaoResDTO~
+        }
+    }
+
+    namespace Application_Service {
+        class ListarNotificacoesUseCaseImpl {
+            +executar(Boolean?, Int, Int) PageResDTO~NotificacaoResDTO~
+        }
+    }
+
+    namespace Application_DTO {
+        class FiltroNotificacaoDTO {
+            +destinatarioId String
+            +visualizada Boolean?
+            +page Int
+            +size Int
+        }
+        class NotificacaoResDTO {
+            +id String
+            +titulo String
+            +assunto String
+            +descricao String
+            +tipoNotificacao String
+            +tipoConteudo String
+            +statusEnvio String
+            +visualizada Boolean
+            +dataCriacao LocalDateTime
+            +dataEnvio LocalDateTime?
+            +dataVisualizacao LocalDateTime?
+        }
+    }
+
+    namespace Application_Ports_Out {
+        class NotificacaoRepositoryPort {
+            <<interface>>
+            +listar(FiltroNotificacaoDTO) PageResDTO~Notificacao~
+        }
+        class JwtPort {
+            <<interface>>
+            +getUsuarioId() UsuarioId
+        }
+    }
+
+    namespace Infrastructure_Adapters {
+        class NotificacaoRepositoryAdapter {
+            <<@ApplicationScoped>>
+            +listar(FiltroNotificacaoDTO) PageResDTO~Notificacao~
+        }
+    }
+
+    NotificacaoResourceImpl --> ListarNotificacoesUseCase : invoca
+
+    ListarNotificacoesUseCaseImpl ..|> ListarNotificacoesUseCase
+    ListarNotificacoesUseCaseImpl --> JwtPort : getUsuarioId (auto-filter)
+    ListarNotificacoesUseCaseImpl --> NotificacaoRepositoryPort : listar
+    ListarNotificacoesUseCaseImpl ..> FiltroNotificacaoDTO : cria
+    ListarNotificacoesUseCaseImpl ..> NotificacaoResDTO : mapeia
+
+    NotificacaoRepositoryAdapter ..|> NotificacaoRepositoryPort

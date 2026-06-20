@@ -4,7 +4,7 @@ title: C4 Component - Notificacao (E-mail assíncrono)
 flowchart TD
     OS_SVC(["Use Cases de OS<br/>(EnviarParaDiagnostico, AprovarOrcamento,<br/>Finalizar, Entregar, Cancelar,<br/>GerarOrcamento, ReprovarOrcamento)"])
     SCHED_TICK(["⏰ Quarkus Scheduler<br/>(@Scheduled every=30s)"])
-    REST(["HTTP Request<br/>(futuro — Fase 7)"])
+    REST(["HTTP Request<br/>NotificacaoResourceImpl<br/>@RolesAllowed(CLIENTE, MECANICO)"])
 
     subgraph INFRA["Infrastructure"]
         ENS["EnvioNotificacaoScheduler<br/>@ApplicationScoped<br/>@Scheduled(every='30s',<br/>concurrentExecution=SKIP)"]
@@ -22,9 +22,15 @@ flowchart TD
         EUC["EnfileirarNotificacaoUseCase"]
         PUC["ProcessarNotificacoesPendentesUseCase"]
         MUC["MarcarNotificacaoVisualizadaUseCase"]
+        LUC["ListarNotificacoesUseCase"]
+        BUC["BuscarNotificacaoUseCase"]
+        CUC["ContarNotificacoesNaoLidasUseCase"]
         ES["EnfileirarNotificacaoUseCaseImpl"]
         PS["ProcessarNotificacoesPendentesUseCaseImpl"]
         MS["MarcarNotificacaoVisualizadaUseCaseImpl"]
+        LS["ListarNotificacoesUseCaseImpl"]
+        BS["BuscarNotificacaoUseCaseImpl"]
+        CS["ContarNotificacoesNaoLidasUseCaseImpl"]
 
         subgraph EVENT["CDI Events (intra-monolito)"]
             EVT["OrdemServicoStatusAlteradoEvent"]
@@ -64,7 +70,12 @@ flowchart TD
     PS --> EGP --> QMG --> SMTP
     PS --> N
 
-    REST -.->|"Fase 7"| MUC --> MS --> NRP
+    REST -->|"GET /notificacoes"| LUC --> LS --> NRP
+    REST -->|"GET /notificacoes/:id"| BUC --> BS --> NRP
+    REST -->|"GET /nao-lidas/contagem"| CUC --> CS --> NRP
+    REST -->|"PATCH /:id/visualizar"| MUC --> MS --> NRP
 
-    CFG -.->|"@Produces"| EUC & PUC & MUC
+    LS & BS & CS & MS --> JWT["JwtPort<br/>(ownership check)"]
+
+    CFG -.->|"@Produces"| EUC & PUC & MUC & LUC & BUC & CUC
     LST --> URP
