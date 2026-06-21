@@ -1,7 +1,6 @@
 package br.com.servicetrack.application.mecanico.service
 
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
-import br.com.servicetrack.application.auditoria.context.AuditoriaContextoHolder
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.mecanico.dto.request.AtualizarMecanicoReqDTO
@@ -44,8 +43,6 @@ class AtualizarMecanicoService(
                 "Apenas mecânicos com nível Sênior podem atualizar outros mecânicos"
             )
         }
-
-        AuditoriaContextoHolder.registrarAntes(mecanicoAlvo)
 
         val mecanicoAtualizado = Mecanico.criar(
             UsuarioId(id),

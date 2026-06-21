@@ -30,6 +30,7 @@ import br.com.servicetrack.application.ordemServico.service.ListarOrdensServicoS
 import br.com.servicetrack.application.ordemServico.service.ReprovarOrcamentoService
 import br.com.servicetrack.application.servico.ports.`out`.ServicoRepositoryPort
 import br.com.servicetrack.application.usuario.ports.`out`.JwtPort
+import br.com.servicetrack.domain.ordemServico.vo.OrdemServicoId
 import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
 import br.com.servicetrack.infrastructure.auditoria.AuditoriaProxy
 import jakarta.enterprise.context.ApplicationScoped
@@ -63,6 +64,7 @@ class OrdemServicoServiceConfig {
         EnviarParaDiagnosticoService(repository, jwtPort, statusAlteradoEvent),
         EnviarParaDiagnosticoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> repository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
     @Produces
@@ -71,12 +73,7 @@ class OrdemServicoServiceConfig {
         repository: OrdemServicoRepositoryPort,
         usuarioRepository: UsuarioRepositoryPort,
         jwtPort: JwtPort,
-        auditoria: RegistrarAuditoriaPort,
-    ): BuscarOrdemServicoUseCase = AuditoriaProxy.envolver(
-        BuscarOrdemServicoService(repository, usuarioRepository, jwtPort),
-        BuscarOrdemServicoUseCase::class.java,
-        auditoria,
-    )
+    ): BuscarOrdemServicoUseCase = BuscarOrdemServicoService(repository, usuarioRepository, jwtPort)
 
     @Produces
     @ApplicationScoped
@@ -84,12 +81,7 @@ class OrdemServicoServiceConfig {
         repository: OrdemServicoRepositoryPort,
         usuarioRepository: UsuarioRepositoryPort,
         jwtPort: JwtPort,
-        auditoria: RegistrarAuditoriaPort,
-    ): ListarOrdensServicoUseCase = AuditoriaProxy.envolver(
-        ListarOrdensServicoService(repository, usuarioRepository, jwtPort),
-        ListarOrdensServicoUseCase::class.java,
-        auditoria,
-    )
+    ): ListarOrdensServicoUseCase = ListarOrdensServicoService(repository, usuarioRepository, jwtPort)
 
     @Produces
     @ApplicationScoped
@@ -103,6 +95,7 @@ class OrdemServicoServiceConfig {
         AssociarItensOrdemServicoService(osRepository, servicoRepository, insumoRepository, jwtPort),
         AssociarItensOrdemServicoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
     @Produces
@@ -117,6 +110,7 @@ class OrdemServicoServiceConfig {
         GerarOrcamentoService(osRepository, insumoRepository, jwtPort, statusAlteradoEvent),
         GerarOrcamentoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
     @Produces
@@ -130,6 +124,7 @@ class OrdemServicoServiceConfig {
         AprovarOrcamentoService(repository, jwtPort, statusAlteradoEvent),
         AprovarOrcamentoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> repository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
     @Produces
@@ -144,6 +139,7 @@ class OrdemServicoServiceConfig {
         ReprovarOrcamentoService(osRepository, insumoRepository, jwtPort, statusAlteradoEvent),
         ReprovarOrcamentoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
     @Produces
@@ -158,6 +154,7 @@ class OrdemServicoServiceConfig {
         CancelarOrdemServicoService(osRepository, insumoRepository, jwtPort, statusAlteradoEvent),
         CancelarOrdemServicoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
     @Produces
@@ -172,6 +169,7 @@ class OrdemServicoServiceConfig {
         FinalizarOrdemServicoService(osRepository, usuarioRepository, jwtPort, statusAlteradoEvent),
         FinalizarOrdemServicoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
     @Produces
@@ -186,6 +184,7 @@ class OrdemServicoServiceConfig {
         EntregarOrdemServicoService(osRepository, usuarioRepository, jwtPort, statusAlteradoEvent),
         EntregarOrdemServicoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
     @Produces
@@ -198,5 +197,6 @@ class OrdemServicoServiceConfig {
         ConcluirItemServicoService(osRepository, jwtPort),
         ConcluirItemServicoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 }

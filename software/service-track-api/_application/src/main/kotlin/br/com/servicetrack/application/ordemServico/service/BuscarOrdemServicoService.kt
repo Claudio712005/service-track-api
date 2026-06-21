@@ -1,6 +1,5 @@
 package br.com.servicetrack.application.ordemServico.service
 
-import br.com.servicetrack.application.auditoria.context.AuditoriaContextoHolder
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.ordemServico.dto.response.OrdemServicoResDTO
@@ -24,8 +23,6 @@ class BuscarOrdemServicoService(
 
         val os = repository.buscarPorId(OrdemServicoId(ordemServicoId))
             ?: throw EntidadeNaoEncontradaException("Ordem de Serviço", arrayOf(ordemServicoId))
-
-        AuditoriaContextoHolder.registrarAntes(os)
 
         if (solicitante.ehCliente() && os.clienteId != solicitanteId) {
             throw OperacaoNegadaException(

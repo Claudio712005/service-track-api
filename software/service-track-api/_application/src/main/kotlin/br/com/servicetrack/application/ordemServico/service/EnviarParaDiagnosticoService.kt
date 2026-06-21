@@ -1,7 +1,6 @@
 package br.com.servicetrack.application.ordemServico.service
 
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
-import br.com.servicetrack.application.auditoria.context.AuditoriaContextoHolder
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
@@ -26,8 +25,6 @@ class EnviarParaDiagnosticoService(
 
         val os = repository.buscarPorId(OrdemServicoId(ordemServicoId))
             ?: throw EntidadeNaoEncontradaException("Ordem de Serviço", arrayOf(ordemServicoId))
-
-        AuditoriaContextoHolder.registrarAntes(os)
 
         if (os.obterMecanicoId() != solicitanteId) {
             throw OperacaoNegadaException(

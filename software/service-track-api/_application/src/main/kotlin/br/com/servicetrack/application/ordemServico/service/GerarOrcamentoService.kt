@@ -1,7 +1,6 @@
 package br.com.servicetrack.application.ordemServico.service
 
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
-import br.com.servicetrack.application.auditoria.context.AuditoriaContextoHolder
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.insumo.ports.`out`.InsumoRepositoryPort
@@ -35,8 +34,6 @@ class GerarOrcamentoService(
 
         val os = osRepository.buscarPorId(OrdemServicoId(ordemServicoId))
             ?: throw EntidadeNaoEncontradaException("Ordem de Serviço", arrayOf(ordemServicoId))
-
-        AuditoriaContextoHolder.registrarAntes(os)
 
         if (os.obterMecanicoId() != solicitanteId) {
             throw OperacaoNegadaException(

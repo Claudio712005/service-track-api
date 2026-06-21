@@ -4,6 +4,7 @@ object AuditoriaContextoHolder {
 
     private val contexto = ThreadLocal<Any?>()
 
+    @Deprecated("Use antesProvider lambda em AuditoriaProxy.envolver()", level = DeprecationLevel.WARNING)
     fun registrarAntes(objeto: Any) {
         contexto.set(objeto)
     }

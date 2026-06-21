@@ -1,7 +1,6 @@
 package br.com.servicetrack.application.servico.service
 
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
-import br.com.servicetrack.application.auditoria.context.AuditoriaContextoHolder
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.servico.dto.AtualizarServicoReqDTO
 import br.com.servicetrack.application.servico.dto.ServicoResDTO
@@ -21,8 +20,6 @@ class AtualizarServicoService(
     override fun atualizarServico(id: ServicoId, req: AtualizarServicoReqDTO): ServicoResDTO {
         val existente = repository.buscarPorId(id)
             ?: throw EntidadeNaoEncontradaException(Servico::class.java.name, arrayOf(id.valor))
-
-        AuditoriaContextoHolder.registrarAntes(ServicoResDTO.de(existente))
 
         val atualizado = Servico.reconstituir(
             id = existente.id,

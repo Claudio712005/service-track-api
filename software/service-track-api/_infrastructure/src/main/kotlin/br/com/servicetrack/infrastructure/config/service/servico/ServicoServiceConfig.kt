@@ -14,7 +14,9 @@ import br.com.servicetrack.application.servico.service.BuscarServicoService
 import br.com.servicetrack.application.servico.service.BuscarTempoMedioConclusaoService
 import br.com.servicetrack.application.servico.service.CriarServicoService
 import br.com.servicetrack.application.servico.service.ListarServicosService
+import br.com.servicetrack.application.servico.dto.ServicoResDTO
 import br.com.servicetrack.application.servico.service.RemoverServicoService
+import br.com.servicetrack.domain.servico.vo.ServicoId
 import br.com.servicetrack.infrastructure.auditoria.AuditoriaProxy
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Produces
@@ -53,7 +55,8 @@ class ServicoServiceConfig {
     ): AtualizarServicoUseCase = AuditoriaProxy.envolver(
         AtualizarServicoService(repository),
         AtualizarServicoUseCase::class.java,
-        auditoria
+        auditoria,
+        antesProvider = { args -> repository.buscarPorId(args[0] as ServicoId)?.let { ServicoResDTO.de(it) } },
     )
 
     @Produces
@@ -64,7 +67,8 @@ class ServicoServiceConfig {
     ): RemoverServicoUseCase = AuditoriaProxy.envolver(
         RemoverServicoService(repository),
         RemoverServicoUseCase::class.java,
-        auditoria
+        auditoria,
+        antesProvider = { args -> repository.buscarPorId(args[0] as ServicoId)?.let { ServicoResDTO.de(it) } },
     )
 
     @Produces

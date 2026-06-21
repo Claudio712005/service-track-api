@@ -10,6 +10,7 @@ import br.com.servicetrack.application.veiculo.ports.`in`.ListarVeiculosUseCase
 import br.com.servicetrack.application.veiculo.ports.`in`.RemoverVeiculoUseCase
 import br.com.servicetrack.application.veiculo.ports.out.FipePort
 import br.com.servicetrack.application.veiculo.ports.out.VeiculoRepositoryPort
+import br.com.servicetrack.domain.veiculo.vo.VeiculoId
 import br.com.servicetrack.application.veiculo.service.AtualizarVeiculoService
 import br.com.servicetrack.application.veiculo.service.BuscarVeiculoService
 import br.com.servicetrack.application.veiculo.service.CadastrarVeiculoService
@@ -46,7 +47,8 @@ class VeiculoServiceConfig {
     ): RemoverVeiculoUseCase = AuditoriaProxy.envolver(
         RemoverVeiculoService(jwt, repository, usuarioRepository),
         RemoverVeiculoUseCase::class.java,
-        auditoria
+        auditoria,
+        antesProvider = { args -> repository.buscarPorId(args[0] as VeiculoId)?.obterDados() },
     )
 
     @Produces
@@ -74,6 +76,7 @@ class VeiculoServiceConfig {
     ): AtualizarVeiculoUseCase = AuditoriaProxy.envolver(
         AtualizarVeiculoService(repository, usuarioRepository, jwt, fipe),
         AtualizarVeiculoUseCase::class.java,
-        auditoria
+        auditoria,
+        antesProvider = { args -> repository.buscarPorId(args[0] as VeiculoId)?.obterDados() },
     )
 }

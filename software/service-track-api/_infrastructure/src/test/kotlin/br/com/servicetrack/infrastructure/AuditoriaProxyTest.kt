@@ -113,4 +113,74 @@ class AuditoriaProxyTest {
 
         assertEquals(estadoAnterior, antesSlot.captured)
     }
+
+    @Test
+    fun `deve capturar estado anterior via antesProvider`() {
+        val estadoAnterior = RespostaDTO("antes-id", "estado anterior")
+        val proxyComProvider = AuditoriaProxy.envolver(
+            ServicoTesteImpl(),
+            ServicoTeste::class.java,
+            auditoriaPort,
+            antesProvider = { _ -> estadoAnterior },
+        )
+        val antesSlot = slot<Any>()
+        justRun {
+            auditoriaPort.registrar(any(), any(), any(), capture(antesSlot), any())
+        }
+
+        proxyComProvider.executar("novo-id")
+
+        assertEquals(estadoAnterior, antesSlot.captured)
+    }
+
+    @Test
+    fun `deve passar argumentos corretos para antesProvider`() {
+        val argsCapturados = mutableListOf<Array<Any?>>()
+        val proxyComProvider = AuditoriaProxy.envolver(
+            ServicoTesteImpl(),
+            ServicoTeste::class.java,
+            auditoriaPort,
+            antesProvider = { args ->
+                argsCapturados.add(args)
+                null
+            },
+        )
+        justRun { auditoriaPort.registrar(any(), any(), any(), any(), any()) }
+
+        proxyComProvider.executar("id-teste")
+
+        assertEquals(1, argsCapturados.size)
+        assertEquals("id-teste", argsCapturados[0][0])
+    }
+
+    @Test
+    fun `deve tratar erro no antesProvider sem impedir execucao`() {
+        val proxyComProvider = AuditoriaProxy.envolver(
+            ServicoTesteImpl(),
+            ServicoTeste::class.java,
+            auditoriaPort,
+            antesProvider = { _ -> throw RuntimeException("Erro no provider") },
+        )
+        justRun { auditoriaPort.registrar(any(), any(), any(), any(), any()) }
+
+        val resultado = proxyComProvider.executar("id-teste")
+
+        assertEquals("id-teste", resultado.id)
+        assertEquals("ok", resultado.valor)
+    }
+
+    @Test
+    fun `deve funcionar sem antesProvider mantendo compatibilidade`() {
+        val proxyPadrao = AuditoriaProxy.envolver(
+            ServicoTesteImpl(),
+            ServicoTeste::class.java,
+            auditoriaPort,
+        )
+        justRun { auditoriaPort.registrar(any(), any(), any(), any(), any()) }
+
+        val resultado = proxyPadrao.executar("id-teste")
+
+        assertEquals("id-teste", resultado.id)
+        verify(exactly = 1) { auditoriaPort.registrar(any(), any(), eq("id-teste"), isNull(), any()) }
+    }
 }

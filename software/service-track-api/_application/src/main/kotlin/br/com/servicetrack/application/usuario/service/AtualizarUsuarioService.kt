@@ -1,7 +1,6 @@
 package br.com.servicetrack.application.usuario.service
 
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
-import br.com.servicetrack.application.auditoria.context.AuditoriaContextoHolder
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.usuario.dto.request.AtualizarUsuarioReqDTO
@@ -37,8 +36,6 @@ class AtualizarUsuarioService(
         if (usuarioRepository.existeEmailEmOutroUsuario(req.email, id)) {
             throw DomainException("E-mail '${req.email}' já está em uso por outro usuário")
         }
-
-        AuditoriaContextoHolder.registrarAntes(alvo)
 
         alvo.atualizar(
             novoNome = req.nome,

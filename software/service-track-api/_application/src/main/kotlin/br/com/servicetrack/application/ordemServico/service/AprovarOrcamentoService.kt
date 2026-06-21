@@ -1,7 +1,6 @@
 package br.com.servicetrack.application.ordemServico.service
 
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
-import br.com.servicetrack.application.auditoria.context.AuditoriaContextoHolder
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
@@ -33,8 +32,6 @@ class AprovarOrcamentoService(
                 "Apenas o cliente titular da OS pode aprovar o orçamento"
             )
         }
-
-        AuditoriaContextoHolder.registrarAntes(os)
 
         os.aprovarOrcamento()
 

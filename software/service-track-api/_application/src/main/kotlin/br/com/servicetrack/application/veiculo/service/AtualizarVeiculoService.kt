@@ -1,7 +1,6 @@
 package br.com.servicetrack.application.veiculo.service
 
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
-import br.com.servicetrack.application.auditoria.context.AuditoriaContextoHolder
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.MarcaInvalidaFipeException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
@@ -42,8 +41,6 @@ class AtualizarVeiculoService(
                 "Apenas o proprietário ou um mecânico pode atualizar este veículo"
             )
         }
-
-        AuditoriaContextoHolder.registrarAntes(DadosveiculoResDTO.de(veiculo))
 
         req.placa?.let { veiculo.alterarPlaca(Placa(it)) }
 
