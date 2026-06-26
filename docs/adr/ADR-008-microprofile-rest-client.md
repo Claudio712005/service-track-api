@@ -24,13 +24,13 @@ Adotar o **MicroProfile REST Client** (`quarkus-rest-client-reactive-jackson`).
 
 | Critério | MicroProfile REST Client | Retrofit | Feign |
 |---|---|---|---|
-| Integração nativa com Quarkus | ✅ Nativa | ❌ Requer configuração manual | ⚠️ Suportado via extension |
-| CDI / Injeção de dependência | ✅ `@RestClient` nativo | ❌ Manual | ⚠️ Parcial |
-| Estilo declarativo (interfaces) | ✅ | ✅ | ✅ |
-| Configuração via `application.properties` | ✅ | ❌ | ⚠️ |
-| Reactive (Vert.x) compatível | ✅ Reactive nativo | ❌ | ⚠️ |
+| Integração nativa com Quarkus | Sim Nativa | Não Requer configuração manual | Parcial Suportado via extension |
+| CDI / Injeção de dependência | Sim `@RestClient` nativo | Não Manual | Parcial Parcial |
+| Estilo declarativo (interfaces) | Sim | Sim | Sim |
+| Configuração via `application.properties` | Sim | Não | Parcial |
+| Reactive (Vert.x) compatível | Sim Reactive nativo | Não | Parcial |
 | Dependências extras | Nenhuma (já no BOM) | 3+ deps | 2+ deps |
-| Observabilidade / Tracing | ✅ Integrado ao OpenTelemetry | ❌ Manual | ⚠️ |
+| Observabilidade / Tracing | Sim Integrado ao OpenTelemetry | Não Manual | Parcial |
 
 O MicroProfile REST Client é a escolha canônica para projetos Quarkus. Não adiciona dependências externas (já faz parte do Quarkus BOM), integra-se nativamente ao CDI para injeção com `@RestClient`, e a configuração das URLs e timeouts é feita diretamente no `application.properties` sem código extra.
 

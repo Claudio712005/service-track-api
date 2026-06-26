@@ -26,8 +26,9 @@ import jakarta.transaction.Transactional
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
 import jakarta.ws.rs.core.Response
+import org.eclipse.microprofile.faulttolerance.Bulkhead
+import org.eclipse.microprofile.faulttolerance.Timeout
 import java.net.URI
-import java.time.LocalDate
 import java.util.UUID
 
 @ApplicationScoped
@@ -48,12 +49,15 @@ class OrdemServicoResourceImpl @Inject constructor(
 
     @RolesAllowed("CLIENTE", "MECANICO")
     @Transactional
+    @Timeout(5000)
     override fun criarOrdemServico(ordemServicoRequest: @Valid @NotNull OrdemServicoRequest): Response {
         val response = criarOrdemServicoUseCase.criarOrdemServico(ordemServicoRequest.toApplicationDTO())
         return Response.created(URI("/ordem-servico/${response.id}")).entity(response).build()
     }
 
     @RolesAllowed("CLIENTE", "MECANICO")
+    @Timeout(5000)
+    @Bulkhead(15)
     override fun listarOrdensServico(
         status: String?,
         clienteId: UUID?,
@@ -66,72 +70,82 @@ class OrdemServicoResourceImpl @Inject constructor(
     }
 
     @RolesAllowed("CLIENTE", "MECANICO")
+    @Timeout(2000)
     override fun buscarOrdemServico(id: UUID): Response {
         return Response.ok(buscarOrdemServicoUseCase.buscarOrdemServico(id.toString())).build()
     }
 
     @RolesAllowed("MECANICO")
     @Transactional
+    @Timeout(5000)
     override fun enviarParaDiagnostico(id: UUID): Response {
         return Response.ok(enviarParaDiagnosticoUseCase.enviarParaDiagnostico(id.toString())).build()
     }
 
     @RolesAllowed("MECANICO")
     @Transactional
+    @Timeout(5000)
     override fun associarItensOrdemServico(
         id: UUID,
         associarItensRequest: @Valid @NotNull AssociarItensRequest,
     ): Response {
         return Response.ok(
-            associarItensOrdemServicoUseCase.associarItens(id.toString(), associarItensRequest.toApplicationDTO())
+            associarItensOrdemServicoUseCase.associarItens(id.toString(), associarItensRequest.toApplicationDTO()),
         ).build()
     }
 
     @RolesAllowed("MECANICO")
     @Transactional
+    @Timeout(5000)
     override fun gerarOrcamento(id: UUID, req: GerarOrcamentoRequest): Response {
         return Response.ok(gerarOrcamentoUseCase.gerarOrcamento(id.toString(), req.prazoEntrega)).build()
     }
 
     @RolesAllowed("CLIENTE")
     @Transactional
+    @Timeout(5000)
     override fun aprovarOrcamento(id: UUID): Response {
         return Response.ok(aprovarOrcamentoUseCase.aprovarOrcamento(id.toString())).build()
     }
 
     @RolesAllowed("CLIENTE")
     @Transactional
+    @Timeout(5000)
     override fun reprovarOrcamento(
         id: UUID,
         reprovarOrcamentoRequest: @Valid @NotNull ReprovarOrcamentoRequest,
     ): Response {
         return Response.ok(
-            reprovarOrcamentoUseCase.reprovarOrcamento(id.toString(), reprovarOrcamentoRequest.toApplicationDTO())
+            reprovarOrcamentoUseCase.reprovarOrcamento(id.toString(), reprovarOrcamentoRequest.toApplicationDTO()),
         ).build()
     }
 
     @RolesAllowed("CLIENTE")
     @Transactional
+    @Timeout(5000)
     override fun cancelarOrdemServico(id: UUID, cancelarOsRequest: CancelarOsRequest?): Response {
         return Response.ok(
-            cancelarOrdemServicoUseCase.cancelarOrdemServico(id.toString(), cancelarOsRequest.toApplicationDTO())
+            cancelarOrdemServicoUseCase.cancelarOrdemServico(id.toString(), cancelarOsRequest.toApplicationDTO()),
         ).build()
     }
 
     @RolesAllowed("MECANICO")
     @Transactional
+    @Timeout(5000)
     override fun finalizarOrdemServico(id: UUID): Response {
         return Response.ok(finalizarOrdemServicoUseCase.finalizarOrdemServico(id.toString())).build()
     }
 
     @RolesAllowed("MECANICO")
     @Transactional
+    @Timeout(5000)
     override fun entregarOrdemServico(id: UUID): Response {
         return Response.ok(entregarOrdemServicoUseCase.entregarOrdemServico(id.toString())).build()
     }
 
     @RolesAllowed("MECANICO")
     @Transactional
+    @Timeout(5000)
     override fun concluirItemServico(
         id: UUID,
         itemId: UUID,
@@ -142,7 +156,7 @@ class OrdemServicoResourceImpl @Inject constructor(
                 id.toString(),
                 itemId.toString(),
                 concluirItemServicoRequest.toApplicationDTO(),
-            )
+            ),
         ).build()
     }
 }

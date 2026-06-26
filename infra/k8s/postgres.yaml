@@ -1,5 +1,3 @@
-# Postgres do banco do ServiceTrack — efemero (sem volume persistente) para a v1.
-# Os dados somem quando o pod reinicia; ok porque o app recria o schema (drop-and-create).
 ---
 apiVersion: v1
 kind: Secret

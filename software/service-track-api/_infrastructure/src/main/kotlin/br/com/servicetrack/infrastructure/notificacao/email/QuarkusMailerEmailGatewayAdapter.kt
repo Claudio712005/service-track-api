@@ -5,9 +5,11 @@ import br.com.servicetrack.application.notificacao.dto.ResultadoEnvio
 import br.com.servicetrack.application.notificacao.ports.out.EmailGatewayPort
 import io.quarkus.mailer.Mail
 import io.quarkus.mailer.Mailer
+import io.smallrye.faulttolerance.api.ExponentialBackoff
 import jakarta.enterprise.context.ApplicationScoped
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker
 import org.eclipse.microprofile.faulttolerance.Retry
+import org.eclipse.microprofile.faulttolerance.Timeout
 import org.jboss.logging.Logger
 
 @ApplicationScoped
@@ -17,8 +19,10 @@ class QuarkusMailerEmailGatewayAdapter(
 
     private val logger: Logger = Logger.getLogger(QuarkusMailerEmailGatewayAdapter::class.java)
 
-    @Retry(maxRetries = 2, delay = 500)
-    @CircuitBreaker(requestVolumeThreshold = 4, failureRatio = 0.75, delay = 5000)
+    @Retry(maxRetries = 3)
+    @ExponentialBackoff(factor = 2, maxDelay = 10000)
+    @CircuitBreaker(requestVolumeThreshold = 5, failureRatio = 1.0, delay = 60000, successThreshold = 2)
+    @Timeout(10000)
     override fun enviar(mensagem: EmailMensagem): ResultadoEnvio {
         return try {
             val mail = Mail.withHtml(
@@ -33,9 +37,8 @@ class QuarkusMailerEmailGatewayAdapter(
             mailer.send(mail)
             ResultadoEnvio.Sucesso
         } catch (ex: RuntimeException) {
-            logger.warn("Falha ao enviar e-mail para ${mensagem.destinatario.valor}: ${ex.message}")
+            logger.warnf("[Email] Falha ao enviar e-mail para %s: %s", mensagem.destinatario.valor, ex.message)
             ResultadoEnvio.Falha(ex.message ?: ex.javaClass.simpleName)
         }
     }
 }
-

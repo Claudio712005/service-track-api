@@ -18,6 +18,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
 import jakarta.ws.rs.PathParam
 import jakarta.ws.rs.core.Response
+import org.eclipse.microprofile.faulttolerance.Timeout
 import java.net.URI
 
 @ApplicationScoped
@@ -32,6 +33,7 @@ class ServicoResourceImpl(
 
     @Transactional
     @RolesAllowed("MECANICO")
+    @Timeout(3000)
     override fun criarServico(criarServicoRequest: @Valid @NotNull CriarServicoRequest): Response {
         val dto = criarServicoRequest.toApplicationDTO()
         val servico = criarServicoUseCase.criarServico(dto)
@@ -42,12 +44,14 @@ class ServicoResourceImpl(
     }
 
     @RolesAllowed("MECANICO")
+    @Timeout(2000)
     override fun buscarServico(@PathParam("id") id: String): Response {
         val servico = buscarServicoUseCase.buscarServico(ServicoId(id))
         return Response.ok(servico.toServicoResponse()).build()
     }
 
     @RolesAllowed("MECANICO")
+    @Timeout(5000)
     override fun listarServicos(): Response {
         val servicos = listarServicosUseCase.listarServicos()
             .map { it.toServicoResponse() }
@@ -56,6 +60,7 @@ class ServicoResourceImpl(
 
     @Transactional
     @RolesAllowed("MECANICO")
+    @Timeout(3000)
     override fun atualizarServico(@PathParam("id") id: String, atualizarServicoRequest: @Valid @NotNull AtualizarServicoRequest): Response {
         val dto = atualizarServicoRequest.toApplicationDTO()
         val servico = atualizarServicoUseCase.atualizarServico(ServicoId(id), dto)
@@ -64,12 +69,14 @@ class ServicoResourceImpl(
 
     @Transactional
     @RolesAllowed("MECANICO")
+    @Timeout(3000)
     override fun removerServico(@PathParam("id") id: String): Response {
         removerServicoUseCase.removerServico(ServicoId(id))
         return Response.noContent().build()
     }
 
     @RolesAllowed("MECANICO")
+    @Timeout(5000)
     override fun buscarTempoMedioConclusao(@PathParam("id") id: String, unidade: String): Response {
         val unidadeTempo = UnidadeTempoEnum.valueOf(unidade.uppercase())
         return Response.ok(buscarTempoMedioConclusaoUseCase.buscarTempoMedio(id, unidadeTempo)).build()

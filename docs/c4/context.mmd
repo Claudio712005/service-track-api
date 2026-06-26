@@ -2,22 +2,30 @@
 title: C4 Context - Service Track API
 ---
 flowchart TD
-    Cliente(["👤 Cliente (usuário final)"])
-    Mecanico(["🔧 Mecânico (usuário interno)"])
+    Cliente(["Cliente (usuário final)"])
+    Mecanico(["Mecânico (usuário interno)"])
 
-    ST["🖥️ Service Track API | Gestão de Ordens de Serviço, Orçamentos, Veículos, Mecânicos e Notificações"]
+    ST["Service Track API | Gestão de Ordens de Serviço, Orçamentos, Veículos, Mecânicos e Notificações"]
 
-    DB[("🗄️ PostgreSQL
+    DB[("PostgreSQL
     Banco de dados relacional")]
 
-    SMTP[("📮 Servidor SMTP
+    SMTP[("Servidor SMTP
     MailHog (dev) / Provedor (prod)")]
 
-    InboxCliente(["📥 Caixa de e-mail
+    FIPE[("FIPE API
+    brasilapi.com.br")]
+
+    UNSPLASH[("Unsplash API
+    api.unsplash.com")]
+
+    InboxCliente(["Caixa de e-mail
     do cliente"])
 
     Cliente -->|"Cria OS, aprova/reprova orçamento, acompanha status"| ST
     Mecanico -->|"Executa diagnóstico, associação de itens, conclusão de serviços"| ST
     ST -->|"Persiste dados (OS, usuários, notificações)"| DB
-    ST -->|"Entrega notificações de mudança de status"| SMTP
+    ST -->|"Entrega notificações de mudança de status (CB + Retry)"| SMTP
+    ST -->|"Consulta marcas/modelos/anos (CB + Retry + Cache)"| FIPE
+    ST -->|"Busca imagens de veículos (CB + Retry + Cache)"| UNSPLASH
     SMTP -->|"Encaminha e-mail"| InboxCliente

@@ -59,11 +59,6 @@ class QuteTemplateRendererAdapterIT {
         assertTrue(resultado.corpoHtml.contains("CONCLUIDA"))
     }
 
-    /**
-     * Garantia paramétrica: cada valor de [TipoConteudoNotificacao] deve possuir
-     * os 3 arquivos de template (subject.txt, body.html, body.txt).
-     * Falha em CI se alguém adicionar um valor ao enum e esquecer dos templates.
-     */
     @Test
     fun `todos os TipoConteudoNotificacao devem ter templates`() {
         val faltantes = mutableListOf<String>()
@@ -73,7 +68,6 @@ class QuteTemplateRendererAdapterIT {
             } catch (e: DomainException) {
                 faltantes.add("${tipo.name}: ${e.message}")
             } catch (e: io.quarkus.qute.TemplateException) {
-                // erro de variável ausente é aceitável (template existe)
             }
         }
         assertTrue(

@@ -11,6 +11,7 @@ import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import jakarta.transaction.Transactional
 import jakarta.ws.rs.core.Response
+import org.eclipse.microprofile.faulttolerance.Timeout
 import java.util.UUID
 
 @ApplicationScoped
@@ -22,18 +23,21 @@ class NotificacaoResourceImpl @Inject constructor(
 ) : NotificacoesApi {
 
     @RolesAllowed("CLIENTE", "MECANICO")
+    @Timeout(5000)
     override fun listarNotificacoes(visualizada: Boolean?, page: Int?, size: Int?): Response {
         val resultado = listarNotificacoesUseCase.executar(visualizada, page ?: 0, size ?: 20)
         return Response.ok(resultado).build()
     }
 
     @RolesAllowed("CLIENTE", "MECANICO")
+    @Timeout(2000)
     override fun buscarNotificacao(id: UUID): Response {
         val resultado = buscarNotificacaoUseCase.executar(id.toString())
         return Response.ok(resultado).build()
     }
 
     @RolesAllowed("CLIENTE", "MECANICO")
+    @Timeout(2000)
     override fun contarNotificacoesNaoLidas(): Response {
         val resultado = contarNotificacoesNaoLidasUseCase.executar()
         return Response.ok(resultado).build()
@@ -41,6 +45,7 @@ class NotificacaoResourceImpl @Inject constructor(
 
     @RolesAllowed("CLIENTE", "MECANICO")
     @Transactional
+    @Timeout(3000)
     override fun marcarNotificacaoVisualizada(id: UUID): Response {
         marcarNotificacaoVisualizadaUseCase.executar(NotificacaoId.de(id))
         return Response.noContent().build()

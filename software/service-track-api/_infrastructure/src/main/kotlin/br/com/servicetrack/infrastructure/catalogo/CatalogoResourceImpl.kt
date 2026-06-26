@@ -8,14 +8,16 @@ import br.com.servicetrack.infrastructure.servico.toCatalogoServicoResponse
 import jakarta.annotation.security.RolesAllowed
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.ws.rs.core.Response
+import org.eclipse.microprofile.faulttolerance.Timeout
 
 @ApplicationScoped
 class CatalogoResourceImpl(
     private val listarServicosUseCase: ListarServicosUseCase,
-    private val listarInsumosUseCase: ListarInsumosUseCase
+    private val listarInsumosUseCase: ListarInsumosUseCase,
 ) : CatalogoApi {
 
     @RolesAllowed("CLIENTE", "MECANICO")
+    @Timeout(5000)
     override fun listarCatalogoServicos(): Response {
         val servicos = listarServicosUseCase.listarResumidos()
             .map { it.toCatalogoServicoResponse() }
@@ -23,6 +25,7 @@ class CatalogoResourceImpl(
     }
 
     @RolesAllowed("CLIENTE", "MECANICO")
+    @Timeout(5000)
     override fun listarCatalogoInsumos(): Response {
         val insumos = listarInsumosUseCase.listarResumidos()
             .map { it.toCatalogoInsumoResponse() }

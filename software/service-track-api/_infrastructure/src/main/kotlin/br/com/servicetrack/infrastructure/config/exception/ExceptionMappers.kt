@@ -8,11 +8,16 @@ import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.exception.UsuarioJaExisteException
 import br.com.servicetrack.application.exception.VeiculoJaExisteException
 import br.com.servicetrack.domain.shared.exception.DomainException
+import io.smallrye.faulttolerance.api.RateLimitException
 import jakarta.validation.ConstraintViolationException
 import jakarta.ws.rs.core.MediaType
 import jakarta.ws.rs.core.Response
 import jakarta.ws.rs.ext.ExceptionMapper
 import jakarta.ws.rs.ext.Provider
+import org.eclipse.microprofile.faulttolerance.exceptions.BulkheadException
+import org.eclipse.microprofile.faulttolerance.exceptions.CircuitBreakerOpenException
+import org.eclipse.microprofile.faulttolerance.exceptions.TimeoutException
+import org.jboss.logging.Logger
 
 @Provider
 class UsuarioJaExisteExceptionMapper : ExceptionMapper<UsuarioJaExisteException> {
@@ -94,6 +99,58 @@ class ConstraintViolationExceptionMapper : ExceptionMapper<ConstraintViolationEx
         return Response.status(Response.Status.BAD_REQUEST)
             .type(MediaType.APPLICATION_JSON)
             .entity(ErroResponse(mensagem = "Dados de entrada inválidos", detalhe = detalhe))
+            .build()
+    }
+}
+
+@Provider
+class TimeoutExceptionMapper : ExceptionMapper<TimeoutException> {
+    private val log = Logger.getLogger(TimeoutExceptionMapper::class.java)
+
+    override fun toResponse(exception: TimeoutException): Response {
+        log.warnf("Timeout na camada de recurso: %s", exception.message)
+        return Response.status(Response.Status.GATEWAY_TIMEOUT)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(ErroResponse(mensagem = "Tempo limite excedido", detalhe = "A requisição excedeu o tempo máximo permitido"))
+            .build()
+    }
+}
+
+@Provider
+class BulkheadExceptionMapper : ExceptionMapper<BulkheadException> {
+    private val log = Logger.getLogger(BulkheadExceptionMapper::class.java)
+
+    override fun toResponse(exception: BulkheadException): Response {
+        log.warnf("Bulkhead atingido: %s", exception.message)
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(ErroResponse(mensagem = "Serviço sobrecarregado", detalhe = "Limite de requisições simultâneas atingido. Tente novamente em instantes"))
+            .build()
+    }
+}
+
+@Provider
+class RateLimitExceptionMapper : ExceptionMapper<RateLimitException> {
+    private val log = Logger.getLogger(RateLimitExceptionMapper::class.java)
+
+    override fun toResponse(exception: RateLimitException): Response {
+        log.warnf("Rate limit excedido: %s", exception.message)
+        return Response.status(429)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(ErroResponse(mensagem = "Limite de requisições excedido", detalhe = "Muitas requisições em curto período. Aguarde antes de tentar novamente"))
+            .build()
+    }
+}
+
+@Provider
+class CircuitBreakerOpenExceptionMapper : ExceptionMapper<CircuitBreakerOpenException> {
+    private val log = Logger.getLogger(CircuitBreakerOpenExceptionMapper::class.java)
+
+    override fun toResponse(exception: CircuitBreakerOpenException): Response {
+        log.errorf("Circuit breaker aberto: %s", exception.message)
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(ErroResponse(mensagem = "Serviço temporariamente indisponível", detalhe = "Circuito de proteção ativado após falhas consecutivas. Tente novamente em 1 minuto"))
             .build()
     }
 }

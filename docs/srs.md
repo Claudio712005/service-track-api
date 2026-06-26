@@ -10,7 +10,7 @@
 
 ---
 
-## 📌 Sumário
+## Sumário
 
 * [1. Introdução](#1-introdução)
 * [2. Visão Geral do Produto](#2-visão-geral-do-produto)

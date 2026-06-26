@@ -3,7 +3,7 @@ title: C4 Component - Notificacao (E-mail assíncrono)
 ---
 flowchart TD
     OS_SVC(["Use Cases de OS<br/>(EnviarParaDiagnostico, AprovarOrcamento,<br/>Finalizar, Entregar, Cancelar,<br/>GerarOrcamento, ReprovarOrcamento)"])
-    SCHED_TICK(["⏰ Quarkus Scheduler<br/>(@Scheduled every=30s)"])
+    SCHED_TICK(["Quarkus Scheduler<br/>(@Scheduled every=30s)"])
     REST(["HTTP Request<br/>NotificacaoResourceImpl<br/>@RolesAllowed(CLIENTE, MECANICO)"])
 
     subgraph INFRA["Infrastructure"]
@@ -11,7 +11,7 @@ flowchart TD
         NRA["NotificacaoRepositoryAdapter<br/>(JPA + Panache + FOR UPDATE SKIP LOCKED)"]
         NE["NotificacaoEntity<br/>+ tabela notificacao_copias"]
         QRA["QuteTemplateRendererAdapter<br/>(Engine Qute)"]
-        QMG["QuarkusMailerEmailGatewayAdapter<br/>@Retry + @CircuitBreaker"]
+        QMG["QuarkusMailerEmailGatewayAdapter<br/>@Retry(3) + @ExponentialBackoff<br/>@CircuitBreaker(5, 60s)<br/>@Timeout(10s)"]
         EDR["EmailDestinatarioResolverAdapter"]
         TRA["TransactionRunnerAdapter<br/>@Transactional(REQUIRES_NEW)"]
         CFG["NotificacaoServiceConfig<br/>(@Produces use cases)"]
@@ -53,8 +53,8 @@ flowchart TD
         VO["AssuntoNotificacao / TituloNotificacao<br/>DescricaoNotificacao / VariaveisTemplate<br/>NotificacaoId"]
     end
 
-    SMTP[("📮 SMTP<br/>(MailHog dev / Provedor prod)")]
-    DB[("🗄️ PostgreSQL")]
+    SMTP[("SMTP<br/>(MailHog dev / Provedor prod)")]
+    DB[("PostgreSQL")]
 
     OS_SVC -- "event.fire(...)" --> EVT
     EVT -- "AFTER_SUCCESS" --> LST

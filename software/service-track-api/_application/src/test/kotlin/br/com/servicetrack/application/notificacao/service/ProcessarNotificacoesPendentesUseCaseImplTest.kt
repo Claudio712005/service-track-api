@@ -107,7 +107,6 @@ class ProcessarNotificacoesPendentesUseCaseImplTest {
     @Test
     fun `deve transitar para FALHA_ENVIO ao esgotar tentativas`() {
         val notificacao = novaNotificacao()
-        // Simula que já houve 2 falhas anteriores (próxima falha = 3ª = atingir MAX_TENTATIVAS=3)
         notificacao.registrarTentativaFalha("erro1", maxTentativas = ProcessarNotificacoesPendentesUseCaseImpl.MAX_TENTATIVAS)
         notificacao.registrarTentativaFalha("erro2", maxTentativas = ProcessarNotificacoesPendentesUseCaseImpl.MAX_TENTATIVAS)
 

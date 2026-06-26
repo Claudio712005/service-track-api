@@ -5,10 +5,15 @@ flowchart TD
     HTTP(["HTTP Request"])
 
     subgraph INFRA["Infrastructure"]
-        VR["VeiculoResourceImpl<br/>POST /veiculos<br/>GET /veiculos<br/>GET /veiculos/{id}<br/>PUT /veiculos/{id}<br/>DELETE /veiculos/{id}"]
+        VR["VeiculoResourceImpl<br/>POST /veiculos @Timeout(15s) @Bulkhead(10)<br/>GET /veiculos @Timeout(5s)<br/>GET /veiculos/{id} @Timeout(2s)<br/>PUT /veiculos/{id} @Timeout(5s)<br/>DELETE /veiculos/{id} @Timeout(3s)<br/>GET /sugestoes-imagens @Timeout(12s) @Bulkhead(5)"]
         VRA["VeiculoRepositoryAdapter<br/>(JPA + Panache)"]
         VE["VeiculoEntity"]
+        FCA["FipeClientAdapter<br/>@Retry(3) + @ExponentialBackoff<br/>@CircuitBreaker(5, 60s)<br/>@Timeout(10s) + @Fallback<br/>@CacheResult"]
+        UCA["UnsplashClientAdapter<br/>@Retry(3) + @ExponentialBackoff<br/>@CircuitBreaker(5, 60s)<br/>@Timeout(10s) + @Fallback<br/>@CacheResult"]
     end
+
+    FIPE_API[("FIPE API<br/>brasilapi.com.br")]
+    UNSPLASH_API[("Unsplash API<br/>api.unsplash.com")]
 
     subgraph APP["Application"]
         CVC["CadastrarVeiculoUseCase"]
@@ -38,3 +43,5 @@ flowchart TD
     RVC --> RVS
     CVS & BVS & AVS & LVS & RVS --> VRP --> VRA --> VE
     CVS & BVS & AVS & LVS & RVS --> V & VO
+    CVS --> FCA -->|"HTTP + CB"| FIPE_API
+    VR -->|"buscarSugestoesImagens"| UCA -->|"HTTP + CB"| UNSPLASH_API

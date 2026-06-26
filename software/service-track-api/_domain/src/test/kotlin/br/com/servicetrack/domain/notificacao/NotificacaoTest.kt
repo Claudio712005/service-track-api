@@ -360,8 +360,6 @@ class NotificacaoTest {
         assertEquals("só é possível visualizar uma notificação ENVIADA", ex.message)
     }
 
-    // ---------- registrarTentativaFalha ----------
-
     @Test
     fun `deve iniciar com tentativasEnvio zero e ultimoErro nulo`() {
         val n = build()
