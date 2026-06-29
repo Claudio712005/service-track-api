@@ -1,0 +1,21 @@
+aws_region  = "us-east-1"
+project     = "servicetrack"
+environment = "dev"
+
+vpc_cidr             = "10.0.0.0/16"
+azs                  = ["us-east-1a", "us-east-1b"]
+public_subnet_cidrs  = ["10.0.0.0/20", "10.0.16.0/20"]
+private_subnet_cidrs = ["10.0.48.0/20", "10.0.64.0/20"]
+
+cluster_name        = "servicetrack-dev"
+cluster_version     = "1.30"
+node_instance_types = ["t3.medium"]
+node_desired_size   = 2
+node_min_size       = 1
+node_max_size       = 3
+
+db_name              = "servicetrack"
+db_username          = "servicetrack"
+db_instance_class    = "db.t3.micro"
+db_allocated_storage = 20
+db_engine_version    = "16.4"
