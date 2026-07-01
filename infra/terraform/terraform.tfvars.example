@@ -18,4 +18,4 @@ db_name              = "servicetrack"
 db_username          = "servicetrack"
 db_instance_class    = "db.t3.micro"
 db_allocated_storage = 20
-db_engine_version    = "16.4"
+db_engine_version    = "16.9"

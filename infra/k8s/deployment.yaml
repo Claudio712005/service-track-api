@@ -19,8 +19,8 @@ spec:
     spec:
       containers:
         - name: service-track-app
-          image: service-track-app:latest
-          imagePullPolicy: IfNotPresent
+          image: ${ECR_IMAGE}
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           envFrom:
