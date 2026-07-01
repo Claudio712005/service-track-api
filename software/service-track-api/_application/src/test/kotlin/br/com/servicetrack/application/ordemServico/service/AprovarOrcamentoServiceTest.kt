@@ -2,6 +2,7 @@ package br.com.servicetrack.application.ordemServico.service
 
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
 import br.com.servicetrack.application.ordemServico.ports.out.OrdemServicoRepositoryPort
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.domain.orcamento.Orcamento
@@ -13,8 +14,10 @@ import br.com.servicetrack.domain.shared.vo.ValorMonetario
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import br.com.servicetrack.domain.veiculo.vo.VeiculoId
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
+import jakarta.enterprise.event.Event
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -25,8 +28,9 @@ class AprovarOrcamentoServiceTest {
 
     private val repository = mockk<OrdemServicoRepositoryPort>()
     private val jwt = mockk<JwtPort>()
+    private val statusEvent = mockk<Event<OrdemServicoStatusAlteradoEvent>>()
 
-    private val service = AprovarOrcamentoService(repository, jwt)
+    private val service = AprovarOrcamentoService(repository, jwt, statusEvent)
 
     private val mecanicoId = UsuarioId.gerar()
     private val clienteId = UsuarioId.gerar()
@@ -62,11 +66,15 @@ class AprovarOrcamentoServiceTest {
         every { jwt.getUsuarioId() } returns clienteId
         every { repository.buscarPorId(any()) } returns os
         every { repository.atualizar(any()) } answers { firstArg() }
+        justRun { statusEvent.fire(any()) }
 
         val result = service.aprovarOrcamento(os.id.valor)
 
         assertEquals(StatusOrdemServicoEnum.EM_EXECUCAO, result.status)
         verify(exactly = 1) { repository.atualizar(any()) }
+        verify(exactly = 1) {
+            statusEvent.fire(match { it.novoStatus == StatusOrdemServicoEnum.EM_EXECUCAO })
+        }
     }
 
     @Test

@@ -14,9 +14,14 @@ dependencies {
     implementation(project(":_application"))
 
     implementation(enforcedPlatform("$qGroupId:$qArtifactId:$qVersion"))
-
+    implementation("io.quarkus:quarkus-qute")
+    implementation("io.quarkus:quarkus-mailer")
+    implementation("io.quarkus:quarkus-scheduler")
+    implementation("io.quarkus:quarkus-smallrye-fault-tolerance")
     implementation("io.quarkus:quarkus-rest")
     implementation("io.quarkus:quarkus-rest-jackson")
+    implementation("io.quarkus:quarkus-rest-client-reactive-jackson")
+    implementation("io.quarkus:quarkus-cache")
     implementation("io.quarkus:quarkus-hibernate-orm-panache-kotlin")
     implementation("io.quarkus:quarkus-jdbc-postgresql")
     implementation("io.quarkus:quarkus-arc")
@@ -31,6 +36,7 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.10")
 
     testImplementation("io.quarkus:quarkus-junit5")
+    testImplementation("io.quarkus:quarkus-junit5-mockito")
     testImplementation("io.rest-assured:rest-assured")
     testImplementation("io.quarkus:quarkus-jacoco")
 }
@@ -55,7 +61,8 @@ openApiGenerate {
             "useJakartaEe" to "true",
             "dateLibrary" to "java8",
             "returnResponse" to "true",
-            "useSwaggerAnnotations" to "false"
+            "useSwaggerAnnotations" to "false",
+            "openApiNullable" to "false"
         )
     )
 }

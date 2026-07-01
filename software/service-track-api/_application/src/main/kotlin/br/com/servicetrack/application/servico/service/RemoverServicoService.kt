@@ -1,7 +1,6 @@
 package br.com.servicetrack.application.servico.service
 
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
-import br.com.servicetrack.application.auditoria.context.AuditoriaContextoHolder
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.servico.dto.ServicoResDTO
 import br.com.servicetrack.application.servico.ports.`in`.RemoverServicoUseCase
@@ -20,7 +19,6 @@ class RemoverServicoService(
         val existente = repository.buscarPorId(id)
             ?: throw EntidadeNaoEncontradaException(Servico::class.java.name, arrayOf(id.valor))
 
-        AuditoriaContextoHolder.registrarAntes(ServicoResDTO.de(existente))
         repository.desativar(id)
     }
 }

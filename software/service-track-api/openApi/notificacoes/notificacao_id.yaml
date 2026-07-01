@@ -1,0 +1,39 @@
+get:
+  summary: Buscar notificação por ID. Usuário vê apenas as suas.
+  operationId: buscarNotificacao
+  tags:
+    - Notificacao
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    '200':
+      description: Notificação encontrada
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/notificacao/NotificacaoResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Notificação não pertence ao usuário
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Notificação não encontrada
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

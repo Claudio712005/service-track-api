@@ -1,6 +1,7 @@
 package br.com.servicetrack.infrastructure.veiculo.persistence
 
 import br.com.servicetrack.domain.shared.enums.IndicativoSimNao
+import br.com.servicetrack.domain.shared.vo.ImagemUrl
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import br.com.servicetrack.domain.veiculo.Veiculo
 import br.com.servicetrack.domain.veiculo.vo.Placa
@@ -24,7 +25,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "veiculos")
-class VeiculoEntity: PanacheEntityBase {
+class VeiculoEntity : PanacheEntityBase {
 
     @Id
     @Column(name = "veiculo_id", nullable = false, updatable = false)
@@ -42,6 +43,12 @@ class VeiculoEntity: PanacheEntityBase {
     @Column(name = "ano", nullable = false)
     var ano: Int = 0
 
+    @Column(name = "imagem_url", nullable = true, length = 2048)
+    var imagemUrl: String? = null
+
+    @Column(name = "codigo_fipe", nullable = true, length = 20)
+    var codigoFipe: String? = null
+
     @Column(name = "ativo", nullable = false)
     @Enumerated(EnumType.STRING)
     var ativo: IndicativoSimNao = IndicativoSimNao.S
@@ -58,7 +65,7 @@ class VeiculoEntity: PanacheEntityBase {
     @JoinColumn(name = "proprietario_id", nullable = false, updatable = true)
     lateinit var proprietario: UsuarioEntity
 
-    companion object : PanacheCompanion<VeiculoEntity>{
+    companion object : PanacheCompanion<VeiculoEntity> {
 
         fun de(veiculo: Veiculo): VeiculoEntity {
             val dados = veiculo.obterDados()
@@ -69,13 +76,15 @@ class VeiculoEntity: PanacheEntityBase {
                 modelo = dados.modelo
                 marca = dados.marca
                 ano = dados.ano
+                imagemUrl = dados.imagemUrl?.url
+                codigoFipe = dados.codigoFipe
                 proprietario = UsuarioEntity().apply {
                     id = UUID.fromString(dados.proprietarioId.valor)
                 }
             }
         }
     }
-    
+
     fun toDomain(): Veiculo = Veiculo.reconstituir(
         id = VeiculoId(id.toString()),
         proprietarioId = UsuarioId(proprietario.id.toString()),
@@ -85,6 +94,8 @@ class VeiculoEntity: PanacheEntityBase {
         ano = ano,
         dataCriacao = dataCriacao,
         dataAtualizacao = dataAtualizacao,
-        ativo = ativo
+        ativo = ativo,
+        imagemUrl = imagemUrl?.let { ImagemUrl.criar(it) },
+        codigoFipe = codigoFipe
     )
 }

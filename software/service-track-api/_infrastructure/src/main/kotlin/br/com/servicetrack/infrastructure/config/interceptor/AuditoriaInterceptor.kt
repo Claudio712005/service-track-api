@@ -11,6 +11,7 @@ import jakarta.interceptor.InvocationContext
 
 @AuditavelInterceptorBinding
 @Interceptor
+@Deprecated("Usar AuditoriaProxy.envolver() com antesProvider. Interceptor não é utilizado por nenhum bean.", level = DeprecationLevel.WARNING)
 class AuditoriaInterceptor {
 
     @Inject

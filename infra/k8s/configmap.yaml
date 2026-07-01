@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: service-track-config
+  namespace: service-track
+data:
+  QUARKUS_PROFILE: "prod"
+  QUARKUS_DATASOURCE_JDBC_URL: "${RDS_JDBC_URL}"
+  QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: "update"
+  QUARKUS_MAILER_FROM: "no-reply@servicetrack.local"
+  QUARKUS_MAILER_HOST: "localhost"

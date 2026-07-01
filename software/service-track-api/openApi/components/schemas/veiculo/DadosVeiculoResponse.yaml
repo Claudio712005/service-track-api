@@ -6,17 +6,25 @@ properties:
     example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
   placa:
     type: string
-    example: "ABC-1234"
+    example: "ABC1D23"
   modelo:
     type: string
-    example: "Civic"
+    example: "Corolla"
   marca:
     type: string
-    example: "Honda"
+    example: "Toyota"
   ano:
     type: integer
-    example: 2020
+    example: 2022
   proprietarioId:
     type: string
     format: uuid
     example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  urlImagem:
+    type: string
+    nullable: true
+    example: "https://images.unsplash.com/photo-abc123"
+  codigoFipe:
+    type: string
+    nullable: true
+    example: "006009-1"

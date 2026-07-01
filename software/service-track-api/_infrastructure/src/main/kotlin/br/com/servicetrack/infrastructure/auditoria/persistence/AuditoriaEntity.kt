@@ -6,12 +6,19 @@ import io.quarkus.hibernate.orm.panache.kotlin.PanacheEntityBase
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
+import jakarta.persistence.Index
 import jakarta.persistence.Table
 import java.time.LocalDateTime
 import java.util.UUID
 
 @Entity
-@Table(name = "auditorias")
+@Table(
+    name = "auditorias",
+    indexes = [
+        Index(name = "idx_auditoria_referencia_id", columnList = "referencia_id"),
+        Index(name = "idx_auditoria_data_criacao", columnList = "data_criacao"),
+    ],
+)
 class AuditoriaEntity : PanacheEntityBase {
 
     @Id

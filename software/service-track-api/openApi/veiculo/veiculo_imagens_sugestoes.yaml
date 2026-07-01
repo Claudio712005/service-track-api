@@ -1,0 +1,33 @@
+get:
+  summary: Buscar sugestões de imagens para um veículo via Unsplash.
+  operationId: buscarSugestoesImagens
+  tags:
+    - Veículos
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: marca
+      in: query
+      required: true
+      schema:
+        type: string
+      example: "Toyota"
+    - name: modelo
+      in: query
+      required: true
+      schema:
+        type: string
+      example: "Corolla"
+  responses:
+    '200':
+      description: Lista de URLs de imagens sugeridas
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/veiculo/SugestoesImagensResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

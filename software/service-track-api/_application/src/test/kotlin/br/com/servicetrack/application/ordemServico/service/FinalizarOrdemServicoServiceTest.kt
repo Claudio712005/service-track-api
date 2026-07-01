@@ -2,6 +2,7 @@ package br.com.servicetrack.application.ordemServico.service
 
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
 import br.com.servicetrack.application.ordemServico.ports.out.OrdemServicoRepositoryPort
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
@@ -23,8 +24,10 @@ import br.com.servicetrack.domain.usuario.vo.Telefone
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import br.com.servicetrack.domain.veiculo.vo.VeiculoId
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
+import jakarta.enterprise.event.Event
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -37,8 +40,9 @@ class FinalizarOrdemServicoServiceTest {
     private val osRepository = mockk<OrdemServicoRepositoryPort>()
     private val usuarioRepository = mockk<UsuarioRepositoryPort>()
     private val jwt = mockk<JwtPort>()
+    private val statusEvent = mockk<Event<OrdemServicoStatusAlteradoEvent>>()
 
-    private val service = FinalizarOrdemServicoService(osRepository, usuarioRepository, jwt)
+    private val service = FinalizarOrdemServicoService(osRepository, usuarioRepository, jwt, statusEvent)
 
     private val mecanicoId = UsuarioId.gerar()
     private val clienteId = UsuarioId.gerar()
@@ -149,11 +153,15 @@ class FinalizarOrdemServicoServiceTest {
         every { usuarioRepository.buscarPorId(mecanicoId) } returns mecanico
         every { osRepository.buscarPorId(any()) } returns os
         every { osRepository.atualizar(any()) } answers { firstArg() }
+        justRun { statusEvent.fire(any()) }
 
         val result = service.finalizarOrdemServico(os.id.valor)
 
         assertEquals(StatusOrdemServicoEnum.FINALIZADA, result.status)
         verify(exactly = 1) { osRepository.atualizar(any()) }
+        verify(exactly = 1) {
+            statusEvent.fire(match { it.novoStatus == StatusOrdemServicoEnum.FINALIZADA })
+        }
     }
 
     @Test

@@ -1,7 +1,6 @@
 package br.com.servicetrack.application.veiculo.service
 
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
-import br.com.servicetrack.application.auditoria.context.AuditoriaContextoHolder
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.usuario.ports.`out`.JwtPort
@@ -29,8 +28,6 @@ class RemoverVeiculoService(
         if (dadosVeiculo.proprietarioId != usuarioId && !usuario.ehMecanico()){
             throw OperacaoNegadaException("remoção de veículo", "Usuário não é o proprietário do veículo e nem mecânico, portanto não possui permissão para realizar a operação")
         }
-
-        AuditoriaContextoHolder.registrarAntes(dadosVeiculo)
 
         repository.desativar(veiculo)
     }

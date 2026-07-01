@@ -28,6 +28,8 @@ paths:
     $ref: './openApi/veiculo/veiculo.yaml'
   /veiculos/{id}:
     $ref: './openApi/veiculo/veiculo_id.yaml'
+  /veiculos/imagens/sugestoes:
+    $ref: './openApi/veiculo/veiculo_imagens_sugestoes.yaml'
   /servicos:
     $ref: './openApi/servicos/servicos.yaml'
   /servicos/{id}:
@@ -66,3 +68,13 @@ paths:
     $ref: './openApi/ordemServico/ordemServico_entrega.yaml'
   /ordem-servico/{id}/itens/{itemId}/concluir:
     $ref: './openApi/ordemServico/ordemServico_item_concluir.yaml'
+  /dashboard/clientes/{id}:
+    $ref: './openApi/dashboard/dashboard_id_cliente.yaml'
+  /notificacoes:
+    $ref: './openApi/notificacoes/notificacoes.yaml'
+  /notificacoes/{id}:
+    $ref: './openApi/notificacoes/notificacao_id.yaml'
+  /notificacoes/{id}/visualizar:
+    $ref: './openApi/notificacoes/notificacao_visualizar.yaml'
+  /notificacoes/nao-lidas/contagem:
+    $ref: './openApi/notificacoes/notificacao_nao_lidas_contagem.yaml'

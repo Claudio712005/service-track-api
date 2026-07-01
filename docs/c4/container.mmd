@@ -2,22 +2,43 @@
 title: C4 Container - Service Track API
 ---
 flowchart TD
-    Cliente(["👤 Cliente"])
-    Mecanico(["🔧 Mecânico"])
+    Cliente(["Cliente"])
+    Mecanico(["Mecânico"])
 
     subgraph ST["Service Track API"]
-        API["⚙️ Quarkus REST API | Kotlin + Quarkus 3.x | JAX-RS / OpenAPI | Role-based JWT auth"]
-        JWT["🔐 JWT Provider | SmallRye JWT | RS256 (RSA keys)"]
-        BCRYPT["🔒 Bcrypt Adapter | jBCrypt | Password hashing"]
-        AUDIT["📋 Audit Interceptor | CDI Interceptor | Strategy Pattern"]
+        API["Quarkus REST API | Kotlin + Quarkus 3.x | JAX-RS / OpenAPI | Role-based JWT auth"]
+        JWT["JWT Provider | SmallRye JWT | RS256 (RSA keys)"]
+        BCRYPT["Bcrypt Adapter | jBCrypt | Password hashing"]
+        AUDIT["Audit Interceptor | CDI Interceptor | Strategy Pattern"]
+        EVT["CDI Event Bus | Outbox semântico via AFTER_SUCCESS"]
+        SCHED["Notificação Scheduler | Quarkus Scheduler (every=30s) | SKIP LOCKED"]
+        QUTE["Qute Renderer | templates/notificacao/&lt;TIPO&gt;/"]
+        MAILER["Mailer Gateway | Quarkus Mailer | @Retry(3) + @ExponentialBackoff + @CircuitBreaker(5, 60s)"]
+        FIPE_ADAPTER["FIPE Adapter | @Retry(3) + @ExponentialBackoff + @CircuitBreaker(5, 60s) + @Fallback + @CacheResult"]
+        UNSPLASH_ADAPTER["Unsplash Adapter | @Retry(3) + @ExponentialBackoff + @CircuitBreaker(5, 60s) + @Fallback + @CacheResult"]
+        FT["Fault Tolerance | SmallRye FT 6.4.0 | @Timeout + @RateLimit + @Bulkhead"]
     end
 
-    DB[("🗄️ PostgreSQL<br/>Hibernate ORM<br/>+ Panache")]
+    DB[("PostgreSQL<br/>Hibernate ORM<br/>+ Panache<br/>(tabela notificacao)")]
+    SMTP[("SMTP<br/>MailHog (dev)<br/>Provedor (prod)")]
+    FIPE_API[("FIPE API<br/>brasilapi.com.br")]
+    UNSPLASH_API[("Unsplash API<br/>api.unsplash.com")]
 
     Cliente -->|"HTTPS/JSON"| API
     Mecanico -->|"HTTPS/JSON"| API
     API --> JWT
     API --> BCRYPT
     API --> AUDIT
+    API --> FT
+    API -- "fire(StatusAlteradoEvent)" --> EVT
+    EVT -- "AFTER_SUCCESS" --> API
+    SCHED -- "buscarPendentes FOR UPDATE SKIP LOCKED" --> DB
+    SCHED --> QUTE
+    SCHED --> MAILER
     API -->|"JDBC"| DB
     AUDIT -->|"persiste eventos"| DB
+    MAILER -->|"SMTP"| SMTP
+    FIPE_ADAPTER -->|"HTTP + CB"| FIPE_API
+    UNSPLASH_ADAPTER -->|"HTTP + CB"| UNSPLASH_API
+    API --> FIPE_ADAPTER
+    API --> UNSPLASH_ADAPTER

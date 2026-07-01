@@ -10,6 +10,7 @@ import br.com.servicetrack.application.usuario.ports.`in`.ResetarSenhaUseCase
 import br.com.servicetrack.application.usuario.ports.out.CriptografiaPort
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
+import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import br.com.servicetrack.application.usuario.service.AtualizarUsuarioService
 import br.com.servicetrack.application.usuario.service.BuscarClienteService
 import br.com.servicetrack.application.usuario.service.CriarUsuarioService
@@ -64,7 +65,8 @@ class UsuarioServiceConfig {
     ): AtualizarUsuarioUseCase = AuditoriaProxy.envolver(
         AtualizarUsuarioService(usuarioRepository, jwt),
         AtualizarUsuarioUseCase::class.java,
-        auditoria
+        auditoria,
+        antesProvider = { args -> usuarioRepository.buscarPorId(args[0] as UsuarioId) },
     )
 
     @Produces
@@ -76,7 +78,8 @@ class UsuarioServiceConfig {
     ): DesativarUsuarioUseCase = AuditoriaProxy.envolver(
         DesativarUsuarioService(usuarioRepository, jwt),
         DesativarUsuarioUseCase::class.java,
-        auditoria
+        auditoria,
+        antesProvider = { args -> usuarioRepository.buscarPorId(args[0] as UsuarioId) },
     )
 
     @Produces

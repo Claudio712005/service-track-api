@@ -1,0 +1,20 @@
+get:
+  summary: Contar notificações não lidas do usuário autenticado.
+  operationId: contarNotificacoesNaoLidas
+  tags:
+    - Notificacao
+  security:
+    - bearerAuth: []
+  responses:
+    '200':
+      description: Contagem de notificações não lidas
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/notificacao/ContadorNaoLidasResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

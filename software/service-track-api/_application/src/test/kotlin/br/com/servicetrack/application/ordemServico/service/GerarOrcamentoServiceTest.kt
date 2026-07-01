@@ -3,8 +3,10 @@ package br.com.servicetrack.application.ordemServico.service
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.insumo.ports.out.InsumoRepositoryPort
+import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
 import br.com.servicetrack.application.ordemServico.ports.out.OrdemServicoRepositoryPort
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
+import jakarta.enterprise.event.Event
 import br.com.servicetrack.domain.insumo.Insumo
 import br.com.servicetrack.domain.insumo.vo.InsumoId
 import br.com.servicetrack.domain.ordemServico.ItemOrdemServico
@@ -34,8 +36,9 @@ class GerarOrcamentoServiceTest {
     private val osRepository = mockk<OrdemServicoRepositoryPort>()
     private val insumoRepository = mockk<InsumoRepositoryPort>()
     private val jwt = mockk<JwtPort>()
+    private val statusEvent = mockk<Event<OrdemServicoStatusAlteradoEvent>>(relaxed = true)
 
-    private val service = GerarOrcamentoService(osRepository, insumoRepository, jwt)
+    private val service = GerarOrcamentoService(osRepository, insumoRepository, jwt, statusEvent)
 
     private val mecanicoId = UsuarioId.gerar()
     private val clienteId = UsuarioId.gerar()

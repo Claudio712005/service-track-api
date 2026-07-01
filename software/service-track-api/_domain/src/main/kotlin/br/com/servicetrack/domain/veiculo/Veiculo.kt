@@ -2,6 +2,7 @@ package br.com.servicetrack.domain.veiculo
 
 import br.com.servicetrack.domain.shared.enums.IndicativoSimNao
 import br.com.servicetrack.domain.shared.exception.DomainException
+import br.com.servicetrack.domain.shared.vo.ImagemUrl
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import br.com.servicetrack.domain.veiculo.vo.Placa
 import br.com.servicetrack.domain.veiculo.vo.VeiculoId
@@ -14,6 +15,8 @@ class Veiculo private constructor(
     private var modelo: String,
     private var marca: String,
     private var ano: Int,
+    private var imagemUrl: ImagemUrl? = null,
+    private var codigoFipe: String? = null,
     private val dataCriacao: LocalDateTime,
     private var dataAtualizacao: LocalDateTime,
     private var ativo: IndicativoSimNao = IndicativoSimNao.S
@@ -26,7 +29,8 @@ class Veiculo private constructor(
             placa: Placa,
             modelo: String,
             marca: String,
-            ano: Int
+            ano: Int,
+            imagemUrl: ImagemUrl? = null
         ): Veiculo {
             validarDados(modelo, marca, ano)
 
@@ -39,6 +43,7 @@ class Veiculo private constructor(
                 modelo = modelo,
                 marca = marca,
                 ano = ano,
+                imagemUrl = imagemUrl,
                 dataCriacao = agora,
                 dataAtualizacao = agora
             )
@@ -60,6 +65,8 @@ class Veiculo private constructor(
             dataCriacao: LocalDateTime,
             dataAtualizacao: LocalDateTime,
             ativo: IndicativoSimNao,
+            imagemUrl: ImagemUrl? = null,
+            codigoFipe: String? = null
         ) = Veiculo(
             id = id,
             proprietarioId = proprietarioId,
@@ -67,6 +74,8 @@ class Veiculo private constructor(
             modelo = modelo,
             marca = marca,
             ano = ano,
+            imagemUrl = imagemUrl,
+            codigoFipe = codigoFipe,
             dataCriacao = dataCriacao,
             dataAtualizacao = dataAtualizacao,
             ativo = ativo
@@ -74,7 +83,7 @@ class Veiculo private constructor(
     }
 
     fun alterarPlaca(novaPlaca: Placa) {
-        if(!veiculoAtivo()){
+        if (!veiculoAtivo()) {
             throw DomainException("Veículo desativado não pode ter a placa alterada")
         }
 
@@ -86,7 +95,7 @@ class Veiculo private constructor(
     }
 
     fun alterarDados(modelo: String, marca: String, ano: Int) {
-        if(!veiculoAtivo()){
+        if (!veiculoAtivo()) {
             throw DomainException("Veículo desativado não pode ter os dados alterados")
         }
 
@@ -97,12 +106,20 @@ class Veiculo private constructor(
         atualizarData()
     }
 
+    fun definirImagemUrl(novaImagemUrl: ImagemUrl?) {
+        if (!veiculoAtivo()) {
+            throw DomainException("Veículo desativado não pode ter a imagem alterada")
+        }
+        this.imagemUrl = novaImagemUrl
+        atualizarData()
+    }
+
     fun pertenceAoUsuario(usuarioId: UsuarioId): Boolean {
         return this.proprietarioId == usuarioId
     }
 
     fun atualizarProprietario(novoProprietarioId: UsuarioId) {
-        if(!veiculoAtivo()){
+        if (!veiculoAtivo()) {
             throw DomainException("Veículo inativo não pode ter o proprietário alterado")
         }
 
@@ -120,7 +137,9 @@ class Veiculo private constructor(
             placa = placa,
             modelo = modelo,
             marca = marca,
-            ano = ano
+            ano = ano,
+            imagemUrl = imagemUrl,
+            codigoFipe = codigoFipe
         )
     }
 
@@ -128,8 +147,8 @@ class Veiculo private constructor(
         return ativo == IndicativoSimNao.S
     }
 
-    fun desativarVeiculo(){
-        if(!veiculoAtivo()){
+    fun desativarVeiculo() {
+        if (!veiculoAtivo()) {
             throw DomainException("O veículo já está desativado")
         }
 

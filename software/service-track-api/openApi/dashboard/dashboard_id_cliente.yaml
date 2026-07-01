@@ -1,0 +1,150 @@
+get:
+  summary: Buscar dashboard completo do cliente por ID. Exclusivo para clientes.
+  description: |
+    Retorna um dashboard personalizado com resumo de atividades, ordens ativas, histórico recente e lista de veículos.
+    Este endpoint fornece uma visão geral completa do status de todas as ordens de serviço e veículos do cliente autenticado.
+    
+    **Apenas clientes podem acessar seus próprios dashboards.**
+  operationId: buscarDashboardCliente
+  tags:
+    - Dashboard
+    - Clientes
+    - Veículos
+    - Ordens de Serviço
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: ID do cliente (deve corresponder ao usuário autenticado)
+      schema:
+        type: string
+        format: uuid
+        example: '550e8400-e29b-41d4-a716-446655440001'
+  responses:
+    '200':
+      description: Dashboard do cliente encontrado com sucesso
+      content:
+        application/json:
+          schema:
+            type: object
+            description: Dashboard completo do cliente com todas as informações resumidas
+            properties:
+              usuario_id:
+                type: string
+                format: uuid
+                description: ID do cliente autenticado
+                example: '550e8400-e29b-41d4-a716-446655440001'
+
+              usuario_nome:
+                type: string
+                maxLength: 255
+                description: Nome completo do cliente
+                example: 'João Silva'
+
+              resumo:
+                $ref: '../components/schemas/dashboard/ResumoDashboardResponse.yaml'
+
+              ordens_ativas:
+                $ref: '../components/schemas/dashboard/OrdensAtivasDashboardResponse.yaml'
+
+              ordens_recentes:
+                $ref: '../components/schemas/dashboard/OrdensRecentesDashboardResponse.yaml'
+
+              veiculos:
+                $ref: '../components/schemas/dashboard/VeiculosDashboardResponse.yaml'
+
+              data_atualizacao:
+                type: string
+                format: date-time
+                description: Data da última atualização dos dados do dashboard
+                example: '2024-11-16T15:45:30Z'
+
+            required:
+              - usuario_id
+              - resumo
+              - ordens_ativas
+              - ordens_recentes
+              - veiculos
+
+            example:
+              usuario_id: '550e8400-e29b-41d4-a716-446655440001'
+              usuario_nome: 'João Silva'
+              resumo:
+                ordens_ativas: 3
+                ordens_concluidas: 12
+                ordens_canceladas: 1
+                total_ordens: 16
+                veiculos_cadastrados: 3
+              ordens_ativas:
+                - id: '550e8400-e29b-41d4-a716-446655880001'
+                  motivo: 'Barulho estranho ao acelerar'
+                  status: 'DIAGNOSTICO'
+                  veiculo_placa: 'ABC-1234'
+                  dias_em_andamento: 2
+              ordens_recentes:
+                - id: '550e8400-e29b-41d4-a716-446655880003'
+                  motivo: 'Troca de pneus'
+                  status: 'FINALIZADA'
+                  veiculo_placa: 'DEF-5678'
+                  valor_total: 520.00
+              veiculos:
+                - id: '660e8400-e29b-41d4-a716-446655550001'
+                  placa: 'ABC-1234'
+                  marca: 'Honda'
+                  modelo: 'Civic'
+                  ano: 2020
+                  total_ordens: 5
+                  total_gasto: 1850.50
+              data_atualizacao: '2024-11-16T15:45:30Z'
+
+    '400':
+      description: ID de cliente inválido ou mal formatado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+          example:
+            status_code: 400
+            mensagem: 'ID de cliente inválido'
+
+    '401':
+      description: Não autorizado - Token inválido, expirado ou ausente
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+          example:
+            status_code: 401
+            mensagem: 'Não autorizado - Token inválido ou expirado'
+
+    '403':
+      description: Acesso proibido - Cliente tentando acessar dashboard de outro cliente
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+          example:
+            status_code: 403
+            mensagem: 'Acesso proibido - Você pode acessar apenas seu próprio dashboard'
+
+    '404':
+      description: Cliente não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+          example:
+            status_code: 404
+            mensagem: 'Cliente não encontrado'
+
+    '500':
+      description: Erro interno do servidor
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+          example:
+            status_code: 500
+            mensagem: 'Erro interno ao processar dashboard'

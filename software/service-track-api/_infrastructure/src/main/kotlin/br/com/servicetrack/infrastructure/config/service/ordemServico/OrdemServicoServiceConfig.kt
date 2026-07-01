@@ -2,6 +2,7 @@ package br.com.servicetrack.infrastructure.config.service.ordemServico
 
 import br.com.servicetrack.application.auditoria.ports.out.RegistrarAuditoriaPort
 import br.com.servicetrack.application.insumo.ports.`out`.InsumoRepositoryPort
+import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
 import br.com.servicetrack.application.ordemServico.ports.`in`.AprovarOrcamentoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.ConcluirItemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.AssociarItensOrdemServicoUseCase
@@ -29,9 +30,11 @@ import br.com.servicetrack.application.ordemServico.service.ListarOrdensServicoS
 import br.com.servicetrack.application.ordemServico.service.ReprovarOrcamentoService
 import br.com.servicetrack.application.servico.ports.`out`.ServicoRepositoryPort
 import br.com.servicetrack.application.usuario.ports.`out`.JwtPort
+import br.com.servicetrack.domain.ordemServico.vo.OrdemServicoId
 import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
 import br.com.servicetrack.infrastructure.auditoria.AuditoriaProxy
 import jakarta.enterprise.context.ApplicationScoped
+import jakarta.enterprise.event.Event
 import jakarta.enterprise.inject.Produces
 
 @ApplicationScoped
@@ -56,10 +59,12 @@ class OrdemServicoServiceConfig {
         repository: OrdemServicoRepositoryPort,
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
+        statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
     ): EnviarParaDiagnosticoUseCase = AuditoriaProxy.envolver(
-        EnviarParaDiagnosticoService(repository, jwtPort),
+        EnviarParaDiagnosticoService(repository, jwtPort, statusAlteradoEvent),
         EnviarParaDiagnosticoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> repository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
     @Produces
@@ -68,12 +73,7 @@ class OrdemServicoServiceConfig {
         repository: OrdemServicoRepositoryPort,
         usuarioRepository: UsuarioRepositoryPort,
         jwtPort: JwtPort,
-        auditoria: RegistrarAuditoriaPort,
-    ): BuscarOrdemServicoUseCase = AuditoriaProxy.envolver(
-        BuscarOrdemServicoService(repository, usuarioRepository, jwtPort),
-        BuscarOrdemServicoUseCase::class.java,
-        auditoria,
-    )
+    ): BuscarOrdemServicoUseCase = BuscarOrdemServicoService(repository, usuarioRepository, jwtPort)
 
     @Produces
     @ApplicationScoped
@@ -81,12 +81,7 @@ class OrdemServicoServiceConfig {
         repository: OrdemServicoRepositoryPort,
         usuarioRepository: UsuarioRepositoryPort,
         jwtPort: JwtPort,
-        auditoria: RegistrarAuditoriaPort,
-    ): ListarOrdensServicoUseCase = AuditoriaProxy.envolver(
-        ListarOrdensServicoService(repository, usuarioRepository, jwtPort),
-        ListarOrdensServicoUseCase::class.java,
-        auditoria,
-    )
+    ): ListarOrdensServicoUseCase = ListarOrdensServicoService(repository, usuarioRepository, jwtPort)
 
     @Produces
     @ApplicationScoped
@@ -100,6 +95,7 @@ class OrdemServicoServiceConfig {
         AssociarItensOrdemServicoService(osRepository, servicoRepository, insumoRepository, jwtPort),
         AssociarItensOrdemServicoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
     @Produces
@@ -109,10 +105,12 @@ class OrdemServicoServiceConfig {
         insumoRepository: InsumoRepositoryPort,
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
+        statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
     ): GerarOrcamentoUseCase = AuditoriaProxy.envolver(
-        GerarOrcamentoService(osRepository, insumoRepository, jwtPort),
+        GerarOrcamentoService(osRepository, insumoRepository, jwtPort, statusAlteradoEvent),
         GerarOrcamentoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
     @Produces
@@ -121,10 +119,12 @@ class OrdemServicoServiceConfig {
         repository: OrdemServicoRepositoryPort,
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
+        statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
     ): AprovarOrcamentoUseCase = AuditoriaProxy.envolver(
-        AprovarOrcamentoService(repository, jwtPort),
+        AprovarOrcamentoService(repository, jwtPort, statusAlteradoEvent),
         AprovarOrcamentoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> repository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
     @Produces
@@ -134,10 +134,12 @@ class OrdemServicoServiceConfig {
         insumoRepository: InsumoRepositoryPort,
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
+        statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
     ): ReprovarOrcamentoUseCase = AuditoriaProxy.envolver(
-        ReprovarOrcamentoService(osRepository, insumoRepository, jwtPort),
+        ReprovarOrcamentoService(osRepository, insumoRepository, jwtPort, statusAlteradoEvent),
         ReprovarOrcamentoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
     @Produces
@@ -147,10 +149,12 @@ class OrdemServicoServiceConfig {
         insumoRepository: InsumoRepositoryPort,
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
+        statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
     ): CancelarOrdemServicoUseCase = AuditoriaProxy.envolver(
-        CancelarOrdemServicoService(osRepository, insumoRepository, jwtPort),
+        CancelarOrdemServicoService(osRepository, insumoRepository, jwtPort, statusAlteradoEvent),
         CancelarOrdemServicoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
     @Produces
@@ -160,10 +164,12 @@ class OrdemServicoServiceConfig {
         usuarioRepository: UsuarioRepositoryPort,
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
+        statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
     ): FinalizarOrdemServicoUseCase = AuditoriaProxy.envolver(
-        FinalizarOrdemServicoService(osRepository, usuarioRepository, jwtPort),
+        FinalizarOrdemServicoService(osRepository, usuarioRepository, jwtPort, statusAlteradoEvent),
         FinalizarOrdemServicoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
     @Produces
@@ -173,10 +179,12 @@ class OrdemServicoServiceConfig {
         usuarioRepository: UsuarioRepositoryPort,
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
+        statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
     ): EntregarOrdemServicoUseCase = AuditoriaProxy.envolver(
-        EntregarOrdemServicoService(osRepository, usuarioRepository, jwtPort),
+        EntregarOrdemServicoService(osRepository, usuarioRepository, jwtPort, statusAlteradoEvent),
         EntregarOrdemServicoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
     @Produces
@@ -189,5 +197,6 @@ class OrdemServicoServiceConfig {
         ConcluirItemServicoService(osRepository, jwtPort),
         ConcluirItemServicoUseCase::class.java,
         auditoria,
+        antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 }

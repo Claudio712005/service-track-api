@@ -11,4 +11,5 @@ enum class TipoEntidade(
     INSUMO("Insumo"),
     SERVICO("Serviço"),
     USUARIO("Usuário"),
+    NOTIFICACAO("Notificação"),
 }

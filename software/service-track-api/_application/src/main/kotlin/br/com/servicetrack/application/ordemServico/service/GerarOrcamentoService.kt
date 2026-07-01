@@ -1,10 +1,10 @@
 package br.com.servicetrack.application.ordemServico.service
 
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
-import br.com.servicetrack.application.auditoria.context.AuditoriaContextoHolder
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.insumo.ports.`out`.InsumoRepositoryPort
+import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
 import br.com.servicetrack.application.ordemServico.dto.response.OrdemServicoResDTO
 import br.com.servicetrack.application.ordemServico.ports.`in`.GerarOrcamentoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`out`.OrdemServicoRepositoryPort
@@ -16,6 +16,7 @@ import br.com.servicetrack.domain.ordemServico.vo.OrdemServicoId
 import br.com.servicetrack.domain.ordemServico.vo.PrazoConclusao
 import br.com.servicetrack.domain.shared.exception.DomainException
 import br.com.servicetrack.domain.shared.vo.ValorMonetario
+import jakarta.enterprise.event.Event
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -24,6 +25,7 @@ class GerarOrcamentoService(
     private val osRepository: OrdemServicoRepositoryPort,
     private val insumoRepository: InsumoRepositoryPort,
     private val jwt: JwtPort,
+    private val statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
 ) : GerarOrcamentoUseCase {
 
     @Auditavel(entidade = TipoEntidade.ORCAMENTO, evento = TipoEventoAuditoria.CRIADO)
@@ -32,8 +34,6 @@ class GerarOrcamentoService(
 
         val os = osRepository.buscarPorId(OrdemServicoId(ordemServicoId))
             ?: throw EntidadeNaoEncontradaException("Ordem de Serviço", arrayOf(ordemServicoId))
-
-        AuditoriaContextoHolder.registrarAntes(os)
 
         if (os.obterMecanicoId() != solicitanteId) {
             throw OperacaoNegadaException(
@@ -86,6 +86,16 @@ class GerarOrcamentoService(
 
         os.gerarOrcamento(custoMaoDeObra, custoInsumos)
 
-        return OrdemServicoResDTO.de(osRepository.atualizar(os))
+        val atualizada = osRepository.atualizar(os)
+
+        statusAlteradoEvent.fire(
+            OrdemServicoStatusAlteradoEvent(
+                ordemServicoId = atualizada.id,
+                clienteId = atualizada.clienteId,
+                novoStatus = atualizada.obterStatus(),
+            )
+        )
+
+        return OrdemServicoResDTO.de(atualizada)
     }
 }

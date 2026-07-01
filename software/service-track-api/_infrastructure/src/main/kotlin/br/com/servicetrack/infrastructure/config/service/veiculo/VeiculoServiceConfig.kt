@@ -8,7 +8,9 @@ import br.com.servicetrack.application.veiculo.ports.`in`.BuscarVeiculoUseCase
 import br.com.servicetrack.application.veiculo.ports.`in`.CadastrarVeiculoUseCase
 import br.com.servicetrack.application.veiculo.ports.`in`.ListarVeiculosUseCase
 import br.com.servicetrack.application.veiculo.ports.`in`.RemoverVeiculoUseCase
+import br.com.servicetrack.application.veiculo.ports.out.FipePort
 import br.com.servicetrack.application.veiculo.ports.out.VeiculoRepositoryPort
+import br.com.servicetrack.domain.veiculo.vo.VeiculoId
 import br.com.servicetrack.application.veiculo.service.AtualizarVeiculoService
 import br.com.servicetrack.application.veiculo.service.BuscarVeiculoService
 import br.com.servicetrack.application.veiculo.service.CadastrarVeiculoService
@@ -27,9 +29,10 @@ class VeiculoServiceConfig {
         usuarioRepository: UsuarioRepositoryPort,
         veiculoRepository: VeiculoRepositoryPort,
         jwt: JwtPort,
+        fipe: FipePort,
         auditoria: RegistrarAuditoriaPort
     ): CadastrarVeiculoUseCase = AuditoriaProxy.envolver(
-        CadastrarVeiculoService(veiculoRepository, usuarioRepository, jwt),
+        CadastrarVeiculoService(veiculoRepository, usuarioRepository, jwt, fipe),
         CadastrarVeiculoUseCase::class.java,
         auditoria
     )
@@ -44,7 +47,8 @@ class VeiculoServiceConfig {
     ): RemoverVeiculoUseCase = AuditoriaProxy.envolver(
         RemoverVeiculoService(jwt, repository, usuarioRepository),
         RemoverVeiculoUseCase::class.java,
-        auditoria
+        auditoria,
+        antesProvider = { args -> repository.buscarPorId(args[0] as VeiculoId)?.obterDados() },
     )
 
     @Produces
@@ -67,11 +71,12 @@ class VeiculoServiceConfig {
         repository: VeiculoRepositoryPort,
         usuarioRepository: UsuarioRepositoryPort,
         jwt: JwtPort,
+        fipe: FipePort,
         auditoria: RegistrarAuditoriaPort
     ): AtualizarVeiculoUseCase = AuditoriaProxy.envolver(
-        AtualizarVeiculoService(repository, usuarioRepository, jwt),
+        AtualizarVeiculoService(repository, usuarioRepository, jwt, fipe),
         AtualizarVeiculoUseCase::class.java,
-        auditoria
+        auditoria,
+        antesProvider = { args -> repository.buscarPorId(args[0] as VeiculoId)?.obterDados() },
     )
-
 }

@@ -1,10 +1,13 @@
 package br.com.servicetrack.application.veiculo.service
 
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
+import br.com.servicetrack.application.exception.MarcaInvalidaFipeException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
+import br.com.servicetrack.application.veiculo.dto.fipe.MarcaFipeDTO
 import br.com.servicetrack.application.veiculo.dto.request.AtualizarVeiculoReqDTO
+import br.com.servicetrack.application.veiculo.ports.out.FipePort
 import br.com.servicetrack.application.veiculo.ports.out.VeiculoRepositoryPort
 import br.com.servicetrack.domain.shared.enums.IndicativoSimNao
 import br.com.servicetrack.domain.shared.enums.Role
@@ -31,11 +34,17 @@ class AtualizarVeiculoServiceTest {
     private val repository = mockk<VeiculoRepositoryPort>()
     private val usuarioRepository = mockk<UsuarioRepositoryPort>()
     private val jwt = mockk<JwtPort>()
+    private val fipe = mockk<FipePort>()
 
-    private val service = AtualizarVeiculoService(repository, usuarioRepository, jwt)
+    private val service = AtualizarVeiculoService(repository, usuarioRepository, jwt, fipe)
 
     private val proprietarioId = UsuarioId.gerar()
     private val veiculoId = VeiculoId.gerar()
+
+    private val marcasFipe = listOf(
+        MarcaFipeDTO(codigo = "23", nome = "Honda"),
+        MarcaFipeDTO(codigo = "59", nome = "Toyota")
+    )
 
     private fun buildCliente(id: UsuarioId = UsuarioId.gerar()): Usuario = Usuario.reconstituir(
         id = id,
@@ -87,6 +96,7 @@ class AtualizarVeiculoServiceTest {
         every { jwt.getUsuarioId() } returns proprietarioId
         every { usuarioRepository.buscarPorId(proprietarioId) } returns proprietario
         every { repository.buscarPorId(veiculoId) } returns veiculo
+        every { fipe.listarMarcasCarros() } returns marcasFipe
         every { repository.atualizar(any()) } returns Unit
 
         val result = service.atualizarVeiculo(veiculoId, req)
@@ -106,12 +116,49 @@ class AtualizarVeiculoServiceTest {
         every { jwt.getUsuarioId() } returns mecanicoId
         every { usuarioRepository.buscarPorId(mecanicoId) } returns mecanico
         every { repository.buscarPorId(veiculoId) } returns veiculo
+        every { fipe.listarMarcasCarros() } returns marcasFipe
         every { repository.atualizar(any()) } returns Unit
 
         val result = service.atualizarVeiculo(veiculoId, req)
 
         assertEquals("Corolla", result.modelo)
         verify(exactly = 1) { repository.atualizar(any()) }
+    }
+
+    @Test
+    fun `deve atualizar urlImagem do veiculo sem validar FIPE quando apenas imagem e alterada`() {
+        val proprietario = buildCliente(proprietarioId)
+        val veiculo = buildVeiculo(proprietarioId)
+        val req = AtualizarVeiculoReqDTO(urlImagem = "https://images.unsplash.com/foto-teste")
+
+        every { jwt.getUsuarioId() } returns proprietarioId
+        every { usuarioRepository.buscarPorId(proprietarioId) } returns proprietario
+        every { repository.buscarPorId(veiculoId) } returns veiculo
+        every { repository.atualizar(any()) } returns Unit
+
+        val result = service.atualizarVeiculo(veiculoId, req)
+
+        assertEquals("https://images.unsplash.com/foto-teste", result.urlImagem)
+        verify(exactly = 0) { fipe.listarMarcasCarros() }
+        verify(exactly = 1) { repository.atualizar(any()) }
+    }
+
+    @Test
+    fun `deve lancar MarcaInvalidaFipeException quando nova marca nao existe na FIPE`() {
+        val proprietario = buildCliente(proprietarioId)
+        val veiculo = buildVeiculo(proprietarioId)
+        val req = AtualizarVeiculoReqDTO(marca = "MarcaInexistente")
+
+        every { jwt.getUsuarioId() } returns proprietarioId
+        every { usuarioRepository.buscarPorId(proprietarioId) } returns proprietario
+        every { repository.buscarPorId(veiculoId) } returns veiculo
+        every { fipe.listarMarcasCarros() } returns marcasFipe
+
+        assertThrows<MarcaInvalidaFipeException> {
+            service.atualizarVeiculo(veiculoId, req)
+        }
+
+        verify(exactly = 0) { repository.atualizar(any()) }
     }
 
     @Test

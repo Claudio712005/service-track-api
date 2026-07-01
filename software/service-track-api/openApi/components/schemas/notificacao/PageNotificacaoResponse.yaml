@@ -1,0 +1,19 @@
+type: object
+properties:
+  content:
+    type: array
+    items:
+      $ref: './NotificacaoResponse.yaml'
+  page:
+    type: integer
+    example: 0
+  size:
+    type: integer
+    example: 20
+  total:
+    type: integer
+    format: int64
+    example: 5
+  totalPages:
+    type: integer
+    example: 1

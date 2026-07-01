@@ -1,5 +1,6 @@
 package br.com.servicetrack.infrastructure.ordemServico.persistence
 
+import br.com.servicetrack.application.dashboard.dto.query.OrdemServicoDashboardQueryDTO
 import br.com.servicetrack.application.ordemServico.dto.request.FiltroOrdemServicoDTO
 import br.com.servicetrack.application.ordemServico.ports.out.OrdemServicoRepositoryPort
 import br.com.servicetrack.application.shared.dto.PageResDTO
@@ -13,6 +14,7 @@ import io.quarkus.panache.common.Page
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import jakarta.persistence.EntityManager
+import java.math.BigDecimal
 import java.util.UUID
 
 @ApplicationScoped
@@ -119,4 +121,102 @@ class OrdemServicoRepositoryAdapter : OrdemServicoRepositoryPort {
             statusFinalizados,
         )
     }
+
+    override fun listarAtivasDashboardPorCliente(
+        clienteId: UsuarioId,
+        limit: Int,
+    ): List<OrdemServicoDashboardQueryDTO> {
+        val activeStatuses = listOf(
+            StatusOrdemServicoEnum.RECEBIDA,
+            StatusOrdemServicoEnum.EM_DIAGNOSTICO,
+            StatusOrdemServicoEnum.AGUARDANDO_APROVACAO,
+            StatusOrdemServicoEnum.EM_EXECUCAO,
+            StatusOrdemServicoEnum.ENTREGUE,
+        )
+        val entities = entityManager.createQuery(
+            """
+            SELECT os FROM OrdemServicoEntity os
+            LEFT JOIN FETCH os.veiculo
+            LEFT JOIN FETCH os.mecanico
+            LEFT JOIN FETCH os.orcamento
+            WHERE os.cliente.id = ?1 AND os.status IN ?2
+            ORDER BY os.dataCriacao DESC
+            """,
+            OrdemServicoEntity::class.java
+        )
+            .setParameter(1, UUID.fromString(clienteId.valor))
+            .setParameter(2, activeStatuses)
+            .setMaxResults(limit)
+            .resultList
+
+        return entities.map { it.toOrdemServicoDashboardQueryDTO() }
+    }
+
+    override fun listarRecentesDashboardPorCliente(
+        clienteId: UsuarioId,
+        limit: Int,
+    ): List<OrdemServicoDashboardQueryDTO> {
+        val entities = entityManager.createQuery(
+            """
+            SELECT os FROM OrdemServicoEntity os
+            LEFT JOIN FETCH os.veiculo
+            LEFT JOIN FETCH os.mecanico
+            LEFT JOIN FETCH os.orcamento
+            WHERE os.cliente.id = ?1
+            ORDER BY os.dataCriacao DESC
+            """,
+            OrdemServicoEntity::class.java
+        )
+            .setParameter(1, UUID.fromString(clienteId.valor))
+            .setMaxResults(limit)
+            .resultList
+
+        return entities.map { it.toOrdemServicoDashboardQueryDTO() }
+    }
+
+    override fun contarPorClienteEStatus(
+        clienteId: UsuarioId,
+        statuses: List<StatusOrdemServicoEnum>,
+    ): Long = OrdemServicoEntity.count(
+        "cliente.id = ?1 and status in ?2",
+        UUID.fromString(clienteId.valor),
+        statuses,
+    )
+
+    override fun contarTotalPorVeiculo(veiculoId: VeiculoId, clienteId: UsuarioId): Long =
+        OrdemServicoEntity.count(
+            "veiculo.id = ?1 and cliente.id = ?2",
+            UUID.fromString(veiculoId.valor),
+            UUID.fromString(clienteId.valor),
+        )
+
+    override fun somarGastoPorVeiculo(veiculoId: VeiculoId, clienteId: UsuarioId): BigDecimal =
+        entityManager.createQuery(
+            """
+            SELECT COALESCE(SUM(o.custoMaoDeObra + o.custoInsumos), 0)
+            FROM OrcamentoEntity o
+            WHERE o.ordemServico.veiculo.id = ?1
+              AND o.ordemServico.cliente.id = ?2
+              AND o.aprovado = true
+            """,
+            BigDecimal::class.java
+        )
+            .setParameter(1, UUID.fromString(veiculoId.valor))
+            .setParameter(2, UUID.fromString(clienteId.valor))
+            .singleResult ?: BigDecimal.ZERO
+
+    private fun OrdemServicoEntity.toOrdemServicoDashboardQueryDTO() = OrdemServicoDashboardQueryDTO(
+        id = id.toString(),
+        motivo = motivo,
+        status = status,
+        veiculoId = veiculo.id.toString(),
+        veiculoPlaca = veiculo.placa,
+        veiculoModelo = veiculo.modelo,
+        mecanicoId = mecanico.id.toString(),
+        mecanicoNome = mecanico.nome,
+        dataCriacao = dataCriacao,
+        dataAtualizacao = dataAtualizacao,
+        prazoConclusao = prazoConclusao,
+        valorOrcado = orcamento?.let { it.custoMaoDeObra.add(it.custoInsumos) },
+    )
 }

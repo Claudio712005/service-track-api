@@ -1,0 +1,62 @@
+name: CD - App
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  APP_DIR: software/service-track-api
+  ECR_REPO: service-track-app
+
+jobs:
+  deploy:
+    name: Build, push e deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login no Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Definir tag da imagem
+        run: echo "ECR_IMAGE=${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPO }}:${{ github.sha }}" >> "$GITHUB_ENV"
+
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build e push da imagem
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.APP_DIR }}
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.ECR_IMAGE }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.5
+          terraform_wrapper: false
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Deploy no EKS
+        env:
+          AWS_PROFILE: "" 
+          ECR_IMAGE: ${{ env.ECR_IMAGE }}
+        run: bash scripts/deploy-k8s.sh

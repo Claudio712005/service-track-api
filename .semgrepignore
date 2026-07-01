@@ -1,0 +1,5 @@
+# Test seed data — bcrypt hashes are intentional fixtures, not leaked secrets
+**/src/main/resources/import.sql
+**/src/main/resources/import-h2.sql
+**/src/test/resources/import.sql
+

@@ -58,7 +58,8 @@ class MecanicoServiceConfig {
     ): AtualizarMecanicoUseCase = AuditoriaProxy.envolver(
         AtualizarMecanicoService(mecanicoRepository, usuarioRepository, jwt),
         AtualizarMecanicoUseCase::class.java,
-        auditoria
+        auditoria,
+        antesProvider = { args -> mecanicoRepository.buscarPorId(args[0] as String) },
     )
 
 }

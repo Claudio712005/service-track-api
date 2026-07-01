@@ -1,5 +1,6 @@
 package br.com.servicetrack.infrastructure.veiculo.persistence
 
+import br.com.servicetrack.application.dashboard.dto.query.VeiculoDashboardQueryDTO
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.veiculo.ports.out.VeiculoRepositoryPort
 import br.com.servicetrack.domain.shared.enums.IndicativoSimNao
@@ -66,12 +67,12 @@ class VeiculoRepositoryAdapter : VeiculoRepositoryPort {
         entity.modelo = dados.modelo
         entity.marca = dados.marca
         entity.ano = dados.ano
+        entity.imagemUrl = dados.imagemUrl?.url
+        entity.codigoFipe = dados.codigoFipe
     }
 
     override fun listarTodos(): List<Veiculo> {
-        return VeiculoEntity.list("ativo"
-            , IndicativoSimNao.S
-        ).map { it.toDomain() }
+        return VeiculoEntity.list("ativo", IndicativoSimNao.S).map { it.toDomain() }
     }
 
     override fun listarPorProprietario(proprietarioId: UsuarioId): List<Veiculo> {
@@ -79,5 +80,24 @@ class VeiculoRepositoryAdapter : VeiculoRepositoryPort {
             .find("proprietario.id = ?1 and ativo = ?2", UUID.fromString(proprietarioId.valor), IndicativoSimNao.S)
             .list()
             .map { it.toDomain() }
+    }
+
+    override fun listarDashboardPorProprietario(proprietarioId: UsuarioId): List<VeiculoDashboardQueryDTO> {
+        return VeiculoEntity
+            .find("proprietario.id = ?1", UUID.fromString(proprietarioId.valor))
+            .list()
+            .map { v ->
+                VeiculoDashboardQueryDTO(
+                    id = v.id.toString(),
+                    placa = v.placa,
+                    marca = v.marca,
+                    modelo = v.modelo,
+                    ano = v.ano,
+                    imagemUrl = v.imagemUrl,
+                    codigoFipe = v.codigoFipe,
+                    ativo = v.ativo == IndicativoSimNao.S,
+                    dataCriacao = v.dataCriacao,
+                )
+            }
     }
 }

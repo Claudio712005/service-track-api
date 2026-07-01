@@ -2,6 +2,7 @@ package br.com.servicetrack.application.ordemServico.service
 
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
 import br.com.servicetrack.application.ordemServico.ports.out.OrdemServicoRepositoryPort
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.domain.ordemServico.OrdemServico
@@ -11,8 +12,10 @@ import br.com.servicetrack.domain.ordemServico.vo.StatusOrdemServico
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import br.com.servicetrack.domain.veiculo.vo.VeiculoId
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
+import jakarta.enterprise.event.Event
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -22,8 +25,9 @@ class EnviarParaDiagnosticoServiceTest {
 
     private val repository = mockk<OrdemServicoRepositoryPort>()
     private val jwt = mockk<JwtPort>()
+    private val statusEvent = mockk<Event<OrdemServicoStatusAlteradoEvent>>()
 
-    private val service = EnviarParaDiagnosticoService(repository, jwt)
+    private val service = EnviarParaDiagnosticoService(repository, jwt, statusEvent)
 
     private val mecanicoId = UsuarioId.gerar()
     private val clienteId = UsuarioId.gerar()
@@ -54,11 +58,15 @@ class EnviarParaDiagnosticoServiceTest {
         every { jwt.getUsuarioId() } returns mecanicoId
         every { repository.buscarPorId(any()) } returns os
         every { repository.atualizar(any()) } answers { firstArg() }
+        justRun { statusEvent.fire(any()) }
 
         val result = service.enviarParaDiagnostico(os.id.valor)
 
         assertEquals(StatusOrdemServicoEnum.EM_DIAGNOSTICO, result.status)
         verify(exactly = 1) { repository.atualizar(any()) }
+        verify(exactly = 1) {
+            statusEvent.fire(match { it.novoStatus == StatusOrdemServicoEnum.EM_DIAGNOSTICO })
+        }
     }
 
     @Test
@@ -71,6 +79,7 @@ class EnviarParaDiagnosticoServiceTest {
         }
 
         verify(exactly = 0) { repository.atualizar(any()) }
+        verify(exactly = 0) { statusEvent.fire(any()) }
     }
 
     @Test
@@ -85,5 +94,6 @@ class EnviarParaDiagnosticoServiceTest {
         }
 
         verify(exactly = 0) { repository.atualizar(any()) }
+        verify(exactly = 0) { statusEvent.fire(any()) }
     }
 }

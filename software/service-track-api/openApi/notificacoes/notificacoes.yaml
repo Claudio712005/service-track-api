@@ -1,0 +1,42 @@
+get:
+  summary: Listar notificações do usuário autenticado (paginado). Cada usuário vê apenas as suas.
+  operationId: listarNotificacoes
+  tags:
+    - Notificacao
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: visualizada
+      in: query
+      required: false
+      schema:
+        type: boolean
+      description: Filtrar por notificações lidas (true) ou não lidas (false)
+    - name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+    - name: size
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 100
+  responses:
+    '200':
+      description: Lista paginada de notificações do usuário
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/notificacao/PageNotificacaoResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

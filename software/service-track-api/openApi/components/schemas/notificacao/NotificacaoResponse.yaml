@@ -1,0 +1,44 @@
+type: object
+properties:
+  id:
+    type: string
+    format: uuid
+    example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+  titulo:
+    type: string
+    example: "Ordem de Serviço Atualizada"
+  assunto:
+    type: string
+    example: "Sua OS #1234 mudou de status"
+  descricao:
+    type: string
+    example: "A ordem de serviço foi aprovada e está em execução."
+  tipoNotificacao:
+    type: string
+    enum: [EMAIL]
+    example: EMAIL
+  tipoConteudo:
+    type: string
+    enum: [MUDANCA_STATUS_OS]
+    example: MUDANCA_STATUS_OS
+  statusEnvio:
+    type: string
+    enum: [PENDENTE, ENVIADA, FALHA_ENVIO]
+    example: ENVIADA
+  visualizada:
+    type: boolean
+    example: false
+  dataCriacao:
+    type: string
+    format: date-time
+    example: "2026-06-19T10:30:00"
+  dataEnvio:
+    type: string
+    format: date-time
+    nullable: true
+    example: "2026-06-19T10:30:30"
+  dataVisualizacao:
+    type: string
+    format: date-time
+    nullable: true
+    example: null

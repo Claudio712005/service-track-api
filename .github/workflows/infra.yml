@@ -1,0 +1,55 @@
+name: Infra (Terraform)
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Ação do Terraform"
+        type: choice
+        options: [plan, apply, destroy]
+        default: plan
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  TF_DIR: infra/terraform
+
+jobs:
+  terraform:
+    name: Terraform ${{ inputs.action }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.5
+
+      - name: Init
+        run: terraform init -input=false
+
+      - name: Plan
+        if: inputs.action == 'plan'
+        run: terraform plan -input=false
+
+      - name: Apply
+        if: inputs.action == 'apply'
+        run: terraform apply -input=false -auto-approve
+
+      - name: Destroy
+        if: inputs.action == 'destroy'
+        run: terraform destroy -input=false -auto-approve

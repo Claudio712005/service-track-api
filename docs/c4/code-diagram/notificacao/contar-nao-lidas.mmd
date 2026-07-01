@@ -1,0 +1,49 @@
+classDiagram
+    direction TB
+
+    namespace Infrastructure_REST {
+        class NotificacaoResourceImpl {
+            <<@ApplicationScoped>>
+            <<@RolesAllowed CLIENTE, MECANICO>>
+            +contarNotificacoesNaoLidas() Response
+        }
+    }
+
+    namespace Application_Ports_In {
+        class ContarNotificacoesNaoLidasUseCase {
+            <<interface>>
+            +executar() ContadorNaoLidasResDTO
+        }
+    }
+
+    namespace Application_Service {
+        class ContarNotificacoesNaoLidasUseCaseImpl {
+            +executar() ContadorNaoLidasResDTO
+        }
+    }
+
+    namespace Application_Ports_Out {
+        class NotificacaoRepositoryPort {
+            <<interface>>
+            +contarNaoLidas(UsuarioId) Long
+        }
+        class JwtPort {
+            <<interface>>
+            +getUsuarioId() UsuarioId
+        }
+    }
+
+    namespace Infrastructure_Adapters {
+        class NotificacaoRepositoryAdapter {
+            <<@ApplicationScoped>>
+            +contarNaoLidas(UsuarioId) Long
+        }
+    }
+
+    NotificacaoResourceImpl --> ContarNotificacoesNaoLidasUseCase : invoca
+
+    ContarNotificacoesNaoLidasUseCaseImpl ..|> ContarNotificacoesNaoLidasUseCase
+    ContarNotificacoesNaoLidasUseCaseImpl --> JwtPort : getUsuarioId (auto-filter)
+    ContarNotificacoesNaoLidasUseCaseImpl --> NotificacaoRepositoryPort : contarNaoLidas
+
+    NotificacaoRepositoryAdapter ..|> NotificacaoRepositoryPort

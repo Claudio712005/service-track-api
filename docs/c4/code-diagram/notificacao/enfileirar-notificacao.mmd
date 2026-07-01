@@ -1,0 +1,98 @@
+classDiagram
+    direction TB
+
+    namespace Application_Event {
+        class OrdemServicoStatusAlteradoEvent {
+            <<event>>
+            +ordemServicoId OrdemServicoId
+            +clienteId UsuarioId
+            +novoStatus StatusOrdemServicoEnum
+        }
+        class OrdemServicoStatusAlteradoListener {
+            <<@ApplicationScoped>>
+            +aoAlterarStatus(@Observes AFTER_SUCCESS evento)
+        }
+    }
+
+    namespace Application_Ports_In {
+        class EnfileirarNotificacaoUseCase {
+            <<interface>>
+            +executar(EnfileirarNotificacaoCommand) NotificacaoId
+        }
+    }
+
+    namespace Application_Service {
+        class EnfileirarNotificacaoUseCaseImpl {
+            +executar(EnfileirarNotificacaoCommand) NotificacaoId
+        }
+    }
+
+    namespace Application_DTO {
+        class EnfileirarNotificacaoCommand {
+            <<command>>
+            +assunto AssuntoNotificacao
+            +titulo TituloNotificacao
+            +descricao DescricaoNotificacao
+            +variaveis VariaveisTemplate
+            +tipoNotificacao TipoNotificacao
+            +tipoConteudoNotificacao TipoConteudoNotificacao
+            +destinatario UsuarioId
+            +copias List~UsuarioId~
+        }
+    }
+
+    namespace Application_Ports_Out {
+        class NotificacaoRepositoryPort {
+            <<interface>>
+            +salvar(Notificacao)
+            +buscarPorId(NotificacaoId) Notificacao?
+            +atualizar(Notificacao)
+            +buscarPendentesParaEnvio(limite) List~Notificacao~
+        }
+        class UsuarioRepositoryPort {
+            <<interface>>
+            +buscarPorId(UsuarioId) Usuario?
+        }
+    }
+
+    namespace Domain {
+        class Notificacao {
+            <<aggregate root>>
+            +gerar(...)$ Notificacao
+            +marcarComoEnviada()
+            +registrarTentativaFalha(erro, maxTentativas)
+            +visualizar()
+        }
+        class VariaveisTemplate {
+            <<value object>>
+            +de(Map~String,String~)$ VariaveisTemplate
+            +comoMap() Map~String,String~
+        }
+    }
+
+    namespace Infrastructure_Adapters {
+        class NotificacaoRepositoryAdapter {
+            <<@ApplicationScoped>>
+            +salvar(Notificacao)
+            +buscarPorId(NotificacaoId) Notificacao?
+            +atualizar(Notificacao)
+        }
+        class NotificacaoEntity {
+            <<JPA + Panache>>
+            +de(Notificacao)$ NotificacaoEntity
+            +toDomain() Notificacao
+        }
+    }
+
+    OrdemServicoStatusAlteradoEvent ..> OrdemServicoStatusAlteradoListener : @Observes(AFTER_SUCCESS)
+    OrdemServicoStatusAlteradoListener --> UsuarioRepositoryPort : resolverNome
+    OrdemServicoStatusAlteradoListener --> VariaveisTemplate : de(map)
+    OrdemServicoStatusAlteradoListener --> EnfileirarNotificacaoUseCase : executar(command)
+    OrdemServicoStatusAlteradoListener --> EnfileirarNotificacaoCommand : monta
+
+    EnfileirarNotificacaoUseCaseImpl ..|> EnfileirarNotificacaoUseCase : implementa
+    EnfileirarNotificacaoUseCaseImpl --> Notificacao : gerar(...)
+    EnfileirarNotificacaoUseCaseImpl --> NotificacaoRepositoryPort : salvar()
+
+    NotificacaoRepositoryAdapter ..|> NotificacaoRepositoryPort : implementa
+    NotificacaoRepositoryAdapter --> NotificacaoEntity : de(domain) / toDomain()

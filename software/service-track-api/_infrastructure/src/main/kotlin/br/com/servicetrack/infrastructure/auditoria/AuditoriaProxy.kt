@@ -12,10 +12,17 @@ object AuditoriaProxy {
         instancia: T,
         contrato: Class<T>,
         auditoriaPort: RegistrarAuditoriaPort,
+        antesProvider: ((Array<Any?>) -> Any?)? = null,
     ): T = Proxy.newProxyInstance(
         contrato.classLoader,
         arrayOf(contrato),
     ) { _, metodo, args ->
+        if (antesProvider != null) {
+            runCatching {
+                antesProvider(args ?: emptyArray())?.let { AuditoriaContextoHolder.registrarAntes(it) }
+            }
+        }
+
         val resultado = try {
             metodo.invoke(instancia, *(args ?: emptyArray()))
         } catch (e: java.lang.reflect.InvocationTargetException) {

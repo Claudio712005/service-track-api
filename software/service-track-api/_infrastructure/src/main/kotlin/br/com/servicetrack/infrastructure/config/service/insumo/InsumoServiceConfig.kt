@@ -11,7 +11,9 @@ import br.com.servicetrack.application.insumo.service.AtualizarInsumoService
 import br.com.servicetrack.application.insumo.service.BuscarInsumoService
 import br.com.servicetrack.application.insumo.service.CriarInsumoService
 import br.com.servicetrack.application.insumo.service.ListarInsumosService
+import br.com.servicetrack.application.insumo.dto.InsumoResDTO
 import br.com.servicetrack.application.insumo.service.RemoverInsumoService
+import br.com.servicetrack.domain.insumo.vo.InsumoId
 import br.com.servicetrack.infrastructure.auditoria.AuditoriaProxy
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Produces
@@ -50,7 +52,8 @@ class InsumoServiceConfig {
     ): AtualizarInsumoUseCase = AuditoriaProxy.envolver(
         AtualizarInsumoService(repository),
         AtualizarInsumoUseCase::class.java,
-        auditoriaPort
+        auditoriaPort,
+        antesProvider = { args -> repository.buscarPorId(args[0] as InsumoId)?.let { InsumoResDTO.de(it) } },
     )
 
     @Produces
@@ -61,5 +64,7 @@ class InsumoServiceConfig {
     ): RemoverInsumoUseCase = AuditoriaProxy.envolver(
         RemoverInsumoService(repository),
         RemoverInsumoUseCase::class.java,
-        auditoriaPort)
+        auditoriaPort,
+        antesProvider = { args -> repository.buscarPorId(args[0] as InsumoId)?.let { InsumoResDTO.de(it) } },
+    )
 }

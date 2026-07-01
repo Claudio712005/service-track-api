@@ -1,0 +1,56 @@
+classDiagram
+    direction TB
+
+    namespace Infrastructure_REST {
+        class NotificacaoResourceImpl {
+            <<@ApplicationScoped>>
+            <<@RolesAllowed CLIENTE, MECANICO>>
+            +buscarNotificacao(UUID) Response
+        }
+    }
+
+    namespace Application_Ports_In {
+        class BuscarNotificacaoUseCase {
+            <<interface>>
+            +executar(String) NotificacaoResDTO
+        }
+    }
+
+    namespace Application_Service {
+        class BuscarNotificacaoUseCaseImpl {
+            +executar(String) NotificacaoResDTO
+        }
+    }
+
+    namespace Application_Ports_Out {
+        class NotificacaoRepositoryPort {
+            <<interface>>
+            +buscarPorId(NotificacaoId) Notificacao?
+        }
+        class JwtPort {
+            <<interface>>
+            +getUsuarioId() UsuarioId
+        }
+    }
+
+    namespace Domain {
+        class Notificacao {
+            +destinatario UsuarioId
+        }
+    }
+
+    namespace Infrastructure_Adapters {
+        class NotificacaoRepositoryAdapter {
+            <<@ApplicationScoped>>
+            +buscarPorId(NotificacaoId) Notificacao?
+        }
+    }
+
+    NotificacaoResourceImpl --> BuscarNotificacaoUseCase : invoca
+
+    BuscarNotificacaoUseCaseImpl ..|> BuscarNotificacaoUseCase
+    BuscarNotificacaoUseCaseImpl --> JwtPort : getUsuarioId (ownership check)
+    BuscarNotificacaoUseCaseImpl --> NotificacaoRepositoryPort : buscarPorId
+    BuscarNotificacaoUseCaseImpl --> Notificacao : verifica destinatario
+
+    NotificacaoRepositoryAdapter ..|> NotificacaoRepositoryPort
