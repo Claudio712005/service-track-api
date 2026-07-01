@@ -9,10 +9,15 @@ services:
       POSTGRES_DB: servicetrack
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      FLYWAY_DB_USER: ${FLYWAY_DB_USER}
+      FLYWAY_DB_PASSWORD: ${FLYWAY_DB_PASSWORD}
+      APP_DB_USER: ${APP_DB_USER}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./scripts/postgres-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d servicetrack"]
       interval: 5s
@@ -44,10 +49,12 @@ services:
       mailhog:
         condition: service_started
     environment:
-      QUARKUS_DATASOURCE_USERNAME: ${POSTGRES_USER}
-      QUARKUS_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      QUARKUS_DATASOURCE_JDBC_URL: ${POSTGRES_JDBC_URL}
-      QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: ${DB_GENERATION:-drop-and-create}
+      QUARKUS_PROFILE: prod
+      APP_DB_USER: ${APP_DB_USER}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
+      FLYWAY_DB_USER: ${FLYWAY_DB_USER}
+      FLYWAY_DB_PASSWORD: ${FLYWAY_DB_PASSWORD}
+      DB_JDBC_URL: ${POSTGRES_JDBC_URL}
       UNSPLASH_CHAVE_ACESSO: ${UNSPLASH_CHAVE_ACESSO}
       QUARKUS_MAILER_HOST: mailhog
       QUARKUS_MAILER_PORT: "1025"

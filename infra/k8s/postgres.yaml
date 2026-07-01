@@ -9,6 +9,10 @@ stringData:
   POSTGRES_DB: servicetrack
   POSTGRES_USER: servicetrack
   POSTGRES_PASSWORD: servicetrack
+  FLYWAY_DB_USER: flyway_user
+  FLYWAY_DB_PASSWORD: flyway_change_me
+  APP_DB_USER: app_user
+  APP_DB_PASSWORD: app_change_me
 ---
 apiVersion: apps/v1
 kind: Deployment

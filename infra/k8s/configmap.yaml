@@ -5,8 +5,7 @@ metadata:
   namespace: service-track
 data:
   QUARKUS_PROFILE: "prod"
-  QUARKUS_DATASOURCE_JDBC_URL: "${RDS_JDBC_URL}"
-  QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: "update"
+  DB_JDBC_URL: "${RDS_JDBC_URL}"
   QUARKUS_MAILER_FROM: "no-reply@servicetrack.local"
   QUARKUS_MAILER_HOST: "mailhog"
   QUARKUS_MAILER_PORT: "1025"

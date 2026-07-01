@@ -26,6 +26,16 @@ export RDS_PASSWORD="$(tf output -raw db_password)"
 CLUSTER_NAME="$(tf output -raw cluster_name)"
 REGION="$(tf output -raw region)"
 
+export APP_DB_USER="${APP_DB_USER:-app_user}"
+export FLYWAY_DB_USER="${FLYWAY_DB_USER:-flyway_user}"
+: "${APP_DB_PASSWORD:?defina APP_DB_PASSWORD (secret) — senha do role app_user}"
+: "${FLYWAY_DB_PASSWORD:?defina FLYWAY_DB_PASSWORD (secret) — senha do role flyway_user}"
+export APP_DB_PASSWORD FLYWAY_DB_PASSWORD
+
+RDS_HOST="$(echo "$RDS_JDBC_URL" | sed -E 's#^jdbc:postgresql://([^:/]+).*#\1#')"
+RDS_PORT="$(echo "$RDS_JDBC_URL" | sed -E 's#^jdbc:postgresql://[^:/]+:([0-9]+).*#\1#')"
+RDS_DB="$(echo "$RDS_JDBC_URL" | sed -E 's#.*/([^/?]+)(\?.*)?$#\1#')"
+
 echo ">> Configurando kubeconfig ($CLUSTER_NAME / $REGION)..."
 aws eks update-kubeconfig --name "$CLUSTER_NAME" --region "$REGION" "${aws_profile_arg[@]}"
 
@@ -51,6 +61,28 @@ kubectl -n service-track create secret generic service-track-jwt \
   --from-file=privateKey.pem="$JWT_TMP/privateKey.pem" \
   --from-file=publicKey.pem="$JWT_TMP/publicKey.pem" \
   --dry-run=client -o yaml | kubectl apply -f -
+
+echo ">> Provisionando roles no RDS (flyway_user / app_user)..."
+
+kubectl -n service-track create configmap db-init-script \
+  --from-file=01-init-roles.sh="$ROOT_DIR/software/service-track-api/scripts/postgres-init/01-init-roles.sh" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl -n service-track create secret generic db-init-creds \
+  --from-literal=PGHOST="$RDS_HOST" \
+  --from-literal=PGPORT="${RDS_PORT:-5432}" \
+  --from-literal=PGUSER="$RDS_USERNAME" \
+  --from-literal=PGPASSWORD="$RDS_PASSWORD" \
+  --from-literal=PGDATABASE="${RDS_DB:-servicetrack}" \
+  --from-literal=FLYWAY_DB_USER="$FLYWAY_DB_USER" \
+  --from-literal=FLYWAY_DB_PASSWORD="$FLYWAY_DB_PASSWORD" \
+  --from-literal=APP_DB_USER="$APP_DB_USER" \
+  --from-literal=APP_DB_PASSWORD="$APP_DB_PASSWORD" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl -n service-track delete job service-track-db-init --ignore-not-found
+kubectl apply -f "$K8S_DIR/db-init-job.yaml"
+kubectl -n service-track wait --for=condition=complete job/service-track-db-init --timeout=120s
 
 kubectl apply -f "$K8S_DIR/mailhog.yaml"
 envsubst < "$K8S_DIR/configmap.yaml"  | kubectl apply -f -
