@@ -9,3 +9,5 @@ data:
   QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: "update"
   QUARKUS_MAILER_FROM: "no-reply@servicetrack.local"
   QUARKUS_MAILER_HOST: "localhost"
+  MP_JWT_VERIFY_PUBLICKEY_LOCATION: "file:/keys/publicKey.pem"
+  SMALLRYE_JWT_SIGN_KEY_LOCATION: "file:/keys/privateKey.pem"

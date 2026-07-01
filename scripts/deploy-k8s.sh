@@ -36,6 +36,22 @@ kubectl -n kube-system rollout status deploy/metrics-server --timeout=120s
 echo ">> Aplicando manifestos..."
 kubectl apply -f "$K8S_DIR/namespace.yaml"
 
+echo ">> Provisionando Secret das chaves JWT..."
+
+JWT_TMP="$(mktemp -d)"
+trap 'rm -rf "$JWT_TMP"' EXIT
+if [ -n "${JWT_PRIVATE_KEY_B64:-}" ] && [ -n "${JWT_PUBLIC_KEY_B64:-}" ]; then
+  echo "$JWT_PRIVATE_KEY_B64" | base64 -d > "$JWT_TMP/privateKey.pem"
+  echo "$JWT_PUBLIC_KEY_B64"  | base64 -d > "$JWT_TMP/publicKey.pem"
+else
+  cp "$ROOT_DIR/software/service-track-api/_infrastructure/src/main/resources/keys/privateKey.pem" "$JWT_TMP/"
+  cp "$ROOT_DIR/software/service-track-api/_infrastructure/src/main/resources/keys/publicKey.pem"  "$JWT_TMP/"
+fi
+kubectl -n service-track create secret generic service-track-jwt \
+  --from-file=privateKey.pem="$JWT_TMP/privateKey.pem" \
+  --from-file=publicKey.pem="$JWT_TMP/publicKey.pem" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
 envsubst < "$K8S_DIR/configmap.yaml"  | kubectl apply -f -
 envsubst < "$K8S_DIR/secret.yaml"     | kubectl apply -f -
 envsubst < "$K8S_DIR/deployment.yaml" | kubectl apply -f -

@@ -28,6 +28,10 @@ spec:
                 name: service-track-config
             - secretRef:
                 name: service-track-secret
+          volumeMounts:
+            - name: jwt-keys
+              mountPath: /keys
+              readOnly: true
           startupProbe:
             tcpSocket:
               port: 8080
@@ -47,3 +51,7 @@ spec:
               memory: 256Mi
             limits:
               memory: 512Mi
+      volumes:
+        - name: jwt-keys
+          secret:
+            secretName: service-track-jwt
