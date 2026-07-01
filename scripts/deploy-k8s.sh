@@ -52,6 +52,7 @@ kubectl -n service-track create secret generic service-track-jwt \
   --from-file=publicKey.pem="$JWT_TMP/publicKey.pem" \
   --dry-run=client -o yaml | kubectl apply -f -
 
+kubectl apply -f "$K8S_DIR/mailhog.yaml"
 envsubst < "$K8S_DIR/configmap.yaml"  | kubectl apply -f -
 envsubst < "$K8S_DIR/secret.yaml"     | kubectl apply -f -
 envsubst < "$K8S_DIR/deployment.yaml" | kubectl apply -f -

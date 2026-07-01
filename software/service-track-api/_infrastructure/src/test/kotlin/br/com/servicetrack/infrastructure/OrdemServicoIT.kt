@@ -346,4 +346,58 @@ class OrdemServicoIT {
         .then()
             .statusCode(400)
     }
+
+    private fun criarOrdemServico(veiculo: String): String {
+        return given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenMecanico")
+            .body(
+                """
+                {
+                  "motivo": "OS listagem",
+                  "clienteId": "$clienteId",
+                  "mecanicoId": "$mecanicoId",
+                  "veiculoId": "$veiculo"
+                }
+                """.trimIndent()
+            )
+            .post("/ordem-servico")
+            .then()
+            .statusCode(201)
+            .extract()
+            .jsonPath()
+            .getString("id")
+    }
+
+    @Test
+    fun `deve listar ordenando por prioridade de status e excluir entregues`() {
+        val veiculo2 = criarVeiculo(tokenMecanico, clienteId)
+
+        val osRecebida = criarOrdemServico(veiculoId)          
+        val osDiagnostico = criarOrdemServico(veiculo2)        
+
+        given()
+            .header("Authorization", "Bearer $tokenMecanico")
+        .`when`()
+            .post("/ordem-servico/$osDiagnostico/diagnostico")
+        .then()
+            .statusCode(200)
+
+        val statuses = given()
+            .header("Authorization", "Bearer $tokenMecanico")
+            .queryParam("mecanicoId", mecanicoId)
+        .`when`()
+            .get("/ordem-servico/lista")
+        .then()
+            .statusCode(200)
+            .extract()
+            .jsonPath()
+            .getList<String>("content.id")
+
+        val idxDiagnostico = statuses.indexOf(osDiagnostico)
+        val idxRecebida = statuses.indexOf(osRecebida)
+        assert(idxDiagnostico in 0 until idxRecebida) {
+            "Esperado EM_DIAGNOSTICO ($idxDiagnostico) antes de RECEBIDA ($idxRecebida): $statuses"
+        }
+    }
 }

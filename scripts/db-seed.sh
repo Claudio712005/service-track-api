@@ -1,19 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Seed one-time do RDS com os dados de import.sql (usuários, mecânicos, catálogo).
-#
-# Contexto:
-#   - O schema é criado pelo Hibernate (generation=update) no boot do 1º pod.
-#   - import.sql NÃO roda com generation=update, então o seed é feito aqui.
-#   - RDS fica em subnet privada -> o seed roda como Job DENTRO do cluster
-#     (nodes EKS têm rota para o RDS; sua máquina local não tem).
-#
-# Idempotente: se a tabela usuarios já tiver linhas, o Job pula o seed.
-#
-# Pré-requisitos: terraform apply + deploy da app (tabelas já criadas) +
-# AWS_PROFILE autenticado + kubeconfig apontando pro cluster.
-
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TF_DIR="$ROOT_DIR/infra/terraform"
 SEED_FILE="$ROOT_DIR/software/service-track-api/_infrastructure/src/main/resources/import.sql"

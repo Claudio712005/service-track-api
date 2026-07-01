@@ -23,6 +23,16 @@ class OrdemServicoRepositoryAdapter : OrdemServicoRepositoryPort {
     @Inject
     lateinit var entityManager: EntityManager
 
+    private companion object {
+        const val ORDER_BY_PRIORIDADE_STATUS =
+            " order by case status" +
+                " when br.com.servicetrack.domain.ordemServico.StatusOrdemServicoEnum.EM_EXECUCAO then 0" +
+                " when br.com.servicetrack.domain.ordemServico.StatusOrdemServicoEnum.AGUARDANDO_APROVACAO then 1" +
+                " when br.com.servicetrack.domain.ordemServico.StatusOrdemServicoEnum.EM_DIAGNOSTICO then 2" +
+                " when br.com.servicetrack.domain.ordemServico.StatusOrdemServicoEnum.RECEBIDA then 3" +
+                " else 4 end asc, dataCriacao asc"
+    }
+
     private fun buscarEntidade(id: UUID): OrdemServicoEntity? =
         OrdemServicoEntity.find("id", id).firstResult()
 
@@ -80,9 +90,16 @@ class OrdemServicoRepositoryAdapter : OrdemServicoRepositoryPort {
         val params = mutableListOf<Any>()
         var paramIndex = 1
 
-        filtro.status?.let {
+        val statusFiltro = filtro.status
+        if (statusFiltro != null) {
+            // Filtro explícito por status respeita a escolha do solicitante.
             conditions.add("status = ?$paramIndex")
-            params.add(it)
+            params.add(statusFiltro)
+            paramIndex++
+        } else {
+            // Exclusão lógica: OS finalizadas e entregues não aparecem na listagem.
+            conditions.add("status not in ?$paramIndex")
+            params.add(listOf(StatusOrdemServicoEnum.FINALIZADA, StatusOrdemServicoEnum.ENTREGUE))
             paramIndex++
         }
         if (filtro.clienteId != null) {
@@ -96,8 +113,8 @@ class OrdemServicoRepositoryAdapter : OrdemServicoRepositoryPort {
             paramIndex++
         }
 
-        val where = if (conditions.isEmpty()) "1=1" else conditions.joinToString(" and ")
-        val query = OrdemServicoEntity.find(where, *params.toTypedArray())
+        val where = conditions.joinToString(" and ")
+        val query = OrdemServicoEntity.find(where + ORDER_BY_PRIORIDADE_STATUS, *params.toTypedArray())
             .page(Page.of(filtro.page, filtro.size))
 
         val content = query.list().map { it.toDomain() }
