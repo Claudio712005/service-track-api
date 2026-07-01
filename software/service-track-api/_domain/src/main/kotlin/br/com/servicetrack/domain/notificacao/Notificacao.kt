@@ -88,11 +88,6 @@ class Notificacao private constructor(
         statusEnvio = StatusEnvio.FALHA_ENVIO
     }
 
-    /**
-     * Registra uma tentativa de envio que falhou. Incrementa o contador; se atingir
-     * [maxTentativas], transita para [StatusEnvio.FALHA_ENVIO]. Caso contrário, mantém
-     * [StatusEnvio.PENDENTE] para que o worker reprocesse.
-     */
     fun registrarTentativaFalha(erro: String, maxTentativas: Int) {
         require(maxTentativas > 0) { "maxTentativas deve ser positivo" }
         if (statusEnvio == StatusEnvio.ENVIADA) {

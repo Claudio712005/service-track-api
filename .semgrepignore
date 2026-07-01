@@ -2,4 +2,4 @@
 **/src/main/resources/import.sql
 **/src/main/resources/import-h2.sql
 **/src/test/resources/import.sql
-
+**/src/main/resources/db/migration/V2__seed_data.sql

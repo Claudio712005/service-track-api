@@ -57,6 +57,10 @@ jobs:
 
       - name: Deploy no EKS
         env:
-          AWS_PROFILE: "" 
+          AWS_PROFILE: ""
           ECR_IMAGE: ${{ env.ECR_IMAGE }}
+          JWT_PRIVATE_KEY_B64: ${{ secrets.JWT_PRIVATE_KEY_B64 }}
+          JWT_PUBLIC_KEY_B64: ${{ secrets.JWT_PUBLIC_KEY_B64 }}
+          APP_DB_PASSWORD: ${{ secrets.APP_DB_PASSWORD }}
+          FLYWAY_DB_PASSWORD: ${{ secrets.FLYWAY_DB_PASSWORD }}
         run: bash scripts/deploy-k8s.sh

@@ -1,6 +1,3 @@
-# AWS Academy Learner Lab não permite iam:CreateRole.
-# Reutilizamos a role pré-provisionada "LabRole" (já possui as policies de
-# EKS cluster, worker node, CNI e ECR anexadas pela conta do lab).
 data "aws_iam_role" "lab" {
   name = "LabRole"
 }
