@@ -7,7 +7,7 @@ set -euo pipefail
 : "${APP_DB_USER:?APP_DB_USER não definida}"
 : "${APP_DB_PASSWORD:?APP_DB_PASSWORD não definida}"
 
-]SUPERUSER="${PGUSER:-${POSTGRES_USER:-postgres}}"
+SUPERUSER="${PGUSER:-${POSTGRES_USER:-postgres}}"
 DB="${PGDATABASE:-${POSTGRES_DB:-postgres}}"
 
 psql -v ON_ERROR_STOP=1 --username "$SUPERUSER" --dbname "$DB" \
