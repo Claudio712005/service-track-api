@@ -51,8 +51,9 @@ echo ">> Provisionando Secret das chaves JWT..."
 JWT_TMP="$(mktemp -d)"
 trap 'rm -rf "$JWT_TMP"' EXIT
 if [ -n "${JWT_PRIVATE_KEY_B64:-}" ] && [ -n "${JWT_PUBLIC_KEY_B64:-}" ]; then
-  echo "$JWT_PRIVATE_KEY_B64" | base64 -d > "$JWT_TMP/privateKey.pem"
-  echo "$JWT_PUBLIC_KEY_B64"  | base64 -d > "$JWT_TMP/publicKey.pem"
+  
+  printf '%s' "$JWT_PRIVATE_KEY_B64" | tr -d '[:space:]' | base64 -d > "$JWT_TMP/privateKey.pem"
+  printf '%s' "$JWT_PUBLIC_KEY_B64"  | tr -d '[:space:]' | base64 -d > "$JWT_TMP/publicKey.pem"
 else
   cp "$ROOT_DIR/software/service-track-api/_infrastructure/src/main/resources/keys/privateKey.pem" "$JWT_TMP/"
   cp "$ROOT_DIR/software/service-track-api/_infrastructure/src/main/resources/keys/publicKey.pem"  "$JWT_TMP/"
