@@ -30,7 +30,8 @@ export APP_DB_USER="${APP_DB_USER:-app_user}"
 export FLYWAY_DB_USER="${FLYWAY_DB_USER:-flyway_user}"
 : "${APP_DB_PASSWORD:?defina APP_DB_PASSWORD (secret) — senha do role app_user}"
 : "${FLYWAY_DB_PASSWORD:?defina FLYWAY_DB_PASSWORD (secret) — senha do role flyway_user}"
-export APP_DB_PASSWORD FLYWAY_DB_PASSWORD
+: "${RESEND_API_KEY:?defina RESEND_API_KEY (secret) — chave de API do Resend}"
+export APP_DB_PASSWORD FLYWAY_DB_PASSWORD RESEND_API_KEY
 
 RDS_HOST="$(echo "$RDS_JDBC_URL" | sed -E 's#^jdbc:postgresql://([^:/]+).*#\1#')"
 RDS_PORT="$(echo "$RDS_JDBC_URL" | sed -E 's#^jdbc:postgresql://[^:/]+:([0-9]+).*#\1#')"
@@ -84,7 +85,6 @@ kubectl -n service-track delete job service-track-db-init --ignore-not-found
 kubectl apply -f "$K8S_DIR/db-init-job.yaml"
 kubectl -n service-track wait --for=condition=complete job/service-track-db-init --timeout=120s
 
-kubectl apply -f "$K8S_DIR/mailhog.yaml"
 envsubst < "$K8S_DIR/configmap.yaml"  | kubectl apply -f -
 envsubst < "$K8S_DIR/secret.yaml"     | kubectl apply -f -
 envsubst < "$K8S_DIR/deployment.yaml" | kubectl apply -f -

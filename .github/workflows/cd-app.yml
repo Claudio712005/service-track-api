@@ -63,4 +63,5 @@ jobs:
           JWT_PUBLIC_KEY_B64: ${{ secrets.JWT_PUBLIC_KEY_B64 }}
           APP_DB_PASSWORD: ${{ secrets.APP_DB_PASSWORD }}
           FLYWAY_DB_PASSWORD: ${{ secrets.FLYWAY_DB_PASSWORD }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: bash scripts/deploy-k8s.sh
