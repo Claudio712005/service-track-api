@@ -117,12 +117,23 @@ O sistema deve permitir associar veículos a clientes.
 
 #### RF03 – Abertura de Ordem de Serviço
 
-O sistema deve permitir:
+O sistema deve permitir dois caminhos de abertura, conforme o ator:
+
+**Abertura simples (cliente):**
 
 * Criar OS com cliente e veículo
 * Gerar identificador único
 * Registrar data/hora
-* Iniciar com status "Aberta"
+* Iniciar com status "Recebida"
+
+**Abertura completa (mecânico):**
+
+* Criar OS já com os serviços e insumos diagnosticados pelo mecânico
+* O mecânico vinculado é o próprio solicitante autenticado
+* Validar estoque dos insumos e existência dos serviços/insumos no catálogo
+* Iniciar diretamente com status "Em diagnóstico" (o mecânico já inspecionou o veículo), pronta para geração de orçamento
+
+> Regra de negócio: o cliente não conhece serviços e peças ao abrir a OS — quem diagnostica é o mecânico. Por isso a abertura com itens é exclusiva do mecânico.
 
 ---
 

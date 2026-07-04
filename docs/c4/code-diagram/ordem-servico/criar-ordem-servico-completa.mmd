@@ -1,0 +1,132 @@
+classDiagram
+    direction TB
+
+    namespace Infrastructure_REST {
+        class OrdemServicoResourceImpl {
+            +criarOrdemServicoCompleta(CriarOrdemServicoCompletaRequest) Response
+        }
+    }
+
+    namespace Infrastructure_CrossCutting {
+        class AuditoriaProxy {
+            <<cross-cutting>>
+            +envolver(T, Class~T~, RegistrarAuditoriaPort) T
+            -interceptar(method, args) Any
+        }
+    }
+
+    namespace Application_Ports_In {
+        class CriarOrdemServicoCompletaUseCase {
+            <<interface>>
+            +criarOrdemServicoCompleta(CriarOrdemServicoCompletaReqDTO) OrdemServicoResDTO
+        }
+    }
+
+    namespace Application_Service {
+        class CriarOrdemServicoCompletaService {
+            +criarOrdemServicoCompleta(CriarOrdemServicoCompletaReqDTO) OrdemServicoResDTO
+            -validarSolicitanteMecanico(solicitante)
+        }
+    }
+
+    namespace Application_Service_Support {
+        class AbridorOrdemServico {
+            <<colaborador compartilhado>>
+            +abrir(motivo, clienteId, mecanicoId, veiculoId, observacao) OrdemServico
+        }
+        class AssociadorItensOrdemServico {
+            <<colaborador compartilhado>>
+            +associar(os, servicos, insumos)
+        }
+    }
+
+    namespace Application_Ports_Out {
+        class JwtPort {
+            <<interface>>
+            +getUsuarioId() UsuarioId
+        }
+        class UsuarioRepositoryPort {
+            <<interface>>
+            +buscarPorId(UsuarioId) Usuario?
+        }
+        class OrdemServicoRepositoryPort {
+            <<interface>>
+            +contarOsAbertaPorIdVeiculoEIdCliente(UsuarioId, VeiculoId) Long
+            +salvar(OrdemServico) OrdemServico
+        }
+        class ServicoRepositoryPort {
+            <<interface>>
+            +buscarPorId(ServicoId) Servico?
+        }
+        class InsumoRepositoryPort {
+            <<interface>>
+            +buscarPorId(InsumoId) Insumo?
+        }
+        class RegistrarAuditoriaPort {
+            <<interface>>
+            +registrar(TipoEntidade, TipoEventoAuditoria, String, Any?, Any?)
+        }
+    }
+
+    namespace Application_Events {
+        class OrdemServicoStatusAlteradoEvent {
+            <<CDI event>>
+            +ordemServicoId OrdemServicoId
+            +clienteId UsuarioId
+            +novoStatus StatusOrdemServicoEnum
+        }
+    }
+
+    namespace Domain {
+        class OrdemServico {
+            <<aggregate root>>
+            +abrir(motivo, clienteId, mecanicoId, veiculoId, observacao)$ OrdemServico
+            +iniciarDiagnostico()
+            +adicionarServico(ServicoId, ValorMonetario)
+            +adicionarInsumo(InsumoId)
+        }
+    }
+
+    namespace Infrastructure_Adapters {
+        class JwtAdapter
+        class UsuarioRepositoryAdapter
+        class OrdemServicoRepositoryAdapter
+        class ServicoRepositoryAdapter
+        class InsumoRepositoryAdapter
+        class AuditoriaRepositoryAdapter
+        class OrdemServicoStatusAlteradoListener {
+            +aoAlterarStatus(evento) : enfileira e-mail
+        }
+    }
+
+    OrdemServicoResourceImpl --> CriarOrdemServicoCompletaUseCase : invoca
+
+    AuditoriaProxy ..|> CriarOrdemServicoCompletaUseCase : wrap (Java Proxy)
+    AuditoriaProxy --> CriarOrdemServicoCompletaService : delega execução
+    AuditoriaProxy --> RegistrarAuditoriaPort : notifica após @Auditavel (CRIADO)
+
+    CriarOrdemServicoCompletaService ..|> CriarOrdemServicoCompletaUseCase : implementa
+    CriarOrdemServicoCompletaService --> JwtPort : getUsuarioId()
+    CriarOrdemServicoCompletaService --> UsuarioRepositoryPort : buscarPorId() solicitante
+    CriarOrdemServicoCompletaService --> AbridorOrdemServico : abrir()
+    CriarOrdemServicoCompletaService --> OrdemServico : iniciarDiagnostico()
+    CriarOrdemServicoCompletaService --> AssociadorItensOrdemServico : associar()
+    CriarOrdemServicoCompletaService --> OrdemServicoRepositoryPort : salvar()
+    CriarOrdemServicoCompletaService --> OrdemServicoStatusAlteradoEvent : fire(EM_DIAGNOSTICO)
+
+    AbridorOrdemServico --> UsuarioRepositoryPort : buscarPorId() cliente/mecanico
+    AbridorOrdemServico --> OrdemServicoRepositoryPort : contarOsAbertas()
+    AbridorOrdemServico --> OrdemServico : abrir()
+
+    AssociadorItensOrdemServico --> ServicoRepositoryPort : buscarPorId()
+    AssociadorItensOrdemServico --> InsumoRepositoryPort : buscarPorId()
+    AssociadorItensOrdemServico --> OrdemServico : adicionarServico() adicionarInsumo()
+
+    OrdemServicoStatusAlteradoEvent ..> OrdemServicoStatusAlteradoListener : observado por (AFTER_SUCCESS)
+
+    JwtAdapter ..|> JwtPort : implementa
+    UsuarioRepositoryAdapter ..|> UsuarioRepositoryPort : implementa
+    OrdemServicoRepositoryAdapter ..|> OrdemServicoRepositoryPort : implementa
+    ServicoRepositoryAdapter ..|> ServicoRepositoryPort : implementa
+    InsumoRepositoryAdapter ..|> InsumoRepositoryPort : implementa
+    AuditoriaRepositoryAdapter ..|> RegistrarAuditoriaPort : implementa

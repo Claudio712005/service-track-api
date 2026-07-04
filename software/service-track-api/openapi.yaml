@@ -46,6 +46,8 @@ paths:
     $ref: './openApi/catalogo/catalogo_insumos.yaml'
   /ordem-servico:
     $ref: './openApi/ordemServico/ordemServico.yaml'
+  /ordem-servico/completa:
+    $ref: './openApi/ordemServico/ordemServico_completa.yaml'
   /ordem-servico/lista:
     $ref: './openApi/ordemServico/ordemServico_lista.yaml'
   /ordem-servico/{id}:

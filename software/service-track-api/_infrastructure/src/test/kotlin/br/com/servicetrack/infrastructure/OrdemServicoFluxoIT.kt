@@ -357,6 +357,75 @@ class OrdemServicoFluxoIT {
             .statusCode(401)
     }
 
+    private fun corpoOsCompleta(quantidade: Int = 2): String = """
+        {
+          "motivo": "Revisão diagnosticada pelo mecânico",
+          "clienteId": "$clienteId",
+          "veiculoId": "$veiculoId",
+          "observacao": "Aberta já com itens",
+          "servicos": [{"servicoId": "$servicoId", "valorCobrado": 150.00}],
+          "insumos": [{"insumoId": "$insumoId", "quantidade": $quantidade}]
+        }
+    """.trimIndent()
+
+    @Test
+    fun `mecanico deve abrir OS completa em diagnostico ja com itens`() {
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenMecanico")
+            .body(corpoOsCompleta())
+            .post("/ordem-servico/completa")
+            .then()
+            .statusCode(201)
+            .body("id", notNullValue())
+            .body("status", equalTo("EM_DIAGNOSTICO"))
+            .body("mecanicoId", equalTo(mecanicoId))
+            .body("clienteId", equalTo(clienteId))
+            .body("itensServico.size()", equalTo(1))
+            .body("insumos.size()", equalTo(1))
+    }
+
+    @Test
+    fun `deve seguir do diagnostico completo direto para geracao de orcamento e aprovacao`() {
+        val osId = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenMecanico")
+            .body(corpoOsCompleta())
+            .post("/ordem-servico/completa")
+            .then()
+            .statusCode(201)
+            .extract()
+            .jsonPath()
+            .getString("id")
+
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenMecanico")
+            .body("""{"prazoEntrega": "2026-12-31"}""")
+            .post("/ordem-servico/$osId/orcamento")
+            .then()
+            .statusCode(200)
+            .body("status", equalTo("AGUARDANDO_APROVACAO"))
+
+        given()
+            .header("Authorization", "Bearer $tokenCliente")
+            .post("/ordem-servico/$osId/orcamento/aprovacao")
+            .then()
+            .statusCode(200)
+            .body("status", equalTo("EM_EXECUCAO"))
+    }
+
+    @Test
+    fun `deve retornar 403 quando cliente tenta abrir OS completa`() {
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenCliente")
+            .body(corpoOsCompleta())
+            .post("/ordem-servico/completa")
+            .then()
+            .statusCode(403)
+    }
+
     @Test
     fun `deve retornar 400 quando observacao de conclusao esta vazia`() {
         val osId = criarOs()

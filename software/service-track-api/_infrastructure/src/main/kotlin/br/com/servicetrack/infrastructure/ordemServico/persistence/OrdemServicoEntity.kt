@@ -110,6 +110,7 @@ class OrdemServicoEntity : PanacheEntityBase {
             status = os.obterStatus()
             orcamento = os.obterOrcamento()?.let { OrcamentoEntity.de(it, this) }
             insumos = os.listarInsumos().map { it.valor }.toMutableList()
+            itensServico = os.listarServicos().map { ItemOrdemServicoEntity.de(it, this) }.toMutableList()
         }
     }
 

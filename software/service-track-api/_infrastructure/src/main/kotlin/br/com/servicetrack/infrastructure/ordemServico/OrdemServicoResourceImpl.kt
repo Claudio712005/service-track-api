@@ -5,6 +5,7 @@ import br.com.servicetrack.application.ordemServico.ports.`in`.ConcluirItemServi
 import br.com.servicetrack.application.ordemServico.ports.`in`.AssociarItensOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.BuscarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.CancelarOrdemServicoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.CriarOrdemServicoCompletaUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.CriarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.EntregarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.EnviarParaDiagnosticoUseCase
@@ -16,6 +17,7 @@ import br.com.servicetrack.infrastructure.api.OrdemServicoApi
 import br.com.servicetrack.infrastructure.api.dto.AssociarItensRequest
 import br.com.servicetrack.infrastructure.api.dto.CancelarOsRequest
 import br.com.servicetrack.infrastructure.api.dto.ConcluirItemServicoRequest
+import br.com.servicetrack.infrastructure.api.dto.CriarOrdemServicoCompletaRequest
 import br.com.servicetrack.infrastructure.api.dto.GerarOrcamentoRequest
 import br.com.servicetrack.infrastructure.api.dto.OrdemServicoRequest
 import br.com.servicetrack.infrastructure.api.dto.ReprovarOrcamentoRequest
@@ -35,6 +37,7 @@ import java.util.UUID
 class OrdemServicoResourceImpl @Inject constructor(
     private val concluirItemServicoUseCase: ConcluirItemServicoUseCase,
     private val criarOrdemServicoUseCase: CriarOrdemServicoUseCase,
+    private val criarOrdemServicoCompletaUseCase: CriarOrdemServicoCompletaUseCase,
     private val enviarParaDiagnosticoUseCase: EnviarParaDiagnosticoUseCase,
     private val buscarOrdemServicoUseCase: BuscarOrdemServicoUseCase,
     private val listarOrdensServicoUseCase: ListarOrdensServicoUseCase,
@@ -52,6 +55,18 @@ class OrdemServicoResourceImpl @Inject constructor(
     @Timeout(5000)
     override fun criarOrdemServico(ordemServicoRequest: @Valid @NotNull OrdemServicoRequest): Response {
         val response = criarOrdemServicoUseCase.criarOrdemServico(ordemServicoRequest.toApplicationDTO())
+        return Response.created(URI("/ordem-servico/${response.id}")).entity(response).build()
+    }
+
+    @RolesAllowed("MECANICO")
+    @Transactional
+    @Timeout(5000)
+    override fun criarOrdemServicoCompleta(
+        criarOrdemServicoCompletaRequest: @Valid @NotNull CriarOrdemServicoCompletaRequest,
+    ): Response {
+        val response = criarOrdemServicoCompletaUseCase.criarOrdemServicoCompleta(
+            criarOrdemServicoCompletaRequest.toApplicationDTO(),
+        )
         return Response.created(URI("/ordem-servico/${response.id}")).entity(response).build()
     }
 

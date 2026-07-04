@@ -8,6 +8,7 @@ import br.com.servicetrack.application.ordemServico.ports.`in`.ConcluirItemServi
 import br.com.servicetrack.application.ordemServico.ports.`in`.AssociarItensOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.BuscarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.CancelarOrdemServicoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.CriarOrdemServicoCompletaUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.CriarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.EntregarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.EnviarParaDiagnosticoUseCase
@@ -21,7 +22,10 @@ import br.com.servicetrack.application.ordemServico.service.ConcluirItemServicoS
 import br.com.servicetrack.application.ordemServico.service.AssociarItensOrdemServicoService
 import br.com.servicetrack.application.ordemServico.service.BuscarOrdemServicoService
 import br.com.servicetrack.application.ordemServico.service.CancelarOrdemServicoService
+import br.com.servicetrack.application.ordemServico.service.CriarOrdemServicoCompletaService
 import br.com.servicetrack.application.ordemServico.service.CriarOrdemServicoService
+import br.com.servicetrack.application.ordemServico.service.support.AbridorOrdemServico
+import br.com.servicetrack.application.ordemServico.service.support.AssociadorItensOrdemServico
 import br.com.servicetrack.application.ordemServico.service.EntregarOrdemServicoService
 import br.com.servicetrack.application.ordemServico.service.EnviarParaDiagnosticoService
 import br.com.servicetrack.application.ordemServico.service.FinalizarOrdemServicoService
@@ -48,8 +52,36 @@ class OrdemServicoServiceConfig {
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
     ): CriarOrdemServicoUseCase = AuditoriaProxy.envolver(
-        CriarOrdemServicoService(repository, usuarioRepositoryPort, jwtPort),
+        CriarOrdemServicoService(
+            repository,
+            usuarioRepositoryPort,
+            jwtPort,
+            AbridorOrdemServico(usuarioRepositoryPort, repository),
+        ),
         CriarOrdemServicoUseCase::class.java,
+        auditoria,
+    )
+
+    @Produces
+    @ApplicationScoped
+    fun criarOrdemServicoCompletaUseCase(
+        repository: OrdemServicoRepositoryPort,
+        usuarioRepositoryPort: UsuarioRepositoryPort,
+        servicoRepository: ServicoRepositoryPort,
+        insumoRepository: InsumoRepositoryPort,
+        jwtPort: JwtPort,
+        auditoria: RegistrarAuditoriaPort,
+        statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
+    ): CriarOrdemServicoCompletaUseCase = AuditoriaProxy.envolver(
+        CriarOrdemServicoCompletaService(
+            repository,
+            usuarioRepositoryPort,
+            jwtPort,
+            AbridorOrdemServico(usuarioRepositoryPort, repository),
+            AssociadorItensOrdemServico(servicoRepository, insumoRepository),
+            statusAlteradoEvent,
+        ),
+        CriarOrdemServicoCompletaUseCase::class.java,
         auditoria,
     )
 
@@ -92,7 +124,11 @@ class OrdemServicoServiceConfig {
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
     ): AssociarItensOrdemServicoUseCase = AuditoriaProxy.envolver(
-        AssociarItensOrdemServicoService(osRepository, servicoRepository, insumoRepository, jwtPort),
+        AssociarItensOrdemServicoService(
+            osRepository,
+            jwtPort,
+            AssociadorItensOrdemServico(servicoRepository, insumoRepository),
+        ),
         AssociarItensOrdemServicoUseCase::class.java,
         auditoria,
         antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },

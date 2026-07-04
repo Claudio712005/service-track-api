@@ -8,12 +8,25 @@ Backend para gestão de ordens de serviço de oficinas mecânicas. Responsável 
 
 Uma oficina mecânica precisa registrar e acompanhar cada atendimento. O sistema suporta:
 
-- Abertura de OS por cliente ou atendente
+- Abertura de OS por cliente (dados de cliente e veículo) — nasce em `RECEBIDA`
+- Abertura completa de OS pelo mecânico (já com serviços e insumos diagnosticados) — nasce em `EM_DIAGNOSTICO`
 - Diagnóstico pelo mecânico (associação de serviços e insumos)
 - Geração de orçamento com custo de mão de obra e insumos
 - Aprovação ou reprovação do orçamento pelo cliente
 - Execução dos serviços com registro por mecânico responsável
 - Finalização e entrega do veículo
+
+### Abertura de OS: dois caminhos
+
+| Rota | Ator | Payload | Status inicial |
+|---|---|---|---|
+| `POST /ordem-servico` | Cliente (ou mecânico) | motivo, cliente, mecânico, veículo | `RECEBIDA` |
+| `POST /ordem-servico/completa` | Mecânico | motivo, cliente, veículo, **serviços + insumos** | `EM_DIAGNOSTICO` |
+
+O cliente não conhece serviços e peças ao abrir a OS — quem diagnostica é o mecânico. Por isso a
+abertura completa é exclusiva do mecânico: ele abre a OS já com os itens diagnosticados, o mecânico
+vinculado é o próprio solicitante autenticado e a OS entra direto em diagnóstico, pronta para a
+geração do orçamento (`POST /ordem-servico/{id}/orcamento`).
 
 ---
 
