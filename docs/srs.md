@@ -176,6 +176,10 @@ O sistema deve permitir dois caminhos de abertura, conforme o ator:
 * Registrar aprovação/reprovação
 * Registrar data/hora
 * Impedir execução sem aprovação
+* Permitir aprovação/reprovação por **link de e-mail (magic link)**, além do app:
+  * autorizado por **token dedicado** (isolado do token de autenticação), enviado apenas ao dono da OS
+  * apenas o **cliente titular** pode decidir; um clique = ação (reprovação usa motivo padrão)
+  * após a decisão, o **mecânico** é notificado por e-mail; segundo clique é rejeitado (uso único garantido pela transição de status)
 
 ---
 

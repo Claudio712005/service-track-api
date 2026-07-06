@@ -1,0 +1,33 @@
+Olá, {nomeCliente}!
+
+O orçamento da sua ordem de serviço está pronto e aguarda a sua decisão.
+
+DADOS DA ORDEM DE SERVIÇO
+  OS: #{os}
+  Veículo: {veiculo}
+  Placa: {placa}
+  Mecânico responsável: {mecanico}
+  Motivo: {motivo}
+  Abertura: {dataAbertura}
+  Prazo estimado de conclusão: {prazoConclusao}
+
+SERVIÇOS
+{servicosTexto}
+
+PEÇAS / INSUMOS
+{insumosTexto}
+
+RESUMO DO ORÇAMENTO
+  Mão de obra: {custoMaoDeObra}
+  Peças/insumos: {custoInsumos}
+  VALOR TOTAL: {valorTotal}
+
+Para APROVAR, acesse:
+{aprovarUrl}
+
+Para RECUSAR, acesse:
+{reprovarUrl}
+
+Estes links são pessoais e expiram em alguns dias. Não os compartilhe.
+
+ServiceTrack — este é um e-mail automático, não responda.

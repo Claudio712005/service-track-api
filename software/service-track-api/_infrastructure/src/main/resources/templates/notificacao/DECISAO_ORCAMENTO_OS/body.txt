@@ -1,0 +1,8 @@
+Atualização da OS #{os}
+
+O cliente {nomeCliente} {decisao} o orçamento.
+{#if motivo}Motivo: {motivo}{/if}
+
+{#if decisao == 'aprovado'}A OS está EM EXECUÇÃO. Você já pode iniciar os serviços.{#else}A OS foi CANCELADA e o estoque dos insumos foi reposto.{/if}
+
+ServiceTrack — este é um e-mail automático, não responda.

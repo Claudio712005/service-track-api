@@ -5,7 +5,7 @@ flowchart TD
     HTTP(["HTTP Request"])
 
     subgraph INFRA["Infrastructure"]
-        OSR["OrdemServicoResourceImpl<br/>POST /ordem-servico<br/>POST /ordem-servico/completa<br/>GET /ordem-servico/lista<br/>GET /ordem-servico/{id}<br/>POST /{id}/diagnostico<br/>POST /{id}/diagnostico/itens<br/>POST /{id}/orcamento<br/>POST /{id}/orcamento/aprovacao<br/>POST /{id}/orcamento/reprovacao<br/>POST /{id}/cancelamento<br/>POST /{id}/finalizacao<br/>POST /{id}/entrega<br/>POST /{id}/itens/{itemId}/concluir"]
+        OSR["OrdemServicoResourceImpl<br/>POST /ordem-servico<br/>POST /ordem-servico/completa<br/>GET /ordem-servico/lista<br/>GET /ordem-servico/{id}<br/>POST /{id}/diagnostico<br/>POST /{id}/diagnostico/itens<br/>POST /{id}/orcamento<br/>POST /{id}/orcamento/aprovacao<br/>POST /{id}/orcamento/reprovacao<br/>GET /orcamento/aprovacao (magic link)<br/>GET /orcamento/reprovacao (magic link)<br/>POST /{id}/cancelamento<br/>POST /{id}/finalizacao<br/>POST /{id}/entrega<br/>POST /{id}/itens/{itemId}/concluir"]
         OSRA["OrdemServicoRepositoryAdapter"]
         IOSRA["ItemOrdemServicoRepositoryAdapter"]
         OSE["OrdemServicoEntity"]

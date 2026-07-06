@@ -2,9 +2,14 @@ package br.com.servicetrack.application.ordemServico.service
 
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.insumo.ports.out.InsumoRepositoryPort
 import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
+import br.com.servicetrack.application.notificacao.ports.`in`.EnfileirarNotificacaoUseCase
 import br.com.servicetrack.application.ordemServico.ports.out.OrdemServicoRepositoryPort
+import br.com.servicetrack.application.ordemServico.service.support.DecididorOrcamento
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
+import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
+import br.com.servicetrack.domain.notificacao.vo.NotificacaoId
 import br.com.servicetrack.domain.orcamento.Orcamento
 import br.com.servicetrack.domain.ordemServico.OrdemServico
 import br.com.servicetrack.domain.ordemServico.StatusOrdemServicoEnum
@@ -27,10 +32,14 @@ import java.time.LocalDateTime
 class AprovarOrcamentoServiceTest {
 
     private val repository = mockk<OrdemServicoRepositoryPort>()
+    private val insumoRepository = mockk<InsumoRepositoryPort>()
+    private val usuarioRepository = mockk<UsuarioRepositoryPort>()
+    private val enfileirar = mockk<EnfileirarNotificacaoUseCase>()
     private val jwt = mockk<JwtPort>()
     private val statusEvent = mockk<Event<OrdemServicoStatusAlteradoEvent>>()
 
-    private val service = AprovarOrcamentoService(repository, jwt, statusEvent)
+    private val decididor = DecididorOrcamento(repository, insumoRepository, usuarioRepository, enfileirar, statusEvent)
+    private val service = AprovarOrcamentoService(repository, jwt, decididor)
 
     private val mecanicoId = UsuarioId.gerar()
     private val clienteId = UsuarioId.gerar()
@@ -66,6 +75,8 @@ class AprovarOrcamentoServiceTest {
         every { jwt.getUsuarioId() } returns clienteId
         every { repository.buscarPorId(any()) } returns os
         every { repository.atualizar(any()) } answers { firstArg() }
+        every { usuarioRepository.buscarPorId(any()) } returns null
+        every { enfileirar.executar(any()) } returns NotificacaoId.gerar()
         justRun { statusEvent.fire(any()) }
 
         val result = service.aprovarOrcamento(os.id.valor)

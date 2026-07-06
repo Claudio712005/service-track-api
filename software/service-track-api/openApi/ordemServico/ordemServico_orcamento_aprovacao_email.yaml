@@ -1,0 +1,28 @@
+get:
+  summary: |
+    Aprovar orçamento via link do e-mail (magic link). Endpoint público autorizado
+    exclusivamente pelo token dedicado, que só o cliente dono da OS recebe. Transição
+    AGUARDANDO_APROVACAO → EM_EXECUCAO. Retorna uma página HTML de confirmação.
+  operationId: aprovarOrcamentoViaEmail
+  tags:
+    - OrdemServico
+  parameters:
+    - name: token
+      in: query
+      required: true
+      schema:
+        type: string
+      description: Token dedicado de decisão de orçamento
+  responses:
+    '200':
+      description: Página HTML com o resultado da decisão
+      content:
+        text/html:
+          schema:
+            type: string
+    '400':
+      description: Link inválido, expirado ou orçamento em status incorreto
+      content:
+        text/html:
+          schema:
+            type: string

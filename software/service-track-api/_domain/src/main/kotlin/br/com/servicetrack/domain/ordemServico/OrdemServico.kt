@@ -99,6 +99,8 @@ class OrdemServico private constructor(
 
     fun obterMecanicoId(): UsuarioId = mecanicoId
 
+    fun obterPrazoConclusao(): LocalDateTime? = prazoConclusao?.valor
+
     fun listarServicos(): List<ItemOrdemServico> = itensServico.toList()
 
     fun iniciarDiagnostico() {

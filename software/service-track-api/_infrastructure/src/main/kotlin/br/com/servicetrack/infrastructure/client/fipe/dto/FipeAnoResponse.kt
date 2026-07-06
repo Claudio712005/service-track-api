@@ -3,6 +3,6 @@ package br.com.servicetrack.infrastructure.client.fipe.dto
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class FipeAnoResponse(
-    @JsonProperty("codigo") val codigo: String,
-    @JsonProperty("nome") val nome: String
+    @JsonProperty("code") val codigo: String,
+    @JsonProperty("name") val nome: String
 )

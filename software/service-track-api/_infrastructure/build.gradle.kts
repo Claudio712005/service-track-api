@@ -76,6 +76,12 @@ sourceSets {
     }
 }
 
+tasks.named("openApiGenerate") {
+    // openapi.yaml apenas referencia (via $ref) os arquivos em openApi/;
+    // sem declarar o diretório como input, edições nos contratos não invalidam o cache da task.
+    inputs.dir(rootProject.file("openApi"))
+}
+
 tasks.named("compileKotlin") {
     dependsOn("openApiGenerate")
     inputs.dir(layout.buildDirectory.dir("generated/openapi"))

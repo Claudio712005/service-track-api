@@ -85,11 +85,33 @@ kubectl -n service-track delete job service-track-db-init --ignore-not-found
 kubectl apply -f "$K8S_DIR/db-init-job.yaml"
 kubectl -n service-track wait --for=condition=complete job/service-track-db-init --timeout=120s
 
+echo ">> Provisionando LoadBalancer e capturando o caminho público da API..."
+kubectl apply -f "$K8S_DIR/service-lb.yaml"
+
+API_HOST=""
+for i in $(seq 1 30); do
+  API_HOST="$(kubectl -n service-track get svc service-track-app-lb \
+    -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)"
+  [ -n "$API_HOST" ] && break
+  echo "   aguardando hostname do LoadBalancer... ($i/30)"
+  sleep 10
+done
+
+if [ -z "$API_HOST" ]; then
+  echo "!! Hostname do LoadBalancer indisponível; os magic links do e-mail podem ficar inválidos." >&2
+fi
+
+export API_BASE_URL="http://${API_HOST}"
+echo ">> API_BASE_URL=$API_BASE_URL"
+
 envsubst < "$K8S_DIR/configmap.yaml"  | kubectl apply -f -
 envsubst < "$K8S_DIR/secret.yaml"     | kubectl apply -f -
 envsubst < "$K8S_DIR/deployment.yaml" | kubectl apply -f -
 kubectl apply -f "$K8S_DIR/service.yaml"
 kubectl apply -f "$K8S_DIR/hpa.yaml"
+
+echo ">> Reiniciando app para aplicar SERVICETRACK_API_BASE_URL..."
+kubectl -n service-track rollout restart deploy/service-track-app
 
 echo ">> Aguardando rollout..."
 kubectl -n service-track rollout status deploy/service-track-app --timeout=300s

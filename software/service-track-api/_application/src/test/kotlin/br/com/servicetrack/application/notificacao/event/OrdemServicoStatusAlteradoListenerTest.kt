@@ -2,6 +2,8 @@ package br.com.servicetrack.application.notificacao.event
 
 import br.com.servicetrack.application.notificacao.dto.EnfileirarNotificacaoCommand
 import br.com.servicetrack.application.notificacao.ports.`in`.EnfileirarNotificacaoUseCase
+import br.com.servicetrack.application.ordemServico.ports.out.AprovacaoOrcamentoLinkPort
+import br.com.servicetrack.application.ordemServico.ports.out.LinksDecisaoOrcamento
 import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
 import br.com.servicetrack.domain.notificacao.TipoConteudoNotificacao
 import br.com.servicetrack.domain.notificacao.TipoNotificacao
@@ -28,7 +30,8 @@ class OrdemServicoStatusAlteradoListenerTest {
 
     private val enfileirar = mockk<EnfileirarNotificacaoUseCase>()
     private val usuarioRepository = mockk<UsuarioRepositoryPort>()
-    private val listener = OrdemServicoStatusAlteradoListener(enfileirar, usuarioRepository)
+    private val aprovacaoLink = mockk<AprovacaoOrcamentoLinkPort>()
+    private val listener = OrdemServicoStatusAlteradoListener(enfileirar, usuarioRepository, aprovacaoLink)
 
     private val clienteId = UsuarioId.gerar()
     private val osId = OrdemServicoId.gerar()
@@ -68,6 +71,34 @@ class OrdemServicoStatusAlteradoListenerTest {
         assertEquals(osId.valor, cmd.variaveis["os"])
         assertEquals(StatusOrdemServicoEnum.EM_DIAGNOSTICO.descricao, cmd.variaveis["novoStatus"])
         assertEquals("Cláudio", cmd.variaveis["nomeCliente"])
+    }
+
+    @Test
+    fun `deve enfileirar tambem o e-mail de aprovacao quando status AGUARDANDO_APROVACAO`() {
+        every { usuarioRepository.buscarPorId(clienteId) } returns buildCliente("Cláudio")
+        every { aprovacaoLink.gerarLinks(osId, clienteId) } returns LinksDecisaoOrcamento(
+            aprovarUrl = "http://api/ordem-servico/orcamento/aprovacao?token=abc",
+            reprovarUrl = "http://api/ordem-servico/orcamento/reprovacao?token=abc",
+        )
+        val comandos = mutableListOf<EnfileirarNotificacaoCommand>()
+        every { enfileirar.executar(capture(comandos)) } returns NotificacaoId.gerar()
+
+        listener.aoAlterarStatus(
+            OrdemServicoStatusAlteradoEvent(
+                ordemServicoId = osId,
+                clienteId = clienteId,
+                novoStatus = StatusOrdemServicoEnum.AGUARDANDO_APROVACAO,
+            )
+        )
+
+        assertEquals(2, comandos.size)
+        val aprovacao = comandos.first {
+            it.tipoConteudoNotificacao == TipoConteudoNotificacao.SOLICITACAO_APROVACAO_ORCAMENTO_OS
+        }
+        assertEquals(clienteId, aprovacao.destinatario)
+        assertEquals("http://api/ordem-servico/orcamento/aprovacao?token=abc", aprovacao.variaveis["aprovarUrl"])
+        assertEquals("http://api/ordem-servico/orcamento/reprovacao?token=abc", aprovacao.variaveis["reprovarUrl"])
+        verify(exactly = 1) { aprovacaoLink.gerarLinks(osId, clienteId) }
     }
 
     @Test

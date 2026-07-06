@@ -1,8 +1,13 @@
 package br.com.servicetrack.infrastructure
 
+import br.com.servicetrack.application.ordemServico.ports.out.TokenDecisaoOrcamentoPort
+import br.com.servicetrack.domain.ordemServico.vo.OrdemServicoId
+import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
+import jakarta.inject.Inject
+import org.hamcrest.CoreMatchers.containsString
 import org.hamcrest.CoreMatchers.notNullValue
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.BeforeEach
@@ -11,6 +16,9 @@ import java.util.UUID
 
 @QuarkusTest
 class OrdemServicoFluxoIT {
+
+    @Inject
+    lateinit var tokenDecisaoOrcamento: TokenDecisaoOrcamentoPort
 
     private lateinit var tokenMecanico: String
     private lateinit var tokenCliente: String
@@ -424,6 +432,94 @@ class OrdemServicoFluxoIT {
             .post("/ordem-servico/completa")
             .then()
             .statusCode(403)
+    }
+
+    private fun prepararOsAguardandoAprovacao(): String {
+        val osId = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenMecanico")
+            .body(corpoOsCompleta())
+            .post("/ordem-servico/completa")
+            .then()
+            .statusCode(201)
+            .extract()
+            .jsonPath()
+            .getString("id")
+
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer $tokenMecanico")
+            .body("""{"prazoEntrega": "2026-12-31"}""")
+            .post("/ordem-servico/$osId/orcamento")
+            .then()
+            .statusCode(200)
+            .body("status", equalTo("AGUARDANDO_APROVACAO"))
+
+        return osId
+    }
+
+    private fun statusDaOs(osId: String): String = given()
+        .header("Authorization", "Bearer $tokenMecanico")
+        .get("/ordem-servico/$osId")
+        .then()
+        .statusCode(200)
+        .extract()
+        .jsonPath()
+        .getString("status")
+
+    @Test
+    fun `deve aprovar orcamento via magic link e retornar pagina HTML`() {
+        val osId = prepararOsAguardandoAprovacao()
+        val token = tokenDecisaoOrcamento.gerar(OrdemServicoId(osId), UsuarioId(clienteId))
+
+        given()
+            .queryParam("token", token)
+            .get("/ordem-servico/orcamento/aprovacao")
+            .then()
+            .statusCode(200)
+            .contentType(containsString("text/html"))
+            .body(containsString("Orçamento aprovado"))
+
+        org.junit.jupiter.api.Assertions.assertEquals("EM_EXECUCAO", statusDaOs(osId))
+    }
+
+    @Test
+    fun `deve reprovar orcamento via magic link e cancelar a OS`() {
+        val osId = prepararOsAguardandoAprovacao()
+        val token = tokenDecisaoOrcamento.gerar(OrdemServicoId(osId), UsuarioId(clienteId))
+
+        given()
+            .queryParam("token", token)
+            .get("/ordem-servico/orcamento/reprovacao")
+            .then()
+            .statusCode(200)
+            .contentType(containsString("text/html"))
+
+        org.junit.jupiter.api.Assertions.assertEquals("CANCELADA", statusDaOs(osId))
+    }
+
+    @Test
+    fun `deve retornar pagina de erro para token invalido`() {
+        given()
+            .queryParam("token", "token-invalido")
+            .get("/ordem-servico/orcamento/aprovacao")
+            .then()
+            .statusCode(400)
+            .contentType(containsString("text/html"))
+    }
+
+    @Test
+    fun `token de outro cliente nao deve decidir a OS`() {
+        val osId = prepararOsAguardandoAprovacao()
+        val tokenIntruso = tokenDecisaoOrcamento.gerar(OrdemServicoId(osId), UsuarioId(UUID.randomUUID().toString()))
+
+        given()
+            .queryParam("token", tokenIntruso)
+            .get("/ordem-servico/orcamento/aprovacao")
+            .then()
+            .statusCode(400)
+
+        org.junit.jupiter.api.Assertions.assertEquals("AGUARDANDO_APROVACAO", statusDaOs(osId))
     }
 
     @Test

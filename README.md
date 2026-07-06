@@ -12,7 +12,7 @@ Uma oficina mecânica precisa registrar e acompanhar cada atendimento. O sistema
 - Abertura completa de OS pelo mecânico (já com serviços e insumos diagnosticados) — nasce em `EM_DIAGNOSTICO`
 - Diagnóstico pelo mecânico (associação de serviços e insumos)
 - Geração de orçamento com custo de mão de obra e insumos
-- Aprovação ou reprovação do orçamento pelo cliente
+- Aprovação ou reprovação do orçamento pelo cliente (no app ou por link/botão no e-mail — magic link)
 - Execução dos serviços com registro por mecânico responsável
 - Finalização e entrega do veículo
 

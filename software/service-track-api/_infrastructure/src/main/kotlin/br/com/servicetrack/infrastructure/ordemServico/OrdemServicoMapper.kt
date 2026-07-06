@@ -57,7 +57,7 @@ internal fun toFiltroDTO(
     page: Int,
     size: Int,
 ) = FiltroOrdemServicoDTO(
-    status = status?.let { StatusOrdemServicoEnum.valueOf(it) },
+    status = status?.takeIf { it.isNotBlank() }?.let { StatusOrdemServicoEnum.valueOf(it) },
     clienteId = clienteId,
     mecanicoId = mecanicoId,
     page = page,

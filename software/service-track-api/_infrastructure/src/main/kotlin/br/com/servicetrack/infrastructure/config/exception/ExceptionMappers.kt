@@ -8,6 +8,9 @@ import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.exception.UsuarioJaExisteException
 import br.com.servicetrack.application.exception.VeiculoJaExisteException
 import br.com.servicetrack.domain.shared.exception.DomainException
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.databind.exc.InvalidFormatException
+import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import io.smallrye.faulttolerance.api.RateLimitException
 import jakarta.validation.ConstraintViolationException
 import jakarta.ws.rs.core.MediaType
@@ -65,6 +68,15 @@ class EntidadeNaoEncontradaExceptionMapper : ExceptionMapper<EntidadeNaoEncontra
 }
 
 @Provider
+class IllegalStateExceptionMapper : ExceptionMapper<IllegalStateException> {
+    override fun toResponse(exception: IllegalStateException): Response =
+        Response.status(Response.Status.CONFLICT)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(ErroResponse(mensagem = "Operação não permitida no estado atual", detalhe = exception.message))
+            .build()
+}
+
+@Provider
 class DomainExceptionMapper : ExceptionMapper<DomainException> {
     override fun toResponse(exception: DomainException): Response =
         Response.status(Response.Status.BAD_REQUEST)
@@ -101,6 +113,30 @@ class ConstraintViolationExceptionMapper : ExceptionMapper<ConstraintViolationEx
             .entity(ErroResponse(mensagem = "Dados de entrada inválidos", detalhe = detalhe))
             .build()
     }
+}
+
+@Provider
+class JsonProcessingExceptionMapper : ExceptionMapper<JsonProcessingException> {
+    private val log = Logger.getLogger(JsonProcessingExceptionMapper::class.java)
+
+    override fun toResponse(exception: JsonProcessingException): Response {
+        val detalhe = when (exception) {
+            is InvalidFormatException -> {
+                val esperado = exception.targetType?.simpleName ?: "tipo esperado"
+                "Campo '${campoDe(exception)}' com valor inválido: '${exception.value}' (esperado $esperado)"
+            }
+            is MismatchedInputException -> "Campo '${campoDe(exception)}' ausente ou com tipo inválido"
+            else -> "Corpo da requisição não é um JSON válido"
+        }
+        log.warnf("Falha ao desserializar corpo da requisição: %s", detalhe)
+        return Response.status(Response.Status.BAD_REQUEST)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(ErroResponse(mensagem = "Dados inválidos", detalhe = detalhe))
+            .build()
+    }
+
+    private fun campoDe(exception: MismatchedInputException): String =
+        exception.path.joinToString(".") { it.fieldName ?: "[${it.index}]" }.ifBlank { "(raiz)" }
 }
 
 @Provider

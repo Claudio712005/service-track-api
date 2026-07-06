@@ -92,12 +92,10 @@ class OrdemServicoRepositoryAdapter : OrdemServicoRepositoryPort {
 
         val statusFiltro = filtro.status
         if (statusFiltro != null) {
-            // Filtro explícito por status respeita a escolha do solicitante.
             conditions.add("status = ?$paramIndex")
             params.add(statusFiltro)
             paramIndex++
         } else {
-            // Exclusão lógica: OS finalizadas e entregues não aparecem na listagem.
             conditions.add("status not in ?$paramIndex")
             params.add(listOf(StatusOrdemServicoEnum.FINALIZADA, StatusOrdemServicoEnum.ENTREGUE))
             paramIndex++

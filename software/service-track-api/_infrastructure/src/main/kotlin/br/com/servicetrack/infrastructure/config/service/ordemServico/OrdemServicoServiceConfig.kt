@@ -3,6 +3,7 @@ package br.com.servicetrack.infrastructure.config.service.ordemServico
 import br.com.servicetrack.application.auditoria.ports.out.RegistrarAuditoriaPort
 import br.com.servicetrack.application.insumo.ports.`out`.InsumoRepositoryPort
 import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
+import br.com.servicetrack.application.notificacao.ports.`in`.EnfileirarNotificacaoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.AprovarOrcamentoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.ConcluirItemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.AssociarItensOrdemServicoUseCase
@@ -14,18 +15,25 @@ import br.com.servicetrack.application.ordemServico.ports.`in`.EntregarOrdemServ
 import br.com.servicetrack.application.ordemServico.ports.`in`.EnviarParaDiagnosticoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.FinalizarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.GerarOrcamentoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.AprovarOrcamentoViaEmailUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.ListarOrdensServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.ReprovarOrcamentoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.ReprovarOrcamentoViaEmailUseCase
 import br.com.servicetrack.application.ordemServico.ports.out.OrdemServicoRepositoryPort
+import br.com.servicetrack.application.ordemServico.ports.out.TokenDecisaoOrcamentoPort
 import br.com.servicetrack.application.ordemServico.service.AprovarOrcamentoService
 import br.com.servicetrack.application.ordemServico.service.ConcluirItemServicoService
 import br.com.servicetrack.application.ordemServico.service.AssociarItensOrdemServicoService
 import br.com.servicetrack.application.ordemServico.service.BuscarOrdemServicoService
 import br.com.servicetrack.application.ordemServico.service.CancelarOrdemServicoService
+import br.com.servicetrack.application.ordemServico.service.AprovarOrcamentoViaEmailService
 import br.com.servicetrack.application.ordemServico.service.CriarOrdemServicoCompletaService
 import br.com.servicetrack.application.ordemServico.service.CriarOrdemServicoService
+import br.com.servicetrack.application.ordemServico.service.ReprovarOrcamentoViaEmailService
 import br.com.servicetrack.application.ordemServico.service.support.AbridorOrdemServico
 import br.com.servicetrack.application.ordemServico.service.support.AssociadorItensOrdemServico
+import br.com.servicetrack.application.ordemServico.service.support.DecididorOrcamento
+import br.com.servicetrack.application.ordemServico.service.support.ResolvedorOrdemServicoPorToken
 import br.com.servicetrack.application.ordemServico.service.EntregarOrdemServicoService
 import br.com.servicetrack.application.ordemServico.service.EnviarParaDiagnosticoService
 import br.com.servicetrack.application.ordemServico.service.FinalizarOrdemServicoService
@@ -149,15 +157,36 @@ class OrdemServicoServiceConfig {
         antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },
     )
 
+    private fun decididorOrcamento(
+        osRepository: OrdemServicoRepositoryPort,
+        insumoRepository: InsumoRepositoryPort,
+        usuarioRepository: UsuarioRepositoryPort,
+        enfileirarNotificacao: EnfileirarNotificacaoUseCase,
+        statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
+    ) = DecididorOrcamento(
+        osRepository,
+        insumoRepository,
+        usuarioRepository,
+        enfileirarNotificacao,
+        statusAlteradoEvent,
+    )
+
     @Produces
     @ApplicationScoped
     fun aprovarOrcamentoUseCase(
         repository: OrdemServicoRepositoryPort,
+        insumoRepository: InsumoRepositoryPort,
+        usuarioRepository: UsuarioRepositoryPort,
         jwtPort: JwtPort,
+        enfileirarNotificacao: EnfileirarNotificacaoUseCase,
         auditoria: RegistrarAuditoriaPort,
         statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
     ): AprovarOrcamentoUseCase = AuditoriaProxy.envolver(
-        AprovarOrcamentoService(repository, jwtPort, statusAlteradoEvent),
+        AprovarOrcamentoService(
+            repository,
+            jwtPort,
+            decididorOrcamento(repository, insumoRepository, usuarioRepository, enfileirarNotificacao, statusAlteradoEvent),
+        ),
         AprovarOrcamentoUseCase::class.java,
         auditoria,
         antesProvider = { args -> repository.buscarPorId(OrdemServicoId(args[0] as String)) },
@@ -168,14 +197,58 @@ class OrdemServicoServiceConfig {
     fun reprovarOrcamentoUseCase(
         osRepository: OrdemServicoRepositoryPort,
         insumoRepository: InsumoRepositoryPort,
+        usuarioRepository: UsuarioRepositoryPort,
         jwtPort: JwtPort,
+        enfileirarNotificacao: EnfileirarNotificacaoUseCase,
         auditoria: RegistrarAuditoriaPort,
         statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
     ): ReprovarOrcamentoUseCase = AuditoriaProxy.envolver(
-        ReprovarOrcamentoService(osRepository, insumoRepository, jwtPort, statusAlteradoEvent),
+        ReprovarOrcamentoService(
+            osRepository,
+            jwtPort,
+            decididorOrcamento(osRepository, insumoRepository, usuarioRepository, enfileirarNotificacao, statusAlteradoEvent),
+        ),
         ReprovarOrcamentoUseCase::class.java,
         auditoria,
         antesProvider = { args -> osRepository.buscarPorId(OrdemServicoId(args[0] as String)) },
+    )
+
+    @Produces
+    @ApplicationScoped
+    fun aprovarOrcamentoViaEmailUseCase(
+        osRepository: OrdemServicoRepositoryPort,
+        insumoRepository: InsumoRepositoryPort,
+        usuarioRepository: UsuarioRepositoryPort,
+        tokenPort: TokenDecisaoOrcamentoPort,
+        enfileirarNotificacao: EnfileirarNotificacaoUseCase,
+        auditoria: RegistrarAuditoriaPort,
+        statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
+    ): AprovarOrcamentoViaEmailUseCase = AuditoriaProxy.envolver(
+        AprovarOrcamentoViaEmailService(
+            ResolvedorOrdemServicoPorToken(tokenPort, osRepository),
+            decididorOrcamento(osRepository, insumoRepository, usuarioRepository, enfileirarNotificacao, statusAlteradoEvent),
+        ),
+        AprovarOrcamentoViaEmailUseCase::class.java,
+        auditoria,
+    )
+
+    @Produces
+    @ApplicationScoped
+    fun reprovarOrcamentoViaEmailUseCase(
+        osRepository: OrdemServicoRepositoryPort,
+        insumoRepository: InsumoRepositoryPort,
+        usuarioRepository: UsuarioRepositoryPort,
+        tokenPort: TokenDecisaoOrcamentoPort,
+        enfileirarNotificacao: EnfileirarNotificacaoUseCase,
+        auditoria: RegistrarAuditoriaPort,
+        statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
+    ): ReprovarOrcamentoViaEmailUseCase = AuditoriaProxy.envolver(
+        ReprovarOrcamentoViaEmailService(
+            ResolvedorOrdemServicoPorToken(tokenPort, osRepository),
+            decididorOrcamento(osRepository, insumoRepository, usuarioRepository, enfileirarNotificacao, statusAlteradoEvent),
+        ),
+        ReprovarOrcamentoViaEmailUseCase::class.java,
+        auditoria,
     )
 
     @Produces
