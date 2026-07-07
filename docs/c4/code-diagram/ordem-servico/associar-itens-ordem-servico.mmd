@@ -27,9 +27,17 @@ classDiagram
             +associarItens(ordemServicoId, AssociarItensReqDTO) OrdemServicoResDTO
             -validarMecanicoVinculado(os, solicitanteId)
             -validarStatusEmDiagnostico(os)
+        }
+    }
+
+    namespace Application_Service_Support {
+        class AssociadorItensOrdemServico {
+            <<colaborador compartilhado>>
+            +associar(os, servicos, insumos)
             -removerItensAnteriores(os)
             -adicionarServicos(os, servicos)
             -adicionarInsumos(os, insumos)
+            -validarEstoque(insumo, quantidade)
         }
     }
 
@@ -100,9 +108,11 @@ classDiagram
     AssociarItensOrdemServicoService ..|> AssociarItensOrdemServicoUseCase : implementa
     AssociarItensOrdemServicoService --> JwtPort : getUsuarioId()
     AssociarItensOrdemServicoService --> OrdemServicoRepositoryPort : buscarPorId() atualizar()
-    AssociarItensOrdemServicoService --> ServicoRepositoryPort : buscarPorId()
-    AssociarItensOrdemServicoService --> InsumoRepositoryPort : buscarPorId()
-    AssociarItensOrdemServicoService --> OrdemServico : adicionarServico() adicionarInsumo()
+    AssociarItensOrdemServicoService --> AssociadorItensOrdemServico : associar()
+
+    AssociadorItensOrdemServico --> ServicoRepositoryPort : buscarPorId()
+    AssociadorItensOrdemServico --> InsumoRepositoryPort : buscarPorId()
+    AssociadorItensOrdemServico --> OrdemServico : adicionarServico() adicionarInsumo()
 
     JwtAdapter ..|> JwtPort : implementa
     OrdemServicoRepositoryAdapter ..|> OrdemServicoRepositoryPort : implementa

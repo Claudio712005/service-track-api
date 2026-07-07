@@ -26,6 +26,13 @@ classDiagram
         class CriarOrdemServicoService {
             +criarOrdemServico(OrdemServicoReqDTO) ResumoOrdemServicoResDTO
             -validarSolicitante(usuarioLogado, req)
+        }
+    }
+
+    namespace Application_Service_Support {
+        class AbridorOrdemServico {
+            <<colaborador compartilhado>>
+            +abrir(motivo, clienteId, mecanicoId, veiculoId, observacao) OrdemServico
             -validarCliente(cliente)
             -validarMecanico(mecanico)
             -validarOsAberta(clienteId, veiculoId)
@@ -88,9 +95,13 @@ classDiagram
 
     CriarOrdemServicoService ..|> CriarOrdemServicoUseCase : implementa
     CriarOrdemServicoService --> JwtPort : getUsuarioId()
-    CriarOrdemServicoService --> UsuarioRepositoryPort : buscarPorId() x3
-    CriarOrdemServicoService --> OrdemServicoRepositoryPort : contarOsAbertas() salvar()
-    CriarOrdemServicoService --> OrdemServico : abrir()
+    CriarOrdemServicoService --> UsuarioRepositoryPort : buscarPorId() solicitante
+    CriarOrdemServicoService --> AbridorOrdemServico : abrir()
+    CriarOrdemServicoService --> OrdemServicoRepositoryPort : salvar()
+
+    AbridorOrdemServico --> UsuarioRepositoryPort : buscarPorId() cliente/mecanico
+    AbridorOrdemServico --> OrdemServicoRepositoryPort : contarOsAbertas()
+    AbridorOrdemServico --> OrdemServico : abrir()
 
     JwtAdapter ..|> JwtPort : implementa
     UsuarioRepositoryAdapter ..|> UsuarioRepositoryPort : implementa

@@ -1,0 +1,47 @@
+post:
+  summary: |
+    Abertura completa de OS pelo mecânico.
+    O mecânico abre a OS já com serviços e insumos diagnosticados; a OS nasce em EM_DIAGNOSTICO.
+    O mecânico vinculado é o próprio solicitante autenticado. Exclusivo para mecânicos.
+  operationId: criarOrdemServicoCompleta
+  tags:
+    - OrdemServico
+  security:
+    - bearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/ordemServico/CriarOrdemServicoCompletaRequest.yaml'
+  responses:
+    '201':
+      description: Ordem de serviço criada em diagnóstico com itens associados
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ordemServico/OrdemServicoResponse.yaml'
+    '400':
+      description: Dados inválidos, estoque insuficiente ou serviço/insumo inconsistente
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '401':
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '403':
+      description: Acesso restrito a mecânicos
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
+    '404':
+      description: Cliente, veículo, serviço ou insumo não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'

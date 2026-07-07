@@ -27,7 +27,7 @@ COPY _application/src/    _application/src/
 COPY _infrastructure/src/ _infrastructure/src/
 
 RUN --mount=type=cache,target=/root/.gradle,sharing=locked \
-    ./gradlew :_infrastructure:build -x test
+    ./gradlew :_infrastructure:build -x test --no-build-cache
 
 FROM eclipse-temurin:21-jre-alpine
 

@@ -1,0 +1,115 @@
+classDiagram
+    direction TB
+
+    namespace Infrastructure_REST {
+        class OrdemServicoResourceImpl {
+            +aprovarOrcamentoViaEmail(token) Response~HTML~
+            +reprovarOrcamentoViaEmail(token) Response~HTML~
+        }
+    }
+
+    namespace Infrastructure_CrossCutting {
+        class AuditoriaProxy {
+            <<cross-cutting>>
+            +envolver(T, Class~T~, RegistrarAuditoriaPort) T
+        }
+    }
+
+    namespace Application_Ports_In {
+        class AprovarOrcamentoViaEmailUseCase {
+            <<interface>>
+            +aprovar(token) ResumoOrdemServicoResDTO
+        }
+        class ReprovarOrcamentoViaEmailUseCase {
+            <<interface>>
+            +reprovar(token) ResumoOrdemServicoResDTO
+        }
+    }
+
+    namespace Application_Service {
+        class AprovarOrcamentoViaEmailService
+        class ReprovarOrcamentoViaEmailService
+    }
+
+    namespace Application_Service_Support {
+        class ResolvedorOrdemServicoPorToken {
+            +resolver(token) OrdemServico
+        }
+        class DecididorOrcamento {
+            <<colaborador compartilhado>>
+            +aprovar(os) OrdemServico
+            +reprovar(os, motivo) OrdemServico
+        }
+    }
+
+    namespace Application_Ports_Out {
+        class TokenDecisaoOrcamentoPort {
+            <<interface>>
+            +gerar(osId, clienteId) String
+            +validar(token) DecisaoOrcamentoTokenClaims?
+        }
+        class OrdemServicoRepositoryPort {
+            <<interface>>
+            +buscarPorId(OrdemServicoId) OrdemServico?
+            +atualizar(OrdemServico) OrdemServico
+        }
+        class InsumoRepositoryPort {
+            <<interface>>
+            +buscarPorId(InsumoId) Insumo?
+            +atualizar(Insumo)
+        }
+        class EnfileirarNotificacaoUseCase {
+            <<interface>>
+            +executar(EnfileirarNotificacaoCommand) NotificacaoId
+        }
+    }
+
+    namespace Application_Events {
+        class OrdemServicoStatusAlteradoEvent {
+            <<CDI event>>
+        }
+    }
+
+    namespace Domain {
+        class OrdemServico {
+            <<aggregate root>>
+            +aprovarOrcamento()
+            +reprovarOrcamento(motivo)
+        }
+    }
+
+    namespace Infrastructure_Adapters {
+        class TokenDecisaoOrcamentoAdapter {
+            +gerar() : SmallRye JWT (purpose+audience)
+            +validar() : parse + checa purpose/aud
+        }
+        class OrdemServicoStatusAlteradoListener {
+            +cliente: e-mail de status
+        }
+    }
+
+    OrdemServicoResourceImpl --> AprovarOrcamentoViaEmailUseCase : token (query)
+    OrdemServicoResourceImpl --> ReprovarOrcamentoViaEmailUseCase : token (query)
+    OrdemServicoResourceImpl --> OrdemServico : renderiza página HTML do resultado
+
+    AuditoriaProxy ..|> AprovarOrcamentoViaEmailUseCase : wrap
+    AuditoriaProxy ..|> ReprovarOrcamentoViaEmailUseCase : wrap
+
+    AprovarOrcamentoViaEmailService ..|> AprovarOrcamentoViaEmailUseCase
+    ReprovarOrcamentoViaEmailService ..|> ReprovarOrcamentoViaEmailUseCase
+    AprovarOrcamentoViaEmailService --> ResolvedorOrdemServicoPorToken : resolver()
+    AprovarOrcamentoViaEmailService --> DecididorOrcamento : aprovar()
+    ReprovarOrcamentoViaEmailService --> ResolvedorOrdemServicoPorToken : resolver()
+    ReprovarOrcamentoViaEmailService --> DecididorOrcamento : reprovar(motivoPadrao)
+
+    ResolvedorOrdemServicoPorToken --> TokenDecisaoOrcamentoPort : validar()
+    ResolvedorOrdemServicoPorToken --> OrdemServicoRepositoryPort : buscarPorId()
+
+    DecididorOrcamento --> OrdemServico : aprovarOrcamento()/reprovarOrcamento()
+    DecididorOrcamento --> OrdemServicoRepositoryPort : atualizar()
+    DecididorOrcamento --> InsumoRepositoryPort : repõe estoque (reprovação)
+    DecididorOrcamento --> EnfileirarNotificacaoUseCase : e-mail ao mecânico (decisão)
+    DecididorOrcamento --> OrdemServicoStatusAlteradoEvent : fire (notifica cliente)
+
+    OrdemServicoStatusAlteradoEvent ..> OrdemServicoStatusAlteradoListener : observado
+    TokenDecisaoOrcamentoAdapter ..|> TokenDecisaoOrcamentoPort : implementa

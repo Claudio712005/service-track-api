@@ -25,16 +25,6 @@ services:
       retries: 10
       start_period: 10s
 
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: servicetrack-mailhog
-    restart: unless-stopped
-    networks:
-      - servicetrack-network
-    ports:
-      - "1025:1025"  
-      - "8025:8025" 
-
   api:
     build:
       context: .
@@ -46,8 +36,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      mailhog:
-        condition: service_started
     environment:
       QUARKUS_PROFILE: prod
       APP_DB_USER: ${APP_DB_USER}
@@ -56,12 +44,9 @@ services:
       FLYWAY_DB_PASSWORD: ${FLYWAY_DB_PASSWORD}
       DB_JDBC_URL: ${POSTGRES_JDBC_URL}
       UNSPLASH_CHAVE_ACESSO: ${UNSPLASH_CHAVE_ACESSO}
-      QUARKUS_MAILER_HOST: mailhog
-      QUARKUS_MAILER_PORT: "1025"
-      QUARKUS_MAILER_MOCK: "false"
-      QUARKUS_MAILER_START_TLS: DISABLED
-      QUARKUS_MAILER_AUTH_METHODS: DISABLED
-      QUARKUS_MAILER_FROM: ${QUARKUS_MAILER_FROM:-no-reply@servicetrack.local}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      QUARKUS_MAILER_FROM: ${QUARKUS_MAILER_FROM:-no-reply@clausilva.com.br}
+      SERVICETRACK_API_BASE_URL: ${SERVICETRACK_API_BASE_URL:-http://localhost:8080}
     ports:
       - "8080:8080"
 

@@ -2,6 +2,7 @@ package br.com.servicetrack.infrastructure.ordemServico
 
 import br.com.servicetrack.application.ordemServico.dto.request.AssociarItensReqDTO
 import br.com.servicetrack.application.ordemServico.dto.request.CancelarOsReqDTO
+import br.com.servicetrack.application.ordemServico.dto.request.CriarOrdemServicoCompletaReqDTO
 import br.com.servicetrack.application.ordemServico.dto.request.ConcluirItemServicoReqDTO
 import br.com.servicetrack.application.ordemServico.dto.request.FiltroOrdemServicoDTO
 import br.com.servicetrack.application.ordemServico.dto.request.ItemInsumoReqDTO
@@ -13,6 +14,7 @@ import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import br.com.servicetrack.domain.veiculo.vo.VeiculoId
 import br.com.servicetrack.infrastructure.api.dto.AssociarItensRequest
 import br.com.servicetrack.infrastructure.api.dto.CancelarOsRequest
+import br.com.servicetrack.infrastructure.api.dto.CriarOrdemServicoCompletaRequest
 import br.com.servicetrack.infrastructure.api.dto.ConcluirItemServicoRequest
 import java.math.BigDecimal
 import br.com.servicetrack.infrastructure.api.dto.OrdemServicoRequest
@@ -24,6 +26,17 @@ internal fun OrdemServicoRequest.toApplicationDTO() = OrdemServicoReqDTO(
     UsuarioId(mecanicoId),
     VeiculoId(veiculoId),
     observacao,
+)
+
+internal fun CriarOrdemServicoCompletaRequest.toApplicationDTO() = CriarOrdemServicoCompletaReqDTO(
+    motivo = motivo,
+    clienteId = UsuarioId(clienteId.toString()),
+    veiculoId = VeiculoId(veiculoId.toString()),
+    observacao = observacao,
+    servicos = servicos.map {
+        ItemServicoReqDTO(it.servicoId.toString(), it.valorCobrado?.let { v -> BigDecimal.valueOf(v) })
+    },
+    insumos = insumos.map { ItemInsumoReqDTO(it.insumoId.toString(), it.quantidade ?: 1) },
 )
 
 internal fun AssociarItensRequest.toApplicationDTO() = AssociarItensReqDTO(
@@ -44,7 +57,7 @@ internal fun toFiltroDTO(
     page: Int,
     size: Int,
 ) = FiltroOrdemServicoDTO(
-    status = status?.let { StatusOrdemServicoEnum.valueOf(it) },
+    status = status?.takeIf { it.isNotBlank() }?.let { StatusOrdemServicoEnum.valueOf(it) },
     clienteId = clienteId,
     mecanicoId = mecanicoId,
     page = page,

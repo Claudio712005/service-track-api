@@ -1,10 +1,13 @@
 package br.com.servicetrack.infrastructure.ordemServico
 
 import br.com.servicetrack.application.ordemServico.ports.`in`.AprovarOrcamentoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.AprovarOrcamentoViaEmailUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.ReprovarOrcamentoViaEmailUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.ConcluirItemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.AssociarItensOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.BuscarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.CancelarOrdemServicoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.CriarOrdemServicoCompletaUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.CriarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.EntregarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.EnviarParaDiagnosticoUseCase
@@ -16,9 +19,11 @@ import br.com.servicetrack.infrastructure.api.OrdemServicoApi
 import br.com.servicetrack.infrastructure.api.dto.AssociarItensRequest
 import br.com.servicetrack.infrastructure.api.dto.CancelarOsRequest
 import br.com.servicetrack.infrastructure.api.dto.ConcluirItemServicoRequest
+import br.com.servicetrack.infrastructure.api.dto.CriarOrdemServicoCompletaRequest
 import br.com.servicetrack.infrastructure.api.dto.GerarOrcamentoRequest
 import br.com.servicetrack.infrastructure.api.dto.OrdemServicoRequest
 import br.com.servicetrack.infrastructure.api.dto.ReprovarOrcamentoRequest
+import jakarta.annotation.security.PermitAll
 import jakarta.annotation.security.RolesAllowed
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
@@ -35,6 +40,10 @@ import java.util.UUID
 class OrdemServicoResourceImpl @Inject constructor(
     private val concluirItemServicoUseCase: ConcluirItemServicoUseCase,
     private val criarOrdemServicoUseCase: CriarOrdemServicoUseCase,
+    private val criarOrdemServicoCompletaUseCase: CriarOrdemServicoCompletaUseCase,
+    private val aprovarOrcamentoViaEmailUseCase: AprovarOrcamentoViaEmailUseCase,
+    private val reprovarOrcamentoViaEmailUseCase: ReprovarOrcamentoViaEmailUseCase,
+    private val decisaoOrcamentoPaginaRenderer: DecisaoOrcamentoPaginaRenderer,
     private val enviarParaDiagnosticoUseCase: EnviarParaDiagnosticoUseCase,
     private val buscarOrdemServicoUseCase: BuscarOrdemServicoUseCase,
     private val listarOrdensServicoUseCase: ListarOrdensServicoUseCase,
@@ -54,6 +63,38 @@ class OrdemServicoResourceImpl @Inject constructor(
         val response = criarOrdemServicoUseCase.criarOrdemServico(ordemServicoRequest.toApplicationDTO())
         return Response.created(URI("/ordem-servico/${response.id}")).entity(response).build()
     }
+
+    @RolesAllowed("MECANICO")
+    @Transactional
+    @Timeout(5000)
+    override fun criarOrdemServicoCompleta(
+        criarOrdemServicoCompletaRequest: @Valid CriarOrdemServicoCompletaRequest,
+    ): Response {
+        val response = criarOrdemServicoCompletaUseCase.criarOrdemServicoCompleta(
+            criarOrdemServicoCompletaRequest.toApplicationDTO(),
+        )
+        return Response.created(URI("/ordem-servico/${response.id}")).entity(response).build()
+    }
+
+    @PermitAll
+    @Transactional
+    @Timeout(5000)
+    override fun aprovarOrcamentoViaEmail(token: String): Response =
+        decisaoOrcamentoPaginaRenderer.processarDecisao(
+            acaoConcluida = "aprovado",
+            cor = "#16a34a",
+            icone = "✅",
+        ) { aprovarOrcamentoViaEmailUseCase.aprovar(token) }
+
+    @PermitAll
+    @Transactional
+    @Timeout(5000)
+    override fun reprovarOrcamentoViaEmail(token: String): Response =
+        decisaoOrcamentoPaginaRenderer.processarDecisao(
+            acaoConcluida = "recusado",
+            cor = "#dc2626",
+            icone = "🚫",
+        ) { reprovarOrcamentoViaEmailUseCase.reprovar(token) }
 
     @RolesAllowed("CLIENTE", "MECANICO")
     @Timeout(5000)

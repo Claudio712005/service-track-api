@@ -4,6 +4,7 @@ import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.ordemServico.dto.request.OrdemServicoReqDTO
 import br.com.servicetrack.application.ordemServico.ports.out.OrdemServicoRepositoryPort
+import br.com.servicetrack.application.ordemServico.service.support.AbridorOrdemServico
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
 import br.com.servicetrack.domain.ordemServico.OrdemServico
@@ -31,7 +32,12 @@ class CriarOrdemServicoServiceTest {
     private val usuarioRepository = mockk<UsuarioRepositoryPort>()
     private val jwt = mockk<JwtPort>()
 
-    private val service = CriarOrdemServicoService(repository, usuarioRepository, jwt)
+    private val service = CriarOrdemServicoService(
+        repository,
+        usuarioRepository,
+        jwt,
+        AbridorOrdemServico(usuarioRepository, repository),
+    )
 
     private val clienteId = UsuarioId.gerar()
     private val mecanicoId = UsuarioId.gerar()

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Decisão do orçamento — OS #{os}</title>
+  <style type="text/css">
+    table, td, div, h1, p { font-family: Arial, sans-serif; }
+  </style>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f6f8; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; color:#1f2937;">
+  <div style="display:none; max-height:0; overflow:hidden; mso-hide:all; font-size:1px; line-height:1px; color:#f4f6f8;">
+    O cliente {decisao} o orçamento da OS #{os}.
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f6f8; padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; width:100%; background-color:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(15,23,42,0.06);">
+
+          <tr>
+            <td style="background: linear-gradient(135deg,#1d4ed8 0%,#2563eb 100%); background-color:#1d4ed8; padding:28px 32px; text-align:left;">
+              <span style="color:#ffffff; font-size:20px; font-weight:700; letter-spacing:0.3px;">🛠️ ServiceTrack</span>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:36px 32px 8px 32px;">
+              <h1 style="margin:0 0 8px 0; font-size:22px; line-height:1.3; color:#111827; font-weight:700;">
+                Decisão sobre o orçamento
+              </h1>
+              <p style="margin:0 0 24px 0; font-size:15px; line-height:1.6; color:#4b5563;">
+                O cliente <strong>{nomeCliente}</strong> respondeu ao orçamento da ordem de serviço.
+              </p>
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; margin:0 0 24px 0;">
+                <tr>
+                  <td style="padding:20px 24px;">
+                    <p style="margin:0 0 6px 0; font-size:12px; color:#6b7280; text-transform:uppercase; letter-spacing:0.8px; font-weight:600;">
+                      Ordem de Serviço
+                    </p>
+                    <p style="margin:0 0 16px 0; font-size:18px; color:#111827; font-weight:700;">#{os}</p>
+
+                    <p style="margin:0 0 6px 0; font-size:12px; color:#6b7280; text-transform:uppercase; letter-spacing:0.8px; font-weight:600;">
+                      Decisão
+                    </p>
+                    {#if decisao == 'aprovado'}
+                    <span style="display:inline-block; background-color:#dcfce7; color:#166534; font-size:13px; font-weight:700; padding:6px 14px; border-radius:999px;">
+                      ✅ Aprovado &middot; OS em execução
+                    </span>
+                    {#else}
+                    <span style="display:inline-block; background-color:#fee2e2; color:#991b1b; font-size:13px; font-weight:700; padding:6px 14px; border-radius:999px;">
+                      🚫 Recusado &middot; OS cancelada
+                    </span>
+                    {/if}
+                  </td>
+                </tr>
+              </table>
+
+              {#if motivo}
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#fffbeb; border-left:4px solid #f59e0b; border-radius:4px; margin:0 0 24px 0;">
+                <tr>
+                  <td style="padding:14px 18px;">
+                    <p style="margin:0 0 4px 0; font-size:12px; color:#92400e; font-weight:700; text-transform:uppercase; letter-spacing:0.6px;">
+                      Motivo
+                    </p>
+                    <p style="margin:0; font-size:14px; line-height:1.5; color:#78350f;">{motivo}</p>
+                  </td>
+                </tr>
+              </table>
+              {/if}
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:24px 32px 28px 32px; border-top:1px solid #e5e7eb; background-color:#f9fafb;">
+              <p style="margin:0; font-size:12px; line-height:1.5; color:#6b7280; text-align:center;">
+                Este é um e-mail automático enviado pelo <strong style="color:#374151;">ServiceTrack</strong>.<br>
+                Por favor, não responda a esta mensagem.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

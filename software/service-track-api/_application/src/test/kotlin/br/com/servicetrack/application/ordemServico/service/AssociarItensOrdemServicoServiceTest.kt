@@ -7,6 +7,7 @@ import br.com.servicetrack.application.ordemServico.dto.request.AssociarItensReq
 import br.com.servicetrack.application.ordemServico.dto.request.ItemInsumoReqDTO
 import br.com.servicetrack.application.ordemServico.dto.request.ItemServicoReqDTO
 import br.com.servicetrack.application.ordemServico.ports.out.OrdemServicoRepositoryPort
+import br.com.servicetrack.application.ordemServico.service.support.AssociadorItensOrdemServico
 import br.com.servicetrack.application.servico.ports.out.ServicoRepositoryPort
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.domain.insumo.Insumo
@@ -37,7 +38,11 @@ class AssociarItensOrdemServicoServiceTest {
     private val insumoRepository = mockk<InsumoRepositoryPort>()
     private val jwt = mockk<JwtPort>()
 
-    private val service = AssociarItensOrdemServicoService(osRepository, servicoRepository, insumoRepository, jwt)
+    private val service = AssociarItensOrdemServicoService(
+        osRepository,
+        jwt,
+        AssociadorItensOrdemServico(servicoRepository, insumoRepository),
+    )
 
     private val mecanicoId = UsuarioId.gerar()
     private val clienteId = UsuarioId.gerar()

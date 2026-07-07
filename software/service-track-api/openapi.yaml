@@ -46,6 +46,8 @@ paths:
     $ref: './openApi/catalogo/catalogo_insumos.yaml'
   /ordem-servico:
     $ref: './openApi/ordemServico/ordemServico.yaml'
+  /ordem-servico/completa:
+    $ref: './openApi/ordemServico/ordemServico_completa.yaml'
   /ordem-servico/lista:
     $ref: './openApi/ordemServico/ordemServico_lista.yaml'
   /ordem-servico/{id}:
@@ -56,6 +58,10 @@ paths:
     $ref: './openApi/ordemServico/ordemServico_diagnostico_itens.yaml'
   /ordem-servico/{id}/orcamento:
     $ref: './openApi/ordemServico/ordemServico_orcamento.yaml'
+  /ordem-servico/orcamento/aprovacao:
+    $ref: './openApi/ordemServico/ordemServico_orcamento_aprovacao_email.yaml'
+  /ordem-servico/orcamento/reprovacao:
+    $ref: './openApi/ordemServico/ordemServico_orcamento_reprovacao_email.yaml'
   /ordem-servico/{id}/orcamento/aprovacao:
     $ref: './openApi/ordemServico/ordemServico_orcamento_aprovacao.yaml'
   /ordem-servico/{id}/orcamento/reprovacao:

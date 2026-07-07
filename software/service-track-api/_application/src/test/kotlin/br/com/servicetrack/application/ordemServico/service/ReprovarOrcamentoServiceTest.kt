@@ -4,9 +4,12 @@ import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.insumo.ports.out.InsumoRepositoryPort
 import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
+import br.com.servicetrack.application.notificacao.ports.`in`.EnfileirarNotificacaoUseCase
 import br.com.servicetrack.application.ordemServico.dto.request.ReprovarOrcamentoReqDTO
 import br.com.servicetrack.application.ordemServico.ports.out.OrdemServicoRepositoryPort
+import br.com.servicetrack.application.ordemServico.service.support.DecididorOrcamento
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
+import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
 import jakarta.enterprise.event.Event
 import br.com.servicetrack.domain.insumo.Insumo
 import br.com.servicetrack.domain.insumo.vo.InsumoId
@@ -32,10 +35,13 @@ class ReprovarOrcamentoServiceTest {
 
     private val osRepository = mockk<OrdemServicoRepositoryPort>()
     private val insumoRepository = mockk<InsumoRepositoryPort>()
+    private val usuarioRepository = mockk<UsuarioRepositoryPort>(relaxed = true)
+    private val enfileirar = mockk<EnfileirarNotificacaoUseCase>(relaxed = true)
     private val jwt = mockk<JwtPort>()
     private val statusEvent = mockk<Event<OrdemServicoStatusAlteradoEvent>>(relaxed = true)
 
-    private val service = ReprovarOrcamentoService(osRepository, insumoRepository, jwt, statusEvent)
+    private val decididor = DecididorOrcamento(osRepository, insumoRepository, usuarioRepository, enfileirar, statusEvent)
+    private val service = ReprovarOrcamentoService(osRepository, jwt, decididor)
 
     private val mecanicoId = UsuarioId.gerar()
     private val clienteId = UsuarioId.gerar()
