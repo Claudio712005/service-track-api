@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: service-track
+
+resources:
+  - ../../base
+  - hpa.yaml
+  - service-lb.yaml
+
+images:
+  - name: servicetrack-api
+    newTag: latest
+
+replicas:
+  - name: service-track-app
+    count: 2
+
+configMapGenerator:
+  - name: service-track-config
+    literals:
+      - QUARKUS_PROFILE=prod
+      - DB_JDBC_URL=PLACEHOLDER_RDS_JDBC_URL
+      - SERVICETRACK_API_BASE_URL=PLACEHOLDER_API_BASE_URL
+      - QUARKUS_MAILER_FROM=no-reply@clausilva.com.br
+      - MP_JWT_VERIFY_PUBLICKEY_LOCATION=file:/keys/publicKey.pem
+      - SMALLRYE_JWT_SIGN_KEY_LOCATION=file:/keys/privateKey.pem
+
+generatorOptions:
+  disableNameSuffixHash: true
