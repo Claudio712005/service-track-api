@@ -15,6 +15,7 @@ env:
   APP_DIR: software/service-track-api
   ECR_REPO: service-track-app
   OVERLAY_DIR: infra/k8s/overlays/prod
+  CLUSTER_NAME: servicetrack-dev
 
 jobs:
   build-and-bump:
@@ -78,7 +79,25 @@ jobs:
             git push origin main
           fi
 
-      - name: Resumo
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Resumo (imagem + URLs)
         run: |
-          echo "Imagem publicada: ${IMAGE}"
-          echo "ArgoCD ira sincronizar o app automaticamente a partir do overlay de prod."
+          aws eks update-kubeconfig --name "$CLUSTER_NAME" --region "$AWS_REGION" || true
+          API_HOST="$(kubectl -n service-track get svc service-track-app-lb \
+            -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)"
+          ARGO_HOST="$(kubectl -n argocd get svc argocd-server \
+            -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)"
+          {
+            echo "## ServiceTrack — Deploy (GitOps)"
+            echo ""
+            echo "| Item | Valor |"
+            echo "|---|---|"
+            echo "| Imagem | \`${IMAGE}\` |"
+            echo "| API publica | ${API_HOST:+http://$API_HOST} |"
+            echo "| Swagger | ${API_HOST:+http://$API_HOST/q/swagger-ui} |"
+            echo "| ArgoCD | ${ARGO_HOST:+http://$ARGO_HOST} |"
+            echo ""
+            echo "O ArgoCD sincroniza o app a partir do commit de bump da imagem."
+          } >> "$GITHUB_STEP_SUMMARY"
