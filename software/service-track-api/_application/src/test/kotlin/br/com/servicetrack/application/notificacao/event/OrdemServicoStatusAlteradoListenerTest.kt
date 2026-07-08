@@ -1,10 +1,14 @@
 package br.com.servicetrack.application.notificacao.event
 
+import br.com.servicetrack.application.insumo.ports.out.InsumoRepositoryPort
 import br.com.servicetrack.application.notificacao.dto.EnfileirarNotificacaoCommand
 import br.com.servicetrack.application.notificacao.ports.`in`.EnfileirarNotificacaoUseCase
 import br.com.servicetrack.application.ordemServico.ports.out.AprovacaoOrcamentoLinkPort
 import br.com.servicetrack.application.ordemServico.ports.out.LinksDecisaoOrcamento
+import br.com.servicetrack.application.ordemServico.ports.out.OrdemServicoRepositoryPort
+import br.com.servicetrack.application.servico.ports.out.ServicoRepositoryPort
 import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
+import br.com.servicetrack.application.veiculo.ports.out.VeiculoRepositoryPort
 import br.com.servicetrack.domain.notificacao.TipoConteudoNotificacao
 import br.com.servicetrack.domain.notificacao.TipoNotificacao
 import br.com.servicetrack.domain.notificacao.vo.NotificacaoId
@@ -31,7 +35,19 @@ class OrdemServicoStatusAlteradoListenerTest {
     private val enfileirar = mockk<EnfileirarNotificacaoUseCase>()
     private val usuarioRepository = mockk<UsuarioRepositoryPort>()
     private val aprovacaoLink = mockk<AprovacaoOrcamentoLinkPort>()
-    private val listener = OrdemServicoStatusAlteradoListener(enfileirar, usuarioRepository, aprovacaoLink)
+    private val ordemServicoRepository = mockk<OrdemServicoRepositoryPort>()
+    private val veiculoRepository = mockk<VeiculoRepositoryPort>()
+    private val servicoRepository = mockk<ServicoRepositoryPort>()
+    private val insumoRepository = mockk<InsumoRepositoryPort>()
+    private val listener = OrdemServicoStatusAlteradoListener(
+        enfileirar,
+        usuarioRepository,
+        aprovacaoLink,
+        ordemServicoRepository,
+        veiculoRepository,
+        servicoRepository,
+        insumoRepository,
+    )
 
     private val clienteId = UsuarioId.gerar()
     private val osId = OrdemServicoId.gerar()
@@ -80,6 +96,7 @@ class OrdemServicoStatusAlteradoListenerTest {
             aprovarUrl = "http://api/ordem-servico/orcamento/aprovacao?token=abc",
             reprovarUrl = "http://api/ordem-servico/orcamento/reprovacao?token=abc",
         )
+        every { ordemServicoRepository.buscarPorId(osId) } returns null
         val comandos = mutableListOf<EnfileirarNotificacaoCommand>()
         every { enfileirar.executar(capture(comandos)) } returns NotificacaoId.gerar()
 
