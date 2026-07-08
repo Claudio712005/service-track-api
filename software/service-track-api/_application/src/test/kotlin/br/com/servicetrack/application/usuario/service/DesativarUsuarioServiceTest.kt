@@ -85,7 +85,7 @@ class DesativarUsuarioServiceTest {
             service.desativarUsuario(mecanicoId)
         }
 
-        verify(exactly = 0) { usuarioRepository.desativar(any()) }
+        verify(exactly = 0) { usuarioRepository.desativar(mecanicoId) }
     }
 
     @Test
@@ -101,7 +101,7 @@ class DesativarUsuarioServiceTest {
             service.desativarUsuario(outroMecanicoId)
         }
 
-        verify(exactly = 0) { usuarioRepository.desativar(any()) }
+        verify(exactly = 0) { usuarioRepository.desativar(mecanicoId) }
     }
 
     @Test

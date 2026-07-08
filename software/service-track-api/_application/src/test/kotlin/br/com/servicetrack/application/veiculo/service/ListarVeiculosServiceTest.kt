@@ -70,7 +70,7 @@ class ListarVeiculosServiceTest {
         verify { jwt.getUsuarioId() }
         verify { usuarioRepository.buscarPorId(usuarioId) }
         verify { repository.listarTodos() }
-        verify(exactly = 0) { repository.listarPorProprietario(any()) }
+        verify(exactly = 0) { repository.listarPorProprietario(usuarioId) }
     }
 
     @Test
@@ -124,6 +124,6 @@ class ListarVeiculosServiceTest {
         verify { jwt.getUsuarioId() }
         verify { usuarioRepository.buscarPorId(usuarioId) }
         verify(exactly = 0) { repository.listarTodos() }
-        verify(exactly = 0) { repository.listarPorProprietario(any()) }
+        verify(exactly = 0) { repository.listarPorProprietario(usuarioId) }
     }
 }

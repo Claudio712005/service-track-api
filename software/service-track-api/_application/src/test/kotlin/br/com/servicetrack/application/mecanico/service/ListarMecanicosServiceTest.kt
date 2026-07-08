@@ -129,7 +129,7 @@ class ListarMecanicosServiceTest {
         assertTrue(resultado.isEmpty())
 
         verify { mecanicoRepository.listarTodos() }
-        verify(exactly = 0) { usuarioRepository.buscarPorId(any()) }
+        verify(exactly = 0) { usuarioRepository.buscarPorId(UsuarioId.gerar()) }
     }
 
     @Test

@@ -174,12 +174,13 @@ class RegistrarAuditoriaAdapterTest {
         val contextoCaptured = slot<AuditoriaContextoDTO>()
         val strategy = mockStrategy(contextoCaptured)
 
+        val referenciaId = UsuarioId.gerar().valor
         every { jwtPort.getUsuarioId() } throws RuntimeException("Token inválido")
         every { strategyFactory.obter(any()) } returns strategy
         every { repository.salvar(any()) } answers { firstArg() }
 
-        adapter.registrar(TipoEntidade.CLIENTE, TipoEventoAuditoria.LOGIN, "user-uuid", null, null)
+        adapter.registrar(TipoEntidade.CLIENTE, TipoEventoAuditoria.LOGIN, referenciaId, null, null)
 
-        assertEquals("user-uuid", contextoCaptured.captured.responsavelAcao.valor)
+        assertEquals(referenciaId, contextoCaptured.captured.responsavelAcao.valor)
     }
 }

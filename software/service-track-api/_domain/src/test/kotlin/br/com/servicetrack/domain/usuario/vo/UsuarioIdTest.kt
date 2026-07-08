@@ -9,8 +9,9 @@ class UsuarioIdTest {
 
     @Test
     fun `deve criar UsuarioId com valor fornecido`() {
-        val id = UsuarioId("abc-123")
-        assertEquals("abc-123", id.valor)
+        val uuid = "550e8400-e29b-41d4-a716-446655440000"
+        val id = UsuarioId(uuid)
+        assertEquals(uuid, id.valor)
     }
 
     @Test

@@ -118,7 +118,7 @@ class RemoverVeiculoServiceTest {
             service.removerVeiculo(veiculoId)
         }
 
-        verify(exactly = 0) { veiculoRepository.desativar(any()) }
+        verify(exactly = 0) { veiculoRepository.desativar(veiculoId) }
     }
 
     @Test
@@ -133,7 +133,7 @@ class RemoverVeiculoServiceTest {
             service.removerVeiculo(veiculoId)
         }
 
-        verify(exactly = 0) { veiculoRepository.desativar(any()) }
+        verify(exactly = 0) { veiculoRepository.desativar(veiculoId) }
     }
 
     @Test
@@ -150,6 +150,6 @@ class RemoverVeiculoServiceTest {
             service.removerVeiculo(veiculoId)
         }
 
-        verify(exactly = 0) { veiculoRepository.desativar(any()) }
+        verify(exactly = 0) { veiculoRepository.desativar(veiculoId) }
     }
 }

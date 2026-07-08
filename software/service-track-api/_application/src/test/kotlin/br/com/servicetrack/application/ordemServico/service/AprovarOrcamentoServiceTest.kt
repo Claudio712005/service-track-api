@@ -75,7 +75,7 @@ class AprovarOrcamentoServiceTest {
         every { jwt.getUsuarioId() } returns clienteId
         every { repository.buscarPorId(any()) } returns os
         every { repository.atualizar(any()) } answers { firstArg() }
-        every { usuarioRepository.buscarPorId(any()) } returns null
+        every { usuarioRepository.buscarPorId(os.clienteId) } returns null
         every { enfileirar.executar(any()) } returns NotificacaoId.gerar()
         justRun { statusEvent.fire(any()) }
 

@@ -34,3 +34,16 @@ output "db_password" {
   value     = random_password.db.result
   sensitive = true
 }
+
+output "argocd_url" {
+  description = "URL do ArgoCD (vazio se argocd_expose_lb=false ou LB ainda provisionando)."
+  value = try(
+    "https://${data.kubernetes_service.argocd_server[0].status[0].load_balancer[0].ingress[0].hostname}",
+    ""
+  )
+}
+
+output "argocd_admin_password_cmd" {
+  description = "Comando para obter a senha inicial do admin do ArgoCD."
+  value       = "kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d; echo"
+}

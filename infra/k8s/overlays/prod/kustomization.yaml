@@ -8,20 +8,24 @@ resources:
   - hpa.yaml
   - service-lb.yaml
 
+# A pipeline (cd-app.yml) sobrescreve newName/newTag via `kustomize edit set image`
+# apontando para o ECR e o git-sha. O commit resultante dispara o sync do ArgoCD.
 images:
   - name: servicetrack-api
+    newName: PLACEHOLDER_ECR_REPO
     newTag: latest
 
 replicas:
   - name: service-track-app
     count: 2
 
+# Apenas config ESTATICA aqui. Valores dinamicos (DB_JDBC_URL, SERVICETRACK_API_BASE_URL)
+# vao para o ConfigMap `service-track-runtime`, criado por scripts/bootstrap-prod.sh
+# (fora do Git, pois dependem de outputs do Terraform e do hostname do LoadBalancer).
 configMapGenerator:
   - name: service-track-config
     literals:
       - QUARKUS_PROFILE=prod
-      - DB_JDBC_URL=PLACEHOLDER_RDS_JDBC_URL
-      - SERVICETRACK_API_BASE_URL=PLACEHOLDER_API_BASE_URL
       - QUARKUS_MAILER_FROM=no-reply@clausilva.com.br
       - MP_JWT_VERIFY_PUBLICKEY_LOCATION=file:/keys/publicKey.pem
       - SMALLRYE_JWT_SIGN_KEY_LOCATION=file:/keys/privateKey.pem

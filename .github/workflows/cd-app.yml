@@ -1,24 +1,30 @@
-name: CD - App
+name: CD - App (GitOps)
 
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'infra/k8s/overlays/prod/kustomization.yaml'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write  
 
 env:
   AWS_REGION: us-east-1
   APP_DIR: software/service-track-api
   ECR_REPO: service-track-app
+  OVERLAY_DIR: infra/k8s/overlays/prod
 
 jobs:
-  deploy:
-    name: Build, push e deploy
+  build-and-bump:
+    name: Build, push e bump (GitOps)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
 
       - name: Configurar credenciais AWS
         uses: aws-actions/configure-aws-credentials@v4
@@ -32,8 +38,9 @@ jobs:
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Definir tag da imagem
-        run: echo "ECR_IMAGE=${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPO }}:${{ github.sha }}" >> "$GITHUB_ENV"
+      - name: Definir referencia da imagem
+        run: |
+          echo "IMAGE=${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPO }}:${{ github.sha }}" >> "$GITHUB_ENV"
 
       - name: Setup Buildx
         uses: docker/setup-buildx-action@v3
@@ -44,24 +51,31 @@ jobs:
           context: ${{ env.APP_DIR }}
           platforms: linux/amd64
           push: true
-          tags: ${{ env.ECR_IMAGE }}
+          tags: ${{ env.IMAGE }}
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.15.5
-          terraform_wrapper: false
+      - name: Instalar kustomize
+        run: |
+          curl -sfL https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
+          sudo mv kustomize /usr/local/bin/
 
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v4
+      - name: Bump da imagem no overlay (GitOps)
+        run: |
+          cd "$OVERLAY_DIR"
+          kustomize edit set image servicetrack-api="${IMAGE}"
 
-      - name: Deploy no EKS
-        env:
-          AWS_PROFILE: ""
-          ECR_IMAGE: ${{ env.ECR_IMAGE }}
-          JWT_PRIVATE_KEY_B64: ${{ secrets.JWT_PRIVATE_KEY_B64 }}
-          JWT_PUBLIC_KEY_B64: ${{ secrets.JWT_PUBLIC_KEY_B64 }}
-          APP_DB_PASSWORD: ${{ secrets.APP_DB_PASSWORD }}
-          FLYWAY_DB_PASSWORD: ${{ secrets.FLYWAY_DB_PASSWORD }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-        run: bash scripts/deploy-k8s.sh
+      - name: Commit e push do bump
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$OVERLAY_DIR/kustomization.yaml"
+          if git diff --cached --quiet; then
+            echo "Sem mudanca de imagem; nada a commitar."
+          else
+            git commit -m "chore(cd): deploy image ${{ github.sha }} [skip ci]"
+            git push origin main
+          fi
+
+      - name: Resumo
+        run: |
+          echo "Imagem publicada: ${IMAGE}"
+          echo "ArgoCD ira sincronizar o app automaticamente a partir do overlay de prod."
