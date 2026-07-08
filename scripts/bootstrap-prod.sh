@@ -98,7 +98,40 @@ echo ">> Registrando AppProject e Application no ArgoCD..."
 kubectl apply -f "$ROOT_DIR/infra/argocd/projects/service-track.appproject.yaml"
 kubectl apply -f "$ROOT_DIR/infra/argocd/applications/service-track-prod.application.yaml"
 
+echo ">> Capturando URL do ArgoCD..."
+ARGO_HOST=""
+for i in $(seq 1 30); do
+  ARGO_HOST="$(kubectl -n argocd get svc argocd-server \
+    -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)"
+  [ -n "$ARGO_HOST" ] && break
+  echo "   aguardando hostname do LoadBalancer do ArgoCD... ($i/30)"; sleep 10
+done
+if [ -n "$ARGO_HOST" ]; then
+  ARGO_URL="http://${ARGO_HOST}"
+else
+  ARGO_URL="(LB nao pronto — use: kubectl -n argocd port-forward svc/argocd-server 8081:443)"
+fi
+ARGO_PASS="$(kubectl -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath='{.data.password}' 2>/dev/null | base64 -d || true)"
+
 echo ""
-echo ">> OK. API publica: http://${API_HOST}"
+echo ">> OK."
+echo ">> API publica:   http://${API_HOST}"
+echo ">> ArgoCD URL:     ${ARGO_URL}"
+echo ">> ArgoCD login:   admin / ${ARGO_PASS:-<rode: kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d>}"
 echo ">> O ArgoCD sincroniza o app automaticamente a partir de infra/k8s/overlays/prod (branch main)."
 echo ">> Acompanhe: kubectl -n argocd get applications  |  kubectl -n $NS get pods,svc,hpa"
+
+# Resumo bonito no GitHub Actions (quando rodando na pipeline).
+if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+  {
+    echo "## ServiceTrack — Bootstrap prod"
+    echo ""
+    echo "| Item | Valor |"
+    echo "|---|---|"
+    echo "| API publica | http://${API_HOST} |"
+    echo "| ArgoCD URL | ${ARGO_URL} |"
+    echo "| ArgoCD login | admin / ${ARGO_PASS:-ver secret argocd-initial-admin-secret} |"
+    echo "| Swagger | http://${API_HOST}/q/swagger-ui |"
+  } >> "$GITHUB_STEP_SUMMARY"
+fi
