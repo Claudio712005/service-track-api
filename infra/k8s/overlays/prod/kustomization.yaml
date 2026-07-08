@@ -13,7 +13,7 @@ resources:
 images:
 - name: servicetrack-api
   newName: 123124496645.dkr.ecr.us-east-1.amazonaws.com/service-track-app
-  newTag: 213415585cd001aaa918fc5d454de017911df499
+  newTag: 476dd178e5d7e4bae7ae273181b4d32794db3b87
 
 replicas:
 - count: 2
