@@ -9,24 +9,41 @@ import br.com.servicetrack.application.ordemServico.ports.out.OrdemServicoReposi
 import br.com.servicetrack.application.servico.ports.out.ServicoRepositoryPort
 import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
 import br.com.servicetrack.application.veiculo.ports.out.VeiculoRepositoryPort
+import br.com.servicetrack.domain.insumo.Insumo
+import br.com.servicetrack.domain.insumo.vo.InsumoId
 import br.com.servicetrack.domain.notificacao.TipoConteudoNotificacao
 import br.com.servicetrack.domain.notificacao.TipoNotificacao
 import br.com.servicetrack.domain.notificacao.vo.NotificacaoId
+import br.com.servicetrack.domain.orcamento.Orcamento
+import br.com.servicetrack.domain.ordemServico.ItemOrdemServico
+import br.com.servicetrack.domain.ordemServico.OrdemServico
 import br.com.servicetrack.domain.ordemServico.StatusOrdemServicoEnum
+import br.com.servicetrack.domain.ordemServico.vo.ItemOrdemServicoId
 import br.com.servicetrack.domain.ordemServico.vo.OrdemServicoId
+import br.com.servicetrack.domain.ordemServico.vo.PrazoConclusao
+import br.com.servicetrack.domain.ordemServico.vo.StatusOrdemServico
+import br.com.servicetrack.domain.servico.Servico
+import br.com.servicetrack.domain.servico.vo.ServicoId
 import br.com.servicetrack.domain.shared.enums.Role
+import br.com.servicetrack.domain.shared.vo.ValorMonetario
 import br.com.servicetrack.domain.usuario.Usuario
 import br.com.servicetrack.domain.usuario.vo.Cpf
 import br.com.servicetrack.domain.usuario.vo.Email
 import br.com.servicetrack.domain.usuario.vo.Senha
 import br.com.servicetrack.domain.usuario.vo.Telefone
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
+import br.com.servicetrack.domain.veiculo.DadosVeiculo
+import br.com.servicetrack.domain.veiculo.Veiculo
+import br.com.servicetrack.domain.veiculo.vo.Placa
+import br.com.servicetrack.domain.veiculo.vo.VeiculoId
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -50,7 +67,11 @@ class OrdemServicoStatusAlteradoListenerTest {
     )
 
     private val clienteId = UsuarioId.gerar()
+    private val mecanicoId = UsuarioId.gerar()
     private val osId = OrdemServicoId.gerar()
+    private val veiculoId = VeiculoId.gerar()
+    private val servicoId = ServicoId.gerar()
+    private val insumoId = InsumoId.gerar()
 
     private fun buildCliente(nome: String = "Cláudio"): Usuario = Usuario.reconstituir(
         id = clienteId,
@@ -65,6 +86,66 @@ class OrdemServicoStatusAlteradoListenerTest {
         dataCriacao = LocalDateTime.now(),
         dataAtualizacao = LocalDateTime.now(),
     )
+
+    private fun buildMecanico(): Usuario = Usuario.reconstituir(
+        id = mecanicoId,
+        nome = "Zé Mecânico",
+        email = Email("mecanico@x.com"),
+        senhaHash = Senha.deHash("\$2a\$10\$hashFake"),
+        dataNascimento = LocalDate.of(1985, 5, 5),
+        telefone = Telefone("11988888888"),
+        cpf = Cpf("39053344705"),
+        ativo = true,
+        roles = setOf(Role.MECANICO),
+        dataCriacao = LocalDateTime.now(),
+        dataAtualizacao = LocalDateTime.now(),
+    )
+
+    private fun buildItem(): ItemOrdemServico = ItemOrdemServico.reconstituir(
+        id = ItemOrdemServicoId.gerar(),
+        servicoId = servicoId,
+        ordemServicoId = osId,
+        valor = ValorMonetario(BigDecimal("150.00")),
+        feito = false,
+        mecanicoResponsavelId = null,
+        dataRealizacao = null,
+        observacao = "",
+        dataCriacao = LocalDateTime.now(),
+        dataAtualizacao = LocalDateTime.now(),
+    )
+
+    private fun buildOs(comOrcamento: Boolean, comPrazo: Boolean): OrdemServico = OrdemServico.reconstituir(
+        id = osId,
+        motivo = "Barulho no motor",
+        observacao = "",
+        clienteId = clienteId,
+        mecanicoId = mecanicoId,
+        veiculoId = veiculoId,
+        dataCriacao = LocalDateTime.now(),
+        dataAtualizacao = LocalDateTime.now(),
+        status = StatusOrdemServico.deEnum(StatusOrdemServicoEnum.AGUARDANDO_APROVACAO),
+        prazoConclusao = if (comPrazo) PrazoConclusao(LocalDateTime.now().plusDays(3)) else null,
+        orcamento = if (comOrcamento) {
+            Orcamento.gerar(ValorMonetario(BigDecimal("200.00")), ValorMonetario(BigDecimal("50.00")))
+        } else {
+            null
+        },
+        insumos = mutableListOf(insumoId),
+        itensServico = mutableListOf(buildItem()),
+    )
+
+    private fun buildVeiculo(): Veiculo {
+        val veiculo = mockk<Veiculo>()
+        every { veiculo.obterDados() } returns DadosVeiculo(
+            id = veiculoId,
+            proprietarioId = clienteId,
+            placa = Placa("ABC1D23"),
+            modelo = "Uno",
+            marca = "Fiat",
+            ano = 2020,
+        )
+        return veiculo
+    }
 
     @Test
     fun `deve enfileirar notificacao com variaveis do template`() {
@@ -131,5 +212,86 @@ class OrdemServicoStatusAlteradoListenerTest {
         )
 
         verify(exactly = 0) { enfileirar.executar(any()) }
+    }
+
+    @Test
+    fun `deve montar aprovacao com dados completos da OS`() {
+        every { usuarioRepository.buscarPorId(clienteId) } returns buildCliente("Cláudio")
+        every { usuarioRepository.buscarPorId(mecanicoId) } returns buildMecanico()
+        every { aprovacaoLink.gerarLinks(osId, clienteId) } returns LinksDecisaoOrcamento(
+            aprovarUrl = "http://api/aprovacao?token=abc",
+            reprovarUrl = "http://api/reprovacao?token=abc",
+        )
+        every { ordemServicoRepository.buscarPorId(osId) } returns buildOs(comOrcamento = true, comPrazo = true)
+        every { veiculoRepository.buscarPorId(veiculoId) } returns buildVeiculo()
+
+        val servico = mockk<Servico>()
+        every { servico.nomeServico } returns "Troca de Óleo"
+        every { servicoRepository.buscarPorId(servicoId) } returns servico
+
+        val insumo = mockk<Insumo>()
+        every { insumo.nome } returns "Filtro"
+        every { insumo.calcularCusto(1) } returns ValorMonetario(BigDecimal("30.00"))
+        every { insumoRepository.buscarPorId(insumoId) } returns insumo
+
+        val comandos = mutableListOf<EnfileirarNotificacaoCommand>()
+        every { enfileirar.executar(capture(comandos)) } returns NotificacaoId.gerar()
+
+        listener.aoAlterarStatus(
+            OrdemServicoStatusAlteradoEvent(
+                ordemServicoId = osId,
+                clienteId = clienteId,
+                novoStatus = StatusOrdemServicoEnum.AGUARDANDO_APROVACAO,
+            )
+        )
+
+        val aprovacao = comandos.first {
+            it.tipoConteudoNotificacao == TipoConteudoNotificacao.SOLICITACAO_APROVACAO_ORCAMENTO_OS
+        }
+        assertEquals("Fiat Uno (2020)", aprovacao.variaveis["veiculo"])
+        assertEquals("ABC1D23", aprovacao.variaveis["placa"])
+        assertEquals("Zé Mecânico", aprovacao.variaveis["mecanico"])
+        assertEquals("Barulho no motor", aprovacao.variaveis["motivo"])
+        assertEquals("R$ 250,00", aprovacao.variaveis["valorTotal"])
+        assertTrue(aprovacao.variaveis["servicosHtml"]!!.contains("Troca de Óleo"))
+        assertTrue(aprovacao.variaveis["servicosTexto"]!!.contains("Troca de Óleo"))
+        assertTrue(aprovacao.variaveis["insumosHtml"]!!.contains("Filtro"))
+        assertTrue(aprovacao.variaveis["insumosTexto"]!!.contains("Filtro"))
+    }
+
+    @Test
+    fun `deve usar fallbacks quando dados relacionados ausentes`() {
+        every { usuarioRepository.buscarPorId(clienteId) } returns buildCliente("Cláudio")
+        every { usuarioRepository.buscarPorId(mecanicoId) } returns null
+        every { aprovacaoLink.gerarLinks(osId, clienteId) } returns LinksDecisaoOrcamento(
+            aprovarUrl = "http://api/aprovacao?token=abc",
+            reprovarUrl = "http://api/reprovacao?token=abc",
+        )
+        every { ordemServicoRepository.buscarPorId(osId) } returns buildOs(comOrcamento = false, comPrazo = false)
+        every { veiculoRepository.buscarPorId(veiculoId) } returns null
+        every { servicoRepository.buscarPorId(servicoId) } returns null
+        every { insumoRepository.buscarPorId(insumoId) } returns null
+
+        val comandos = mutableListOf<EnfileirarNotificacaoCommand>()
+        every { enfileirar.executar(capture(comandos)) } returns NotificacaoId.gerar()
+
+        listener.aoAlterarStatus(
+            OrdemServicoStatusAlteradoEvent(
+                ordemServicoId = osId,
+                clienteId = clienteId,
+                novoStatus = StatusOrdemServicoEnum.AGUARDANDO_APROVACAO,
+            )
+        )
+
+        val aprovacao = comandos.first {
+            it.tipoConteudoNotificacao == TipoConteudoNotificacao.SOLICITACAO_APROVACAO_ORCAMENTO_OS
+        }
+        assertEquals("Não informado", aprovacao.variaveis["veiculo"])
+        assertEquals("-", aprovacao.variaveis["placa"])
+        assertEquals("-", aprovacao.variaveis["mecanico"])
+        assertEquals("R$ 0,00", aprovacao.variaveis["valorTotal"])
+        assertEquals("A combinar", aprovacao.variaveis["prazoConclusao"])
+        assertTrue(aprovacao.variaveis["servicosTexto"]!!.contains(servicoId.valor))
+        assertTrue(aprovacao.variaveis["insumosTexto"]!!.contains(insumoId.valor))
     }
 }

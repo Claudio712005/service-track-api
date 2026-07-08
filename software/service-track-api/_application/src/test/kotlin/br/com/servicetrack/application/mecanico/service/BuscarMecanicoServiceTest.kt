@@ -56,14 +56,14 @@ class BuscarMecanicoServiceTest {
         )
 
         every { mecanicoRepository.buscarPorId(any()) } returns mecanico
-        every { usuarioRepository.buscarPorId(any()) } returns usuario
+        every { usuarioRepository.buscarPorId(mecanicoId) } returns usuario
 
         val resultado = service.buscarMecanico(mecanicoId.valor)
 
         assertEquals(usuario.id.valor, resultado.usuarioId)
 
         verify { mecanicoRepository.buscarPorId(any()) }
-        verify { usuarioRepository.buscarPorId(any()) }
+        verify { usuarioRepository.buscarPorId(mecanicoId) }
     }
 
     @Test
@@ -79,13 +79,13 @@ class BuscarMecanicoServiceTest {
         assertTrue(exception.message!!.contains("Mecanico"))
 
         verify { mecanicoRepository.buscarPorId(mecanicoId) }
-        verify(exactly = 0) { usuarioRepository.buscarPorId(any()) }
+        verify(exactly = 0) { usuarioRepository.buscarPorId(UsuarioId.gerar()) }
     }
 
     @Test
     fun `deve lancar excecao quando usuario nao encontrado`() {
         val mecanicoId = "1"
-        val usuarioId = UsuarioId("10")
+        val usuarioId = UsuarioId.gerar()
 
         val mecanico = Mecanico.criar(
             usuarioId = usuarioId,

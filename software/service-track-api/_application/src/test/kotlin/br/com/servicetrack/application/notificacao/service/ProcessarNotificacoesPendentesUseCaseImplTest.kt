@@ -142,7 +142,8 @@ class ProcessarNotificacoesPendentesUseCaseImplTest {
         val n1 = novaNotificacao()
         val n2 = novaNotificacao()
         every { repository.buscarPendentesParaEnvio(any()) } returns listOf(n1, n2)
-        every { destinatarioResolver.resolverEmail(any()) } returns Email("dest@x.com")
+        every { destinatarioResolver.resolverEmail(n1.destinatario) } returns Email("dest@x.com")
+        every { destinatarioResolver.resolverEmail(n2.destinatario) } returns Email("dest@x.com")
         every { renderer.renderizar(any(), any()) } returns conteudo
         every { emailGateway.enviar(any()) } returnsMany listOf(ResultadoEnvio.Sucesso, ResultadoEnvio.Falha("x"))
 
