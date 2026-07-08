@@ -92,3 +92,19 @@ variable "tags" {
   type    = map(string)
   default = {}
 }
+
+variable "argocd_chart_version" {
+  type    = string
+  default = "7.7.0"
+}
+
+variable "metrics_server_chart_version" {
+  type    = string
+  default = "3.12.2"
+}
+
+variable "argocd_expose_lb" {
+  description = "Expor o argocd-server via LoadBalancer publico. false = acesso apenas por kubectl port-forward."
+  type        = bool
+  default     = true
+}

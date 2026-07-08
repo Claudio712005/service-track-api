@@ -24,8 +24,13 @@ spec:
           ports:
             - containerPort: 8080
           envFrom:
+            # Config estatica versionada no Git (gerenciada pelo ArgoCD).
             - configMapRef:
                 name: service-track-config
+            # Config dinamica (DB_JDBC_URL, SERVICETRACK_API_BASE_URL) provisionada
+            # por scripts/bootstrap-prod.sh — fora do Git.
+            - configMapRef:
+                name: service-track-runtime
             - secretRef:
                 name: service-track-secret
           volumeMounts:

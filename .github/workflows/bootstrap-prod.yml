@@ -1,0 +1,45 @@
+name: Bootstrap Prod (secrets + DB roles + ArgoCD app)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  bootstrap:
+    name: Bootstrap prod
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.5
+          terraform_wrapper: false
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Bootstrap
+        env:
+          AWS_PROFILE: ""
+          JWT_PRIVATE_KEY_B64: ${{ secrets.JWT_PRIVATE_KEY_B64 }}
+          JWT_PUBLIC_KEY_B64: ${{ secrets.JWT_PUBLIC_KEY_B64 }}
+          APP_DB_PASSWORD: ${{ secrets.APP_DB_PASSWORD }}
+          FLYWAY_DB_PASSWORD: ${{ secrets.FLYWAY_DB_PASSWORD }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          UNSPLASH_CHAVE_ACESSO: ${{ secrets.UNSPLASH_CHAVE_ACESSO }}
+        run: bash scripts/bootstrap-prod.sh
