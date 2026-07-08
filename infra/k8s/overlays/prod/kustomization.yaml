@@ -4,31 +4,31 @@ kind: Kustomization
 namespace: service-track
 
 resources:
-  - ../../base
-  - hpa.yaml
-  - service-lb.yaml
+- ../../base
+- hpa.yaml
+- service-lb.yaml
 
 # A pipeline (cd-app.yml) sobrescreve newName/newTag via `kustomize edit set image`
 # apontando para o ECR e o git-sha. O commit resultante dispara o sync do ArgoCD.
 images:
-  - name: servicetrack-api
-    newName: PLACEHOLDER_ECR_REPO
-    newTag: latest
+- name: servicetrack-api
+  newName: 123124496645.dkr.ecr.us-east-1.amazonaws.com/service-track-app
+  newTag: 213415585cd001aaa918fc5d454de017911df499
 
 replicas:
-  - name: service-track-app
-    count: 2
+- count: 2
+  name: service-track-app
 
 # Apenas config ESTATICA aqui. Valores dinamicos (DB_JDBC_URL, SERVICETRACK_API_BASE_URL)
 # vao para o ConfigMap `service-track-runtime`, criado por scripts/bootstrap-prod.sh
 # (fora do Git, pois dependem de outputs do Terraform e do hostname do LoadBalancer).
 configMapGenerator:
-  - name: service-track-config
-    literals:
-      - QUARKUS_PROFILE=prod
-      - QUARKUS_MAILER_FROM=no-reply@clausilva.com.br
-      - MP_JWT_VERIFY_PUBLICKEY_LOCATION=file:/keys/publicKey.pem
-      - SMALLRYE_JWT_SIGN_KEY_LOCATION=file:/keys/privateKey.pem
+- literals:
+  - QUARKUS_PROFILE=prod
+  - QUARKUS_MAILER_FROM=no-reply@clausilva.com.br
+  - MP_JWT_VERIFY_PUBLICKEY_LOCATION=file:/keys/publicKey.pem
+  - SMALLRYE_JWT_SIGN_KEY_LOCATION=file:/keys/privateKey.pem
+  name: service-track-config
 
 generatorOptions:
   disableNameSuffixHash: true
