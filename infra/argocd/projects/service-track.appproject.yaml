@@ -8,7 +8,7 @@ metadata:
 spec:
   description: Ordens de serviço - API ServiceTrack
   sourceRepos:
-    - https://github.com/Claudio712005/ServiceTrack-API.git
+    - https://github.com/Claudio712005/service-track-api.git
   destinations:
     - server: https://kubernetes.default.svc
       namespace: service-track

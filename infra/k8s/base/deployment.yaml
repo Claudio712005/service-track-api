@@ -38,16 +38,19 @@ spec:
               mountPath: /keys
               readOnly: true
           startupProbe:
-            tcpSocket:
+            httpGet:
+              path: /q/health/started
               port: 8080
             failureThreshold: 30
             periodSeconds: 5
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /q/health/ready
               port: 8080
             periodSeconds: 10
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /q/health/live
               port: 8080
             periodSeconds: 15
           resources:

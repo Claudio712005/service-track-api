@@ -8,7 +8,7 @@ metadata:
 spec:
   project: service-track
   source:
-    repoURL: https://github.com/Claudio712005/ServiceTrack-API.git
+    repoURL: https://github.com/Claudio712005/service-track-api.git
     targetRevision: fase-2
     path: infra/k8s/overlays/local
   destination:
