@@ -15,9 +15,7 @@ images:
   newName: 123124496645.dkr.ecr.us-east-1.amazonaws.com/service-track-app
   newTag: 835320a0189423564c3ed93c840c52b90a932e81
 
-replicas:
-- count: 2
-  name: service-track-app
+# SEM `replicas:` de proposito — o HPA (min 2 / max 10) e o dono do scale em prod.
 
 # Apenas config ESTATICA aqui. Valores dinamicos (DB_JDBC_URL, SERVICETRACK_API_BASE_URL)
 # vao para o ConfigMap `service-track-runtime`, criado por scripts/bootstrap-prod.sh
