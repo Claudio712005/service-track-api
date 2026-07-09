@@ -32,3 +32,18 @@ spec:
       kind: HorizontalPodAutoscaler
   orphanedResources:
     warn: true
+    ignore:
+      - kind: Secret
+        name: service-track-secret
+      - kind: Secret
+        name: service-track-jwt
+      - kind: Secret
+        name: db-init-creds
+      - kind: ConfigMap
+        name: service-track-runtime
+      - kind: ConfigMap
+        name: db-init-script
+      - kind: ConfigMap
+        name: kube-root-ca.crt
+      - kind: Job
+        name: service-track-db-init

@@ -83,6 +83,10 @@ Para detalhes de cada camada, veja:
 | [ADR-003](docs/adr/ADR-003-kotlin.md) | Kotlin | Expressividade, null safety, value classes |
 | [ADR-004](docs/adr/ADR-004-quarkus.md) | Quarkus | Startup rápido, suporte nativo a CDI/MicroProfile |
 | [ADR-005](docs/adr/ADR-005-autenticacao-jwt.md) | JWT RS256 | Stateless, integrado via SmallRye JWT |
+| [ADR-015](docs/adr/ADR-015-kubernetes-eks.md) | Kubernetes no EKS | HPA, multi-AZ, alta disponibilidade |
+| [ADR-016](docs/adr/ADR-016-terraform-iac.md) | Terraform (IaC) | Ambiente reproduzível: VPC, EKS, ECR, RDS, ArgoCD |
+| [ADR-017](docs/adr/ADR-017-gitops-argocd.md) | GitOps com ArgoCD | Git como fonte de verdade, auto-sync e self-heal |
+| [ADR-018](docs/adr/ADR-018-bootstrap-scripts-operacionais.md) | Bootstrap de segredos | Segredos/config dinâmica fora do Git, idempotente |
 
 ---
 
@@ -246,7 +250,10 @@ Medida por módulo com JaCoCo e consolidada no SonarCloud. Exclusões: DTOs, ent
 
 | Item | Status |
 |---|---|
-| Infraestrutura como código (Terraform) | **Não implementado** |
-| Pipeline de CD / deploy automatizado | **Não implementado** |
-| Notificações ao cliente (e-mail/SMS) | Possível evolução |
+| Infraestrutura como código (Terraform) | **Implementado** — [ADR-016](docs/adr/ADR-016-terraform-iac.md), `infra/terraform/` |
+| Kubernetes (EKS) + HPA multi-AZ | **Implementado** — [ADR-015](docs/adr/ADR-015-kubernetes-eks.md), `infra/k8s/` |
+| Pipeline de CD / deploy automatizado (GitOps) | **Implementado** — [ADR-017](docs/adr/ADR-017-gitops-argocd.md), [GITOPS_AWS.md](infra/GITOPS_AWS.md) |
+| Notificações ao cliente (e-mail) | **Implementado** — [ADR-009](docs/adr/ADR-009-notificacoes-email.md), [ADR-014](docs/adr/ADR-014-aprovacao-orcamento-magic-link.md) |
+| External Secrets / Sealed Secrets | Possível evolução ([ADR-018](docs/adr/ADR-018-bootstrap-scripts-operacionais.md)) |
+| Cluster Autoscaler / Karpenter | Possível evolução |
 | Migração para microsserviços | Possível evolução pós-validação do monólito |
