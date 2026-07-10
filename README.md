@@ -43,6 +43,9 @@ geração do orçamento (`POST /ordem-servico/{id}/orcamento`).
 | Criptografia de senha | BCrypt |
 | Build | Gradle Kotlin DSL (multi-module) |
 | Containers | Docker + Docker Compose |
+| Orquestração (prod) | Kubernetes — Amazon EKS 1.30, multi-AZ + HPA |
+| IaC | Terraform (VPC, EKS, ECR, RDS, ArgoCD) — state em S3 |
+| CD / GitOps | ArgoCD (auto-sync, self-heal) + GitHub Actions |
 | Qualidade | JaCoCo + SonarCloud |
 | Segurança (SAST) | Semgrep |
 | CI | GitHub Actions |
@@ -194,12 +197,21 @@ http://localhost:8080/q/swagger-ui
 
 ```
 ServiceTrack-API/
+├── .github/workflows/     # ci, security, cd-app (GitOps), infra (Terraform), bootstrap-prod
 ├── docs/
-│   ├── adr/               # Architecture Decision Records
-│   ├── rfc/               # Request for Comments
+│   ├── adr/               # Architecture Decision Records (001–018)
+│   ├── rfc/               # Request for Comments (001–018)
 │   ├── c4/                # Diagramas C4 (context, container, components, code)
-│   ├── mvp-1/             # Domain Storytelling e Event Storming
+│   ├── mvp-1/ mvp-2/      # Enunciados e DDD (Domain Storytelling, Event Storming)
 │   └── srs.md             # Software Requirements Specification
+├── infra/
+│   ├── terraform/         # IaC: VPC, EKS, ECR, RDS, ArgoCD, metrics-server
+│   ├── k8s/               # base/ + overlays/{local,prod} (Kustomize) + db-init-job
+│   ├── argocd/            # bootstrap, AppProject, Applications (local e prod)
+│   ├── kind/              # cluster local de validação
+│   ├── GITOPS_AWS.md      # runbook de produção (EKS + ArgoCD)
+│   └── GITOPS_LOCAL.md    # runbook local (kind + ArgoCD)
+├── scripts/               # bootstrap-prod, tf, db-seed, demo-hpa, aws-student-login
 └── software/
     └── service-track-api/
         ├── _domain/       # Regras de negócio puras
@@ -237,6 +249,61 @@ Pipeline em `.github/workflows/security.yml`. Executa nos mesmos branches do CI.
 - Gera relatórios JSON e SARIF
 - **Bloqueia o pipeline** se houver findings Critical/High
 - SARIF enviado ao GitHub Code Scanning (Security tab)
+
+---
+
+## Fase 2 — Infraestrutura, Deploy e GitOps
+
+Evolução da Fase 1 para atender escalabilidade dinâmica, alta disponibilidade e deploy
+automatizado ([enunciado](docs/mvp-2/CASE.md)). Decisões completas em
+[ADR-015](docs/adr/ADR-015-kubernetes-eks.md) (EKS), [ADR-016](docs/adr/ADR-016-terraform-iac.md)
+(Terraform), [ADR-017](docs/adr/ADR-017-gitops-argocd.md) (ArgoCD) e
+[ADR-018](docs/adr/ADR-018-bootstrap-scripts-operacionais.md) (bootstrap/scripts).
+
+### Componentes da infraestrutura
+
+| Componente | Detalhe |
+|---|---|
+| VPC | `10.0.0.0/16`, 2 AZs (us-east-1a/b), subnets públicas + privadas, NAT único |
+| EKS 1.30 | node group `t3.medium` (2 nós, um por AZ) com `LabRole` |
+| Aplicação | Deployment `service-track-app` (2–10 réplicas via **HPA** CPU 70%/mem 80%), probes `/q/health/*`, réplicas espalhadas por AZ |
+| Banco | RDS PostgreSQL 16 privado (acesso só do SG do cluster), roles `flyway_user`/`app_user` |
+| Registro | ECR `service-track-app` (tag = git-sha, scan on push) |
+| GitOps | ArgoCD (chart 7.7.0 via Terraform/Helm), auto-sync + self-heal do overlay `prod` |
+| Métricas | metrics-server (requisito do HPA) |
+
+### Fluxo de deploy (GitOps)
+
+```
+push na main ──► CD (cd-app.yml): build ──► push ECR ──► bump da tag no overlay (commit [skip ci])
+                                                                    │
+                                                                    ▼
+                                          ArgoCD (in-cluster) detecta o commit e sincroniza
+                                                                    │
+                                                                    ▼
+                                    EKS: rolling update · HPA mantém 2–10 réplicas por carga
+```
+
+Pipelines: `infra.yml` (Terraform plan/apply/destroy — manual), `bootstrap-prod.yml`
+(segredos + roles no RDS + registro no ArgoCD — manual, 1x após o apply) e `cd-app.yml`
+(contínuo). Ordem da primeira subida: **Infra → Bootstrap → push/CD**.
+
+### Instruções
+
+| Cenário | Guia |
+|---|---|
+| Execução local (docker-compose ou quarkusDev) | [Como rodar o projeto](#como-rodar-o-projeto) |
+| Kubernetes local (kind + ArgoCD) | [infra/GITOPS_LOCAL.md](infra/GITOPS_LOCAL.md) |
+| Provisionamento AWS + deploy em produção | [infra/GITOPS_AWS.md](infra/GITOPS_AWS.md) |
+| Demonstração de escalabilidade (HPA) | `scripts/demo-hpa.sh` (carga autenticada + `watch kubectl get hpa,pods`) |
+
+### Diagramas
+
+Prompts versionados para geração/atualização dos desenhos:
+[infraestrutura AWS](infra/PROMPT_DIAGRAMA_INFRAESTRUTURA.md) ·
+[deployment C4](infra/PROMPT_DIAGRAMA_DEPLOYMENT.md) ·
+[esteira CI/CD](infra/PROMPT_DIAGRAMA_ESTEIRA.md).
+Artefatos em `docs/infra/` e `infra/diagrams/`.
 
 ---
 
