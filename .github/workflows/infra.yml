@@ -50,6 +50,16 @@ jobs:
         if: inputs.action == 'apply'
         run: terraform apply -input=false -auto-approve
 
+      - name: Limpar LoadBalancers/ENIs orfaos (pre-destroy)
+        if: inputs.action == 'destroy'
+        working-directory: ${{ github.workspace }}
+        env:
+          CLUSTER_NAME: servicetrack-dev
+          AWS_REGION: ${{ env.AWS_REGION }}
+        run: |
+          chmod +x scripts/aws-lb-cleanup.sh
+          scripts/aws-lb-cleanup.sh
+
       - name: Destroy
         if: inputs.action == 'destroy'
         run: terraform destroy -input=false -auto-approve
