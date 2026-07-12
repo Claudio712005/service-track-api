@@ -82,8 +82,6 @@ jobs:
       - name: Setup kubectl
         uses: azure/setup-kubectl@v4
 
-      # Garante que o app existe no ArgoCD mesmo que o Bootstrap Prod ainda nao tenha rodado.
-      # Idempotente: kubectl apply nao muda nada se ja estiver registrado.
       - name: Registrar AppProject + Application no ArgoCD
         run: |
           aws eks update-kubeconfig --name "$CLUSTER_NAME" --region "$AWS_REGION"

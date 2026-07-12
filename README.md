@@ -260,6 +260,44 @@ automatizado ([enunciado](docs/mvp-2/CASE.md)). Decisões completas em
 (Terraform), [ADR-017](docs/adr/ADR-017-gitops-argocd.md) (ArgoCD) e
 [ADR-018](docs/adr/ADR-018-bootstrap-scripts-operacionais.md) (bootstrap/scripts).
 
+### Descrição da solução e objetivos
+
+Com o aumento de demanda e a expansão para novas unidades, a oficina precisava de um ambiente
+resiliente e elástico. Esta fase evolui a API da Fase 1 sem alterar o domínio, focando em
+**infraestrutura, automação e escalabilidade**:
+
+- **Escalabilidade dinâmica** — HPA escala a aplicação de 2 a 10 réplicas conforme CPU/memória,
+  suportando picos de ordens de serviço sem intervenção manual.
+- **Alta disponibilidade** — cluster EKS multi-AZ (2 zonas), réplicas espalhadas por AZ e RDS
+  gerenciado; a queda de uma zona não derruba o serviço.
+- **Provisionamento automatizado** — toda a infraestrutura é descrita em Terraform (IaC),
+  reproduzível e versionada.
+- **Deploy automatizado (GitOps)** — o Git é a fonte da verdade; ArgoCD sincroniza o cluster a
+  cada commit, com rolling update e self-heal.
+- **Qualidade sustentável** — arquitetura hexagonal, testes automatizados (unitários e de
+  integração), cobertura no SonarCloud e SAST com Semgrep na esteira.
+
+### Desenho da arquitetura proposta
+
+**Componentes da aplicação** — monólito modular em Kotlin/Quarkus, três módulos Gradle alinhados
+à Arquitetura Hexagonal (`_domain → _application → _infrastructure`, ver
+[Arquitetura](#arquitetura)). Exposta via REST (contract-first OpenAPI), autenticação JWT RS256,
+persistência em PostgreSQL e notificações por e-mail (Resend). Diagramas C4 em
+[docs/c4/](docs/c4/) (contexto, container e componentes por módulo).
+
+**Infraestrutura provisionada** — VPC multi-AZ na AWS, cluster EKS com a aplicação em pods
+gerenciados por HPA, RDS PostgreSQL privado, imagens no ECR e ArgoCD no cluster.
+
+![Infraestrutura AWS](docs/infra/aws-infra.drawio.png)
+
+**Deployment (C4)** — distribuição dos artefatos em execução no cluster.
+
+![Deployment](docs/infra/deployment.png)
+
+**Fluxo de deploy (esteira CI/CD + GitOps)**
+
+![Esteira CI/CD](docs/infra/ci-cd.png)
+
 ### Componentes da infraestrutura
 
 | Componente | Detalhe |
@@ -288,7 +326,9 @@ Pipelines: `infra.yml` (Terraform plan/apply/destroy — manual), `bootstrap-pro
 (segredos + roles no RDS + registro no ArgoCD — manual, 1x após o apply) e `cd-app.yml`
 (contínuo). Ordem da primeira subida: **Infra → Bootstrap → push/CD**.
 
-### Instruções
+### Instruções de execução
+
+Resumo por cenário; os runbooks completos trazem pré-requisitos e troubleshooting.
 
 | Cenário | Guia |
 |---|---|
@@ -297,13 +337,85 @@ Pipelines: `infra.yml` (Terraform plan/apply/destroy — manual), `bootstrap-pro
 | Provisionamento AWS + deploy em produção | [infra/GITOPS_AWS.md](infra/GITOPS_AWS.md) |
 | Demonstração de escalabilidade (HPA) | `scripts/demo-hpa.sh` (carga autenticada + `watch kubectl get hpa,pods`) |
 
+#### 1. Execução local
+
+Ver [Como rodar o projeto](#como-rodar-o-projeto): `docker compose up --build` (com Postgres) ou
+`./gradlew :_infrastructure:quarkusDev` (H2 in-memory). Swagger em `http://localhost:8080/q/swagger-ui`.
+
+#### 2. Provisionamento da infraestrutura com Terraform
+
+Provisiona VPC, EKS, RDS, ECR e ArgoCD. State remoto em S3. Requer AWS CLI autenticada
+(`scripts/aws-student-login.sh`). Detalhes em [infra/GITOPS_AWS.md](infra/GITOPS_AWS.md).
+
+```bash
+# scripts/tf.sh encapsula `terraform -chdir=infra/terraform` com o profile aws-student
+./scripts/tf.sh init
+./scripts/tf.sh plan
+./scripts/tf.sh apply        # cria toda a infra (~15 min p/ o EKS)
+
+# destruir o ambiente
+./scripts/tf.sh destroy
+```
+
+Recursos criados (documentados em `infra/terraform/*.tf`): `vpc.tf`, `eks.tf`, `rds.tf`,
+`ecr.tf`, `argocd.tf`. Variáveis em `variables.tf` (exemplo em `terraform.tfvars.example`).
+
+#### 3. Deploy em Kubernetes
+
+Manifestos em `infra/k8s/` (Kustomize: `base/` + `overlays/{local,prod}`). Em produção o deploy
+é **contínuo via GitOps** — não se aplica YAML na mão; o ArgoCD sincroniza o overlay `prod`.
+**Ordem da primeira subida: Infra → Bootstrap → CD.**
+
+```bash
+# ordem obrigatoria na primeira subida:
+# 1) Infra (acima)   2) Bootstrap   3) CD (push na main)
+
+# 2) Bootstrap (1x): cria Secrets, ConfigMaps, roles no RDS e registra o app no ArgoCD
+#    via Actions → "Bootstrap Prod" → Run workflow, ou localmente:
+./scripts/bootstrap-prod.sh
+
+# 3) Deploy contínuo: qualquer push na main dispara cd-app.yml (build → ECR → bump → ArgoCD)
+
+# inspecionar o cluster:
+kubectl -n service-track get deploy,pods,svc,hpa
+kubectl -n argocd get application service-track-prod
+
+# render local dos manifestos (sem aplicar), para revisão:
+kubectl kustomize infra/k8s/overlays/prod
+```
+
+> Sem o Bootstrap os pods não sobem (faltam os Secrets/ConfigMap de runtime e as roles do RDS).
+
+#### Demonstração de escalabilidade (HPA)
+
+```bash
+# terminal A — acompanha o scale em tempo real
+watch -n2 'kubectl -n service-track get hpa,pods'
+
+# terminal B — gera carga autenticada (usa `hey` por baixo)
+API_URL="http://<elb-da-api>" EMAIL="<email>" SENHA="<senha>" ./scripts/demo-hpa.sh 180 60
+```
+
 ### Diagramas
 
-Prompts versionados para geração/atualização dos desenhos:
+Artefatos renderizados em [docs/infra/](docs/infra/): infraestrutura AWS
+(`aws-infra.drawio.png`), deployment C4 (`deployment.png`) e esteira CI/CD (`ci-cd.png`).
+Diagramas C4 da aplicação (contexto/container/componentes) em [docs/c4/](docs/c4/).
+Prompts versionados para regeneração dos desenhos:
 [infraestrutura AWS](infra/PROMPT_DIAGRAMA_INFRAESTRUTURA.md) ·
 [deployment C4](infra/PROMPT_DIAGRAMA_DEPLOYMENT.md) ·
 [esteira CI/CD](infra/PROMPT_DIAGRAMA_ESTEIRA.md).
-Artefatos em `docs/infra/` e `infra/diagrams/`.
+
+### Entregáveis
+
+- **Collection completa das APIs (Postman):**
+  [service-track.postman_collection.json](software/service-track-api/service-track.postman_collection.json)
+  — importar no Postman; inclui todo o fluxo da OS, scripts de autenticação e variáveis com defaults.
+  Alternativa viva: **Swagger UI** em `http://<elb-da-api>/q/swagger-ui` (local:
+  `http://localhost:8080/q/swagger-ui`). Contratos OpenAPI versionados em
+  `software/service-track-api/openApi/`.
+- **Vídeo demonstrativo (≤15 min):** https://www.youtube.com/watch?v=EXMPSr7ylxg
+  — demonstra deploy, execução do CI/CD, consumo das APIs e escalabilidade automática (HPA).
 
 ---
 
