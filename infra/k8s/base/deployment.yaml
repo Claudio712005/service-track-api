@@ -7,8 +7,6 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  # replicas omitido de proposito: em prod quem gerencia e o HPA (min 2 / max 10).
-  # Fixar aqui faria o ArgoCD (selfHeal) brigar com o HPA a cada scale.
   progressDeadlineSeconds: 600
   revisionHistoryLimit: 2
   selector:
@@ -19,9 +17,6 @@ spec:
       labels:
         app: service-track-app
     spec:
-      # Espalha as replicas entre as AZs (us-east-1a/1b) para alta disponibilidade:
-      # se uma zona cair, a outra segue servindo. ScheduleAnyway = preferencia,
-      # nao bloqueia o scheduling se uma zona estiver sem capacidade.
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: topology.kubernetes.io/zone
@@ -35,11 +30,8 @@ spec:
           ports:
             - containerPort: 8080
           envFrom:
-            # Config estatica versionada no Git (gerenciada pelo ArgoCD).
             - configMapRef:
                 name: service-track-config
-            # Config dinamica (DB_JDBC_URL, SERVICETRACK_API_BASE_URL) provisionada
-            # por scripts/bootstrap-prod.sh — fora do Git.
             - configMapRef:
                 name: service-track-runtime
             - secretRef:

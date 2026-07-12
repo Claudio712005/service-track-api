@@ -96,7 +96,7 @@
   ],
   "item": [
     {
-      "name": "🔐 Autenticação",
+      "name": "Autenticação",
       "description": "Login gera JWT. Os scripts salvam `tokenMecanico`/`tokenCliente` e os IDs automaticamente. Rode **login mecânico** e **login cliente** logo após criar os usuários.",
       "item": [
         {
@@ -254,7 +254,7 @@
       ]
     },
     {
-      "name": "👤 Clientes",
+      "name": "Clientes",
       "description": "CRUD de clientes. **criar cliente** gera e-mail/CPF únicos (pré-script) e salva `clienteId`.",
       "item": [
         {
@@ -454,7 +454,7 @@
       ]
     },
     {
-      "name": "🔧 Mecânicos",
+      "name": "Mecânicos",
       "description": "CRUD de mecânicos. **criar mecânico** gera e-mail/CPF únicos e salva `mecanicoId`.",
       "item": [
         {
@@ -633,7 +633,7 @@
       ]
     },
     {
-      "name": "🚗 Veículos",
+      "name": "Veículos",
       "description": "CRUD de veículos. **criar veículo** gera placa única e usa `clienteId` como proprietário; salva `veiculoId`.",
       "item": [
         {
@@ -900,7 +900,7 @@
       ]
     },
     {
-      "name": "🛠️ Serviços",
+      "name": "Serviços",
       "description": "Catálogo de serviços da oficina. **criar serviço** salva `servicoId`.",
       "item": [
         {
@@ -1145,7 +1145,7 @@
       ]
     },
     {
-      "name": "📦 Insumos",
+      "name": "Insumos",
       "description": "Estoque de peças/insumos. **criar insumo** salva `insumoId`.",
       "item": [
         {
@@ -1359,7 +1359,7 @@
       ]
     },
     {
-      "name": "📚 Catálogo",
+      "name": "Catálogo",
       "description": "Consultas de catálogo (serviços e insumos disponíveis).",
       "item": [
         {
@@ -1425,7 +1425,7 @@
       ]
     },
     {
-      "name": "📋 Ordem de Serviço",
+      "name": "Ordem de Serviço",
       "description": "Ciclo de vida da OS. Ordem sugerida: criar → diagnóstico → associar itens → gerar orçamento → aprovar/reprovar → concluir item → finalizar → entregar. Scripts salvam `ordemServicoId` e `itemServicoId`.",
       "item": [
         {
@@ -2065,7 +2065,7 @@
       ]
     },
     {
-      "name": "📧 Decisão por E-mail (Magic Link)",
+      "name": "Decisão por E-mail (Magic Link)",
       "description": "Endpoints públicos acionados pelo botão do e-mail. O token vem no link recebido pelo cliente quando a OS entra em AGUARDANDO_APROVACAO — copie-o para a variável `decisaoToken`. Retornam página HTML.",
       "item": [
         {
@@ -2153,7 +2153,7 @@
       ]
     },
     {
-      "name": "🔔 Notificações",
+      "name": "Notificações",
       "description": "Notificações in-app do usuário autenticado.",
       "item": [
         {
@@ -2337,7 +2337,7 @@
       ]
     },
     {
-      "name": "📊 Dashboard",
+      "name": "Dashboard",
       "description": "Resumo do cliente: ordens ativas/recentes e estatísticas de veículos.",
       "item": [
         {

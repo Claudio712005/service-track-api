@@ -14,7 +14,6 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: service-track
-  # HPA gerencia replicas em prod; Argo nao deve considerar spec.replicas como drift.
   ignoreDifferences:
     - group: apps
       kind: Deployment
