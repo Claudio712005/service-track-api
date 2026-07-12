@@ -11,7 +11,7 @@ resources:
 images:
 - name: servicetrack-api
   newName: 123124496645.dkr.ecr.us-east-1.amazonaws.com/service-track-app
-  newTag: df81fe38ded20fc996d4e5ba08a6e12042f3a460
+  newTag: 564b927b6433d95528711b945c89afa53aaef3e0
 
 configMapGenerator:
 - literals:
