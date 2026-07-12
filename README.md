@@ -202,22 +202,25 @@ ServiceTrack-API/
 │   ├── adr/               # Architecture Decision Records (001–018)
 │   ├── rfc/               # Request for Comments (001–018)
 │   ├── c4/                # Diagramas C4 (context, container, components, code)
-│   ├── mvp-1/ mvp-2/      # Enunciados e DDD (Domain Storytelling, Event Storming)
+│   ├── infra/             # Desenhos renderizados: aws-infra, deployment, ci-cd (PNG/drawio)
+│   ├── mvp-1/ mvp-2/      # Enunciados das fases + colinha do vídeo (mvp-2)
+│   ├── template/          # Templates de ADR/RFC
 │   └── srs.md             # Software Requirements Specification
 ├── infra/
 │   ├── terraform/         # IaC: VPC, EKS, ECR, RDS, ArgoCD, metrics-server
 │   ├── k8s/               # base/ + overlays/{local,prod} (Kustomize) + db-init-job
 │   ├── argocd/            # bootstrap, AppProject, Applications (local e prod)
-│   ├── kind/              # cluster local de validação
-│   ├── GITOPS_AWS.md      # runbook de produção (EKS + ArgoCD)
-│   └── GITOPS_LOCAL.md    # runbook local (kind + ArgoCD)
-├── scripts/               # bootstrap-prod, tf, db-seed, demo-hpa, aws-student-login
+│   └── kind/              # cluster local de validação
+├── scripts/               # aws-student-login, tf, bootstrap-prod, aws-lb-cleanup, db-seed, demo-hpa
 └── software/
     └── service-track-api/
-        ├── _domain/       # Regras de negócio puras
-        ├── _application/  # Casos de uso, ports, DTOs
+        ├── _domain/        # Regras de negócio puras
+        ├── _application/   # Casos de uso, ports, DTOs
         ├── _infrastructure/ # REST, persistência, JWT, adapters
-        ├── openApi/       # Especificações OpenAPI (contract-first)
+        ├── openApi/        # Especificações OpenAPI por recurso (contract-first)
+        ├── openapi.yaml    # Spec agregada (input do OpenAPI Generator)
+        ├── scripts/        # postgres-init (roles), security-scan, convert-to-sarif
+        ├── service-track.postman_collection.json  # Collection das APIs
         ├── docker-compose.yaml
         ├── Dockerfile
         └── build.gradle.kts
@@ -328,13 +331,14 @@ Pipelines: `infra.yml` (Terraform plan/apply/destroy — manual), `bootstrap-pro
 
 ### Instruções de execução
 
-Resumo por cenário; os runbooks completos trazem pré-requisitos e troubleshooting.
+Resumo por cenário; os passos detalhados de cada um estão nas subseções abaixo.
 
 | Cenário | Guia |
 |---|---|
-| Execução local (docker-compose ou quarkusDev) | [Como rodar o projeto](#como-rodar-o-projeto) |
-| Kubernetes local (kind + ArgoCD) | [infra/GITOPS_LOCAL.md](infra/GITOPS_LOCAL.md) |
-| Provisionamento AWS + deploy em produção | [infra/GITOPS_AWS.md](infra/GITOPS_AWS.md) |
+| Execução local (docker-compose ou quarkusDev) | [1. Execução local](#1-execução-local) |
+| Provisionamento AWS (Terraform) | [2. Provisionamento da infraestrutura com Terraform](#2-provisionamento-da-infraestrutura-com-terraform) |
+| Deploy em produção (K8s + GitOps) | [3. Deploy em Kubernetes](#3-deploy-em-kubernetes) · [ADR-017](docs/adr/ADR-017-gitops-argocd.md) |
+| Kubernetes local (kind + ArgoCD) | `infra/k8s/overlays/local/` + `infra/argocd/applications/service-track-local.application.yaml` |
 | Demonstração de escalabilidade (HPA) | `scripts/demo-hpa.sh` (carga autenticada + `watch kubectl get hpa,pods`) |
 
 #### 1. Execução local
@@ -345,7 +349,7 @@ Ver [Como rodar o projeto](#como-rodar-o-projeto): `docker compose up --build` (
 #### 2. Provisionamento da infraestrutura com Terraform
 
 Provisiona VPC, EKS, RDS, ECR e ArgoCD. State remoto em S3. Requer AWS CLI autenticada
-(`scripts/aws-student-login.sh`). Detalhes em [infra/GITOPS_AWS.md](infra/GITOPS_AWS.md).
+(`scripts/aws-student-login.sh`). Decisão em [ADR-016](docs/adr/ADR-016-terraform-iac.md).
 
 ```bash
 # scripts/tf.sh encapsula `terraform -chdir=infra/terraform` com o profile aws-student
@@ -399,12 +403,9 @@ API_URL="http://<elb-da-api>" EMAIL="<email>" SENHA="<senha>" ./scripts/demo-hpa
 ### Diagramas
 
 Artefatos renderizados em [docs/infra/](docs/infra/): infraestrutura AWS
-(`aws-infra.drawio.png`), deployment C4 (`deployment.png`) e esteira CI/CD (`ci-cd.png`).
+(`aws-infra.drawio.png`, fonte editável `aws-infra.drawio.xml`), deployment C4
+(`deployment.png`) e esteira CI/CD (`ci-cd.png`).
 Diagramas C4 da aplicação (contexto/container/componentes) em [docs/c4/](docs/c4/).
-Prompts versionados para regeneração dos desenhos:
-[infraestrutura AWS](infra/PROMPT_DIAGRAMA_INFRAESTRUTURA.md) ·
-[deployment C4](infra/PROMPT_DIAGRAMA_DEPLOYMENT.md) ·
-[esteira CI/CD](infra/PROMPT_DIAGRAMA_ESTEIRA.md).
 
 ### Entregáveis
 
@@ -431,7 +432,7 @@ Medida por módulo com JaCoCo e consolidada no SonarCloud. Exclusões: DTOs, ent
 |---|---|
 | Infraestrutura como código (Terraform) | **Implementado** — [ADR-016](docs/adr/ADR-016-terraform-iac.md), `infra/terraform/` |
 | Kubernetes (EKS) + HPA multi-AZ | **Implementado** — [ADR-015](docs/adr/ADR-015-kubernetes-eks.md), `infra/k8s/` |
-| Pipeline de CD / deploy automatizado (GitOps) | **Implementado** — [ADR-017](docs/adr/ADR-017-gitops-argocd.md), [GITOPS_AWS.md](infra/GITOPS_AWS.md) |
+| Pipeline de CD / deploy automatizado (GitOps) | **Implementado** — [ADR-017](docs/adr/ADR-017-gitops-argocd.md), `.github/workflows/cd-app.yml` |
 | Notificações ao cliente (e-mail) | **Implementado** — [ADR-009](docs/adr/ADR-009-notificacoes-email.md), [ADR-014](docs/adr/ADR-014-aprovacao-orcamento-magic-link.md) |
 | External Secrets / Sealed Secrets | Possível evolução ([ADR-018](docs/adr/ADR-018-bootstrap-scripts-operacionais.md)) |
 | Cluster Autoscaler / Karpenter | Possível evolução |
