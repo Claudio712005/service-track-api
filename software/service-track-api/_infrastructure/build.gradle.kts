@@ -88,6 +88,30 @@ tasks.named("compileKotlin") {
     inputs.dir(layout.buildDirectory.dir("generated/openapi"))
 }
 
+// Agrupa a spec contract-first (openapi.yaml + openApi/**) em um único arquivo e o publica
+// em src/main/resources/META-INF/openapi.yaml, servido pelo SmallRye OpenAPI e Swagger UI em runtime
+// (o gerador jaxrs-spec roda com useSwaggerAnnotations=false, então o document runtime seria vazio
+// sem este bundle).
+//
+// O arquivo empacotado é versionado no repositório, então o build NÃO depende de Node/npx.
+// Rode esta tarefa manualmente após alterar os contratos em openApi/** para regerar o bundle:
+//   ./gradlew :_infrastructure:bundleOpenApiSpec
+// Requer Node/npx disponível no PATH.
+tasks.register<Exec>("bundleOpenApiSpec") {
+    group = "openapi"
+    description = "Agrupa a spec OpenAPI (openapi.yaml + openApi/**) em src/main/resources/META-INF/openapi.yaml."
+    val inputSpec = rootProject.file("openapi.yaml")
+    val outputSpec = layout.projectDirectory.file("src/main/resources/META-INF/openapi.yaml")
+    inputs.file(inputSpec)
+    inputs.dir(rootProject.file("openApi"))
+    outputs.file(outputSpec)
+    // Usa um shell de login para herdar o PATH (npx costuma ficar fora do PATH do daemon do Gradle).
+    commandLine(
+        "sh", "-lc",
+        "npx --yes @redocly/cli@latest bundle '${inputSpec.absolutePath}' -o '${outputSpec.asFile.absolutePath}'",
+    )
+}
+
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
