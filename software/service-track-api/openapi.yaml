@@ -2,7 +2,54 @@ openapi: 3.0.3
 info:
   title: ServiceTrack API
   version: 1.0.0
-  description: API para gerenciamento do sistema de atendimento da oficina mecânica
+  description: |
+    API para gerenciamento do sistema de atendimento de uma oficina mecânica.
+
+    Cobre o ciclo completo de atendimento: cadastro de clientes, mecânicos e veículos,
+    catálogo de serviços e insumos, e o fluxo de vida das ordens de serviço
+    (recebimento → diagnóstico → orçamento → aprovação → execução → finalização → entrega),
+    além de notificações e do dashboard do cliente.
+
+    ## Autenticação
+    A maior parte dos endpoints exige um token JWT no cabeçalho `Authorization: Bearer <token>`.
+    Obtenha o token em `POST /autenticacao`. Endpoints públicos (cadastro de cliente/mecânico,
+    login e os links de decisão de orçamento por e-mail) estão marcados sem requisito de segurança.
+
+    ## Perfis de acesso
+    - **CLIENTE**: gerencia seus próprios dados, veículos, ordens de serviço e dashboard.
+    - **MECANICO**: gerencia catálogo, diagnósticos, orçamentos e execução das ordens.
+  contact:
+    name: Equipe ServiceTrack
+    email: clausilvaaraujo11@gmail.com
+  license:
+    name: Proprietária
+    url: https://github.com/Claudio712005/ServiceTrack-API
+
+servers:
+  - url: http://localhost:8080
+    description: Ambiente local de desenvolvimento
+
+tags:
+  - name: Login
+    description: Autenticação de usuários e redefinição de senha. Emite o token JWT usado nos demais endpoints.
+  - name: Clientes
+    description: Cadastro, consulta, atualização e desativação (soft delete) de clientes.
+  - name: Mecânicos
+    description: Cadastro e gestão de mecânicos, incluindo nível e valor/hora.
+  - name: Veículos
+    description: Cadastro e gestão de veículos dos clientes e sugestões de imagens.
+  - name: Servicos
+    description: Catálogo administrativo de serviços oferecidos pela oficina (gestão pelos mecânicos).
+  - name: Insumos
+    description: Catálogo administrativo de insumos/peças e controle de estoque (gestão pelos mecânicos).
+  - name: Catalogo
+    description: Consulta pública (autenticada) de serviços e insumos disponíveis para clientes e mecânicos.
+  - name: OrdemServico
+    description: Ciclo de vida completo das ordens de serviço, do recebimento à entrega.
+  - name: Notificacao
+    description: Notificações do usuário autenticado (listagem, leitura e contagem de não lidas).
+  - name: Dashboard
+    description: Visão consolidada do cliente com resumo, ordens ativas/recentes e veículos.
 
 components:
   securitySchemes:
@@ -10,6 +57,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      description: "Token JWT obtido em `POST /autenticacao`. Envie no cabeçalho como `Authorization: Bearer <token>`."
 
 paths:
   /clientes:
