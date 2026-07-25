@@ -14,21 +14,25 @@ post:
   responses:
     '201':
       description: Ordem de serviço criada com sucesso
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ordemServico/ResumoOrdemServicoResponse.yaml'
     '400':
       description: Dados inválidos
       content:
-      application/json:
-        schema:
-        $ref: '../components/schemas/ErroResponse.yaml'
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
     '401':
       description: Não autorizado
       content:
-      application/json:
-        schema:
-        $ref: '../components/schemas/ErroResponse.yaml'
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
     '403':
       description: Acesso restrito
       content:
-      application/json:
-        schema:
-        $ref: '../components/schemas/ErroResponse.yaml'
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErroResponse.yaml'
