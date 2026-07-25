@@ -9,15 +9,18 @@ get:
     - name: id
       in: path
       required: true
+      description: Identificador único do serviço (UUID).
       schema:
         type: string
+        example: "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
     - name: unidade
       in: query
       required: true
+      description: Unidade de tempo para expressar o resultado.
       schema:
         type: string
         enum: [SEGUNDOS, MINUTOS, HORAS, DIAS]
-      description: Unidade de tempo para expressar o resultado
+        example: HORAS
   responses:
     '200':
       description: Tempo médio calculado com sucesso
@@ -25,17 +28,26 @@ get:
         application/json:
           schema:
             type: object
+            description: Tempo médio de conclusão de um serviço.
             properties:
               servicoId:
                 type: string
+                description: ID do serviço consultado.
+                example: "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
               tempoMedio:
                 type: number
                 format: double
+                description: Tempo médio de conclusão na unidade solicitada.
+                example: 2.5
               unidade:
                 type: string
                 enum: [SEGUNDOS, MINUTOS, HORAS, DIAS]
+                description: Unidade de tempo do resultado.
+                example: HORAS
               totalAmostras:
                 type: integer
+                description: Quantidade de itens concluídos considerados no cálculo.
+                example: 18
     '400':
       description: Unidade de tempo inválida
       content:

@@ -9,15 +9,17 @@ get:
     - name: marca
       in: query
       required: true
+      description: Marca/fabricante do veículo usada na busca de imagens.
       schema:
         type: string
-      example: "Toyota"
+        example: "Toyota"
     - name: modelo
       in: query
       required: true
+      description: Modelo do veículo usado na busca de imagens.
       schema:
         type: string
-      example: "Corolla"
+        example: "Corolla"
   responses:
     '200':
       description: Lista de URLs de imagens sugeridas
