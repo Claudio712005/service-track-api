@@ -1,44 +1,56 @@
 type: object
+description: Representação de uma notificação do usuário.
 properties:
   id:
     type: string
     format: uuid
+    description: Identificador único da notificação.
     example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
   titulo:
     type: string
+    description: Título curto da notificação.
     example: "Ordem de Serviço Atualizada"
   assunto:
     type: string
+    description: Assunto/resumo da notificação.
     example: "Sua OS #1234 mudou de status"
   descricao:
     type: string
+    description: Conteúdo detalhado da notificação.
     example: "A ordem de serviço foi aprovada e está em execução."
   tipoNotificacao:
     type: string
     enum: [EMAIL]
+    description: Canal de envio da notificação.
     example: EMAIL
   tipoConteudo:
     type: string
     enum: [MUDANCA_STATUS_OS]
+    description: Tipo de conteúdo/evento que originou a notificação.
     example: MUDANCA_STATUS_OS
   statusEnvio:
     type: string
     enum: [PENDENTE, ENVIADA, FALHA_ENVIO]
+    description: Status do envio da notificação.
     example: ENVIADA
   visualizada:
     type: boolean
+    description: Indica se a notificação já foi visualizada pelo usuário.
     example: false
   dataCriacao:
     type: string
     format: date-time
+    description: Data e hora de criação da notificação.
     example: "2026-06-19T10:30:00"
   dataEnvio:
     type: string
     format: date-time
     nullable: true
+    description: Data e hora do envio; nulo se ainda não enviada.
     example: "2026-06-19T10:30:30"
   dataVisualizacao:
     type: string
     format: date-time
     nullable: true
+    description: Data e hora da visualização; nulo se ainda não visualizada.
     example: null

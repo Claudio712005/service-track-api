@@ -1,21 +1,27 @@
 type: object
+description: Dados retornados após autenticação bem-sucedida, incluindo o token JWT.
 properties:
   token:
     type: string
-    example: "mock-jwt-token-"
+    description: Token JWT a ser enviado no cabeçalho Authorization dos próximos requests.
+    example: "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c3VhcmlvIn0..."
   usuarioId:
     type: string
     format: uuid
+    description: Identificador único do usuário autenticado.
     example: "550e8400-e29b-41d4-a716-446655440000"
   nome:
     type: string
+    description: Nome completo do usuário autenticado.
     example: "Cláudio da Silva Araújo"
   email:
     type: string
     format: email
+    description: E-mail do usuário autenticado.
     example: "clausilvaaraujo11@gmail.com"
   roles:
     type: array
+    description: Perfis de acesso do usuário (ex. CLIENTE, MECANICO).
     items:
       type: string
     example: ["CLIENTE"]

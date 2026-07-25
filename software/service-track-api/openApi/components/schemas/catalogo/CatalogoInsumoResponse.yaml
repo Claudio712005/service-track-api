@@ -1,11 +1,16 @@
 type: object
+description: Insumo/peça disponível no catálogo (visão simplificada para consulta).
 properties:
   id:
     type: string
     format: uuid
+    description: Identificador único do insumo.
+    example: "9f1c2d3e-4b5a-6c7d-8e9f-0a1b2c3d4e5f"
   nome:
     type: string
+    description: Nome do insumo.
     example: "Óleo de Motor 5W30"
   descricao:
     type: string
+    description: Descrição do insumo.
     example: "Óleo sintético para motores a gasolina e flex"

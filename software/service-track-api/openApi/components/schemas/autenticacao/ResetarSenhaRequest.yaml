@@ -1,4 +1,5 @@
 type: object
+description: Dados para redefinição de senha do usuário autenticado.
 required:
   - senhaAtual
   - novaSenha
@@ -6,10 +7,16 @@ required:
 properties:
   senhaAtual:
     type: string
+    format: password
+    description: Senha atual do usuário, usada para confirmar a identidade.
     example: "Senha@123"
   novaSenha:
     type: string
+    format: password
+    description: Nova senha desejada. Deve atender à política de senha.
     example: "NovaSenha@456"
   confirmacaoNovaSenha:
     type: string
+    format: password
+    description: Repetição da nova senha; deve ser idêntica a novaSenha.
     example: "NovaSenha@456"

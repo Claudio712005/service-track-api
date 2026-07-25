@@ -1,21 +1,29 @@
 type: object
+description: Representação de um insumo, incluindo estoque atual.
 properties:
   id:
     type: string
     format: uuid
+    description: Identificador único do insumo.
+    example: "9f1c2d3e-4b5a-6c7d-8e9f-0a1b2c3d4e5f"
   nome:
     type: string
+    description: Nome do insumo.
     example: "Óleo de Motor 5W30"
   descricao:
     type: string
+    description: Descrição do insumo.
     example: "Óleo sintético para motores a gasolina e flex"
   custo:
     type: number
     format: double
+    description: Custo unitário do insumo.
     example: 35.00
   estoqueMinimo:
     type: integer
+    description: Quantidade mínima em estoque antes de alertar reposição.
     example: 5
   qtdEstoque:
     type: integer
+    description: Quantidade atualmente disponível em estoque.
     example: 20

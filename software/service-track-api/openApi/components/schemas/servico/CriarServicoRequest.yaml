@@ -1,15 +1,19 @@
 type: object
+description: Dados necessários para cadastrar um novo serviço no catálogo.
 required:
   - nomeServico
   - descricaoServico
 properties:
   nomeServico:
     type: string
+    description: Nome do serviço.
     example: "Troca de Óleo"
   descricaoServico:
     type: string
+    description: Descrição do serviço.
     example: "Substituição do óleo do motor e filtro"
   valorReferencia:
     type: number
     format: double
+    description: Valor de referência cobrado pelo serviço.
     example: 150.00

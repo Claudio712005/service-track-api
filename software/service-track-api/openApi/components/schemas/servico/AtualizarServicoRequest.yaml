@@ -1,12 +1,16 @@
 type: object
+description: Campos atualizáveis de um serviço. Todos são opcionais; apenas os enviados são alterados.
 properties:
   nomeServico:
     type: string
+    description: Nome do serviço.
     example: "Troca de Óleo Sintético"
   descricaoServico:
     type: string
+    description: Descrição do serviço.
     example: "Substituição completa do óleo e filtro"
   valorReferencia:
     type: number
     format: double
+    description: Valor de referência cobrado pelo serviço.
     example: 180.00

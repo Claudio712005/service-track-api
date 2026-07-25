@@ -1,26 +1,34 @@
 type: object
+description: Representação de um cliente retornada pela API.
 properties:
   id:
     type: string
     format: uuid
+    description: Identificador único do cliente.
     example: "550e8400-e29b-41d4-a716-446655440000"
   nome:
     type: string
+    description: Nome completo do cliente.
     example: "Cláudio da Silva Araújo"
   email:
     type: string
+    description: E-mail do cliente.
     example: "claudio@email.com"
   cpf:
     type: string
+    description: CPF do cliente.
     example: "54927170063"
   telefone:
     type: string
+    description: Telefone de contato do cliente.
     example: "11987654321"
   roles:
     type: array
+    description: Perfis de acesso do cliente.
     items:
       type: string
     example: ["CLIENTE"]
   ativo:
     type: boolean
+    description: Indica se o cliente está ativo (false após soft delete).
     example: true

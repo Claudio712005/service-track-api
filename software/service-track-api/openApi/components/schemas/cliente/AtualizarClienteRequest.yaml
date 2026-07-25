@@ -1,4 +1,5 @@
 type: object
+description: Dados atualizáveis de um cliente.
 required:
   - nome
   - email
@@ -6,11 +7,14 @@ required:
 properties:
   nome:
     type: string
+    description: Nome completo do cliente.
     example: "João da Silva"
   email:
     type: string
     format: email
+    description: E-mail de contato do cliente.
     example: "joao@email.com"
   telefone:
     type: string
+    description: Telefone de contato (somente dígitos, com DDD).
     example: "11999999999"

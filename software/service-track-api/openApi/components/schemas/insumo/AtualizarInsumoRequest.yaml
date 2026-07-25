@@ -1,16 +1,21 @@
 type: object
+description: Campos atualizáveis de um insumo. Todos são opcionais; apenas os enviados são alterados.
 properties:
   nome:
     type: string
+    description: Nome do insumo.
     example: "Óleo de Motor 10W40"
   descricao:
     type: string
+    description: Descrição do insumo.
     example: "Óleo mineral para motores mais antigos"
   custo:
     type: number
     format: double
+    description: Custo unitário do insumo.
     example: 28.00
   estoqueMinimo:
     type: integer
     minimum: 0
+    description: Quantidade mínima em estoque antes de alertar reposição.
     example: 3

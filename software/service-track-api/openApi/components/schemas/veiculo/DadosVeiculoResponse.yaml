@@ -1,30 +1,39 @@
 type: object
+description: Representação de um veículo retornada pela API.
 properties:
   id:
     type: string
     format: uuid
+    description: Identificador único do veículo.
     example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
   placa:
     type: string
+    description: Placa do veículo.
     example: "ABC1D23"
   modelo:
     type: string
+    description: Modelo do veículo.
     example: "Corolla"
   marca:
     type: string
+    description: Marca/fabricante do veículo.
     example: "Toyota"
   ano:
     type: integer
+    description: Ano de fabricação do veículo.
     example: 2022
   proprietarioId:
     type: string
     format: uuid
+    description: ID do cliente proprietário do veículo.
     example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
   urlImagem:
     type: string
     nullable: true
+    description: URL da imagem representativa do veículo.
     example: "https://images.unsplash.com/photo-abc123"
   codigoFipe:
     type: string
     nullable: true
+    description: Código FIPE do veículo, quando disponível.
     example: "006009-1"

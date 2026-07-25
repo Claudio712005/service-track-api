@@ -1,33 +1,43 @@
 type: object
+description: Representação de um mecânico retornada pela API.
 properties:
   usuarioId:
     type: string
     format: uuid
+    description: Identificador único do mecânico (usuário).
     example: "550e8400-e29b-41d4-a716-446655440000"
   nome:
     type: string
+    description: Nome completo do mecânico.
     example: "João da Silva"
   email:
     type: string
+    description: E-mail do mecânico.
     example: "joao@mecanica.com"
   cpf:
     type: string
+    description: CPF do mecânico.
     example: "54927170063"
   telefone:
     type: string
+    description: Telefone de contato do mecânico.
     example: "11987654321"
   nivel:
     type: string
+    description: Nível de senioridade do mecânico.
     example: "JUNIOR"
   valorHora:
     type: number
     format: double
+    description: Valor cobrado por hora de trabalho do mecânico.
     example: 50.00
   roles:
     type: array
+    description: Perfis de acesso do mecânico.
     items:
       type: string
     example: ["MECANICO"]
   ativo:
     type: boolean
+    description: Indica se o mecânico está ativo (false após soft delete).
     example: true
