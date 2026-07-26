@@ -1,11 +1,16 @@
 type: object
+description: Serviço disponível no catálogo (visão simplificada para consulta).
 properties:
   id:
     type: string
     format: uuid
+    description: Identificador único do serviço.
+    example: "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
   nomeServico:
     type: string
+    description: Nome do serviço.
     example: "Troca de Óleo"
   descricaoServico:
     type: string
+    description: Descrição do serviço.
     example: "Substituição do óleo do motor e filtro"

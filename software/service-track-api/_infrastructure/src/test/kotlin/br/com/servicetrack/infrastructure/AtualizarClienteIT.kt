@@ -1,5 +1,7 @@
 package br.com.servicetrack.infrastructure
 
+import br.com.servicetrack.infrastructure.support.TokenTeste
+
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
@@ -50,26 +52,10 @@ class AtualizarClienteIT {
                 """.trimIndent()
             )
             .post("/mecanicos")
-
-        val loginCliente = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "cliente.aut.atualizar.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath()
-
-        tokenCliente = loginCliente.getString("token")
-        clienteId = loginCliente.getString("usuarioId")
-
-        val loginMecanico = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "mecanico.aut.atualizar.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath()
-
-        tokenMecanico = loginMecanico.getString("token")
-        mecanicoId = loginMecanico.getString("usuarioId")
+        tokenCliente = TokenTeste.para("cliente.aut.atualizar.it@email.com")
+        clienteId = TokenTeste.idDe("cliente.aut.atualizar.it@email.com")
+        tokenMecanico = TokenTeste.para("mecanico.aut.atualizar.it@email.com")
+        mecanicoId = TokenTeste.idDe("mecanico.aut.atualizar.it@email.com")
     }
 
     @Test
@@ -89,16 +75,8 @@ class AtualizarClienteIT {
                 """.trimIndent()
             )
             .post("/clientes")
-
-        val tokenAlvo = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "cliente.alvo.upd.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath()
-
-        val alvoId = tokenAlvo.getString("usuarioId")
-        val tokenAlvoStr = tokenAlvo.getString("token")
+        val alvoId = TokenTeste.idDe("cliente.alvo.upd.it@email.com")
+        val tokenAlvoStr = TokenTeste.para("cliente.alvo.upd.it@email.com")
 
         given()
             .header("Authorization", "Bearer $tokenAlvoStr")
@@ -130,12 +108,7 @@ class AtualizarClienteIT {
             )
             .post("/clientes")
 
-        val alvoId = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "cliente.alvo.mec.upd.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath().getString("usuarioId")
+        val alvoId = TokenTeste.idDe("cliente.alvo.mec.upd.it@email.com")
 
         given()
             .header("Authorization", "Bearer $tokenMecanico")
@@ -180,12 +153,7 @@ class AtualizarClienteIT {
             )
             .post("/mecanicos")
 
-        val segundoMecanicoId = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "segundo.mecanico.atualizar.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath().getString("usuarioId")
+        val segundoMecanicoId = TokenTeste.idDe("segundo.mecanico.atualizar.it@email.com")
 
         given()
             .header("Authorization", "Bearer $tokenMecanico")

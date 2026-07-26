@@ -1,6 +1,7 @@
 type: object
+description: Dados opcionais para cancelamento de uma OS pelo cliente.
 properties:
   motivo:
     type: string
-    description: Motivo opcional do cancelamento
+    description: Motivo opcional do cancelamento.
     example: "Vou levar o veículo para outra oficina"

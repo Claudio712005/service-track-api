@@ -1,19 +1,25 @@
 type: object
+description: Campos atualizáveis de um veículo. Todos são opcionais; apenas os enviados são alterados.
 properties:
   placa:
     type: string
+    description: Placa do veículo (formato brasileiro, com ou sem hífen).
     example: "ABC1D23"
   modelo:
     type: string
+    description: Modelo do veículo.
     example: "Corolla"
   marca:
     type: string
+    description: Marca/fabricante do veículo.
     example: "Toyota"
   ano:
     type: integer
     minimum: 1886
+    description: Ano de fabricação do veículo.
     example: 2022
   urlImagem:
     type: string
     nullable: true
+    description: URL da imagem representativa do veículo.
     example: "https://images.unsplash.com/photo-abc123"

@@ -1,5 +1,7 @@
 package br.com.servicetrack.infrastructure
 
+import br.com.servicetrack.infrastructure.support.TokenTeste
+
 import br.com.servicetrack.application.ordemServico.ports.out.TokenDecisaoOrcamentoPort
 import br.com.servicetrack.domain.ordemServico.vo.OrdemServicoId
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
@@ -69,18 +71,8 @@ class OrdemServicoFluxoIT {
             .post("/mecanicos")
             .then()
             .statusCode(201)
-
-        val loginMecanico = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "$emailMecanico", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then()
-            .statusCode(200)
-            .extract()
-            .jsonPath()
-
-        tokenMecanico = loginMecanico.getString("token")
-        mecanicoId = loginMecanico.getString("usuarioId")
+        tokenMecanico = TokenTeste.para("$emailMecanico")
+        mecanicoId = TokenTeste.idDe("$emailMecanico")
 
         given()
             .contentType(ContentType.JSON)
@@ -99,18 +91,8 @@ class OrdemServicoFluxoIT {
             .post("/clientes")
             .then()
             .statusCode(201)
-
-        val loginCliente = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "$emailCliente", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then()
-            .statusCode(200)
-            .extract()
-            .jsonPath()
-
-        tokenCliente = loginCliente.getString("token")
-        clienteId = loginCliente.getString("usuarioId")
+        tokenCliente = TokenTeste.para("$emailCliente")
+        clienteId = TokenTeste.idDe("$emailCliente")
 
         veiculoId = given()
             .contentType(ContentType.JSON)

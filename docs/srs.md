@@ -281,3 +281,35 @@ Logs obrigatórios:
 * Movimentação de estoque
 * Aprovações
 * Ações de usuários
+
+#### Cobertura atual
+
+| Evento | Produtor | Situação |
+|---|---|---|
+| Criação, atualização e desativação de entidades | serviços de aplicação, via `AuditoriaProxy` | ativo |
+| Alterações de status da OS | serviços de ordem de serviço | ativo |
+| Aprovação e reprovação de orçamento | serviços de ordem de serviço | ativo |
+| Alteração de senha | `ResetarSenhaService` | ativo |
+| **Autenticação (`LOGIN`)** | — | **sem produtor** |
+
+#### Débito técnico previsto — auditoria de autenticação
+
+A partir da Fase 3 a autenticação passou a ser responsabilidade de uma função serverless
+externa a este repositório (`service-track-lambda`), decidido em `GLOBAL-ADR-004`. Com a
+remoção de `LoginService`, o evento `TipoEventoAuditoria.LOGIN` **deixou de ter produtor**:
+o sistema não registra mais quem autenticou e quando.
+
+A escolha foi deliberada — auditar o login na Lambda exigiria que ela passasse a escrever no
+banco, ampliando seu escopo além da leitura de credenciais e criando um segundo serviço com
+escrita sobre o mesmo schema.
+
+O enum `TipoEventoAuditoria.LOGIN` e `LOGOUT` foram mantidos, assim como
+`LoginAuditoriaStrategy` e `LogoutAuditoriaStrategy`, para que a reativação não exija
+remodelagem. Rastreado como `I-21` em `workspace/architecture/inconsistencias.md`.
+
+Caminhos possíveis, quando for endereçado:
+
+1. Lambda escreve na tabela de auditoria — revisa a premissa de mantê-la somente-leitura.
+2. Lambda notifica a API por endpoint interno — mantém a escrita concentrada, ao custo de
+   acoplamento síncrono no caminho de autenticação.
+3. Auditoria de acesso derivada dos logs do API Gateway — não usa a tabela de auditoria.

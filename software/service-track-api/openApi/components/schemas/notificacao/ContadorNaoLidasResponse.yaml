@@ -1,7 +1,8 @@
 type: object
+description: Contagem de notificações não lidas do usuário autenticado.
 properties:
   total:
     type: integer
     format: int64
+    description: Quantidade de notificações não lidas do usuário.
     example: 3
-    description: Quantidade de notificações não lidas do usuário

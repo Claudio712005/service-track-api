@@ -1,4 +1,5 @@
 type: object
+description: Dados necessários para cadastrar um novo insumo.
 required:
   - nome
   - descricao
@@ -6,21 +7,26 @@ required:
 properties:
   nome:
     type: string
+    description: Nome do insumo.
     example: "Óleo de Motor 5W30"
   descricao:
     type: string
+    description: Descrição do insumo.
     example: "Óleo sintético para motores a gasolina e flex"
   custo:
     type: number
     format: double
+    description: Custo unitário do insumo.
     example: 35.00
   qtdEstoqueInicial:
     type: integer
     minimum: 0
     default: 0
+    description: Quantidade inicial em estoque no cadastro.
     example: 10
   estoqueMinimo:
     type: integer
     minimum: 0
     default: 0
+    description: Quantidade mínima em estoque antes de alertar reposição.
     example: 5

@@ -1,19 +1,25 @@
 type: object
+description: Página de notificações do usuário (resultado paginado).
 properties:
   content:
     type: array
+    description: Notificações da página atual.
     items:
       $ref: './NotificacaoResponse.yaml'
   page:
     type: integer
+    description: Índice da página atual (base zero).
     example: 0
   size:
     type: integer
+    description: Quantidade de itens por página.
     example: 20
   total:
     type: integer
     format: int64
+    description: Total de notificações disponíveis.
     example: 5
   totalPages:
     type: integer
+    description: Número total de páginas.
     example: 1

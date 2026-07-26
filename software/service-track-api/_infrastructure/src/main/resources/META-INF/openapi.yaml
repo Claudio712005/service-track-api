@@ -1,0 +1,3521 @@
+openapi: 3.0.3
+info:
+  title: ServiceTrack API
+  version: 1.0.0
+  description: |
+    API para gerenciamento do sistema de atendimento de uma oficina mecânica.
+
+    Cobre o ciclo completo de atendimento: cadastro de clientes, mecânicos e veículos,
+    catálogo de serviços e insumos, e o fluxo de vida das ordens de serviço
+    (recebimento → diagnóstico → orçamento → aprovação → execução → finalização → entrega),
+    além de notificações e do dashboard do cliente.
+
+    ## Autenticação
+    A maior parte dos endpoints exige um token JWT no cabeçalho `Authorization: Bearer <token>`.
+    Obtenha o token em `POST /autenticacao`. Endpoints públicos (cadastro de cliente/mecânico,
+    login e os links de decisão de orçamento por e-mail) estão marcados sem requisito de segurança.
+
+    ## Perfis de acesso
+    - **CLIENTE**: gerencia seus próprios dados, veículos, ordens de serviço e dashboard.
+    - **MECANICO**: gerencia catálogo, diagnósticos, orçamentos e execução das ordens.
+  contact:
+    name: Equipe ServiceTrack
+    email: clausilvaaraujo11@gmail.com
+  license:
+    name: Proprietária
+    url: https://github.com/Claudio712005/ServiceTrack-API
+servers:
+  - url: http://localhost:8080
+    description: Ambiente local de desenvolvimento
+tags:
+  - name: Login
+    description: Autenticação de usuários e redefinição de senha. Emite o token JWT usado nos demais endpoints.
+  - name: Clientes
+    description: Cadastro, consulta, atualização e desativação (soft delete) de clientes.
+  - name: Mecânicos
+    description: Cadastro e gestão de mecânicos, incluindo nível e valor/hora.
+  - name: Veículos
+    description: Cadastro e gestão de veículos dos clientes e sugestões de imagens.
+  - name: Servicos
+    description: Catálogo administrativo de serviços oferecidos pela oficina (gestão pelos mecânicos).
+  - name: Insumos
+    description: Catálogo administrativo de insumos/peças e controle de estoque (gestão pelos mecânicos).
+  - name: Catalogo
+    description: Consulta pública (autenticada) de serviços e insumos disponíveis para clientes e mecânicos.
+  - name: OrdemServico
+    description: Ciclo de vida completo das ordens de serviço, do recebimento à entrega.
+  - name: Notificacao
+    description: Notificações do usuário autenticado (listagem, leitura e contagem de não lidas).
+  - name: Dashboard
+    description: Visão consolidada do cliente com resumo, ordens ativas/recentes e veículos.
+paths:
+  /clientes:
+    post:
+      summary: Realiza o cadastro de um novo cliente. Não requer autenticação.
+      operationId: criarCliente
+      tags:
+        - Clientes
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CadastrarClienteRequest'
+      responses:
+        '201':
+          description: Cliente cadastrado com sucesso
+          headers:
+            Location:
+              description: URI do recurso criado
+              schema:
+                type: string
+                example: /clientes/550e8400-e29b-41d4-a716-446655440000
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClienteResponse'
+        '400':
+          description: Dados de entrada inválidos (falha de validação ou política de senha)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '409':
+          description: Email ou CPF já cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '500':
+          description: Erro interno do servidor
+  /clientes/{id}:
+    get:
+      summary: Buscar cliente por ID. O próprio cliente ou um mecânico podem consultar.
+      operationId: buscarCliente
+      tags:
+        - Clientes
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do recurso (UUID).
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Cliente encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClienteResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Acesso não permitido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Cliente não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+    put:
+      summary: Atualizar dados de um usuário. Cliente atualiza apenas os próprios dados; Mecânico pode atualizar dados de clientes.
+      operationId: atualizarCliente
+      tags:
+        - Clientes
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do recurso (UUID).
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarClienteRequest'
+      responses:
+        '200':
+          description: Usuário atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClienteResponse'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Operação não permitida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+    delete:
+      summary: Desativar (soft delete) um usuário. Cliente desativa apenas a si mesmo; Mecânico pode desativar clientes.
+      operationId: desativarCliente
+      tags:
+        - Clientes
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do recurso (UUID).
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '204':
+          description: Usuário desativado com sucesso
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Operação não permitida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /mecanicos:
+    get:
+      summary: Listar todos os mecânicos. Requer autenticação.
+      operationId: listarMecanicos
+      tags:
+        - Mecânicos
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de mecânicos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MecanicoResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+    post:
+      summary: Realiza o cadastro de um novo mecânico. Não requer autenticação.
+      operationId: criarMecanico
+      tags:
+        - Mecânicos
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CadastrarMecanicoRequest'
+      responses:
+        '201':
+          description: Mecânico cadastrado com sucesso
+          headers:
+            Location:
+              description: URI do recurso criado
+              schema:
+                type: string
+                example: /mecanicos/550e8400-e29b-41d4-a716-446655440000
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MecanicoResponse'
+        '400':
+          description: Dados de entrada inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '409':
+          description: Email ou CPF já cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '500':
+          description: Erro interno do servidor
+  /mecanicos/{id}:
+    get:
+      summary: Buscar mecânico por ID. Requer autenticação.
+      operationId: buscarMecanico
+      tags:
+        - Mecânicos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do recurso (UUID).
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Mecânico encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MecanicoResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Mecânico não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+    put:
+      summary: Atualizar nível e valor/hora de um mecânico. Apenas mecânicos Sênior podem atualizar outros. Requer autenticação.
+      operationId: atualizarMecanico
+      tags:
+        - Mecânicos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do recurso (UUID).
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarMecanicoRequest'
+      responses:
+        '200':
+          description: Mecânico atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MecanicoResponse'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Operação não permitida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Mecânico não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /usuarios/senha:
+    put:
+      summary: Alterar a senha do usuário autenticado. Requer senha atual, nova senha e confirmação.
+      operationId: alterarSenha
+      tags:
+        - Usuario
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlterarSenhaRequest'
+      responses:
+        '204':
+          description: Senha alterada com sucesso
+        '400':
+          description: Dados de entrada inválidos (nova senha não atende à política ou confirmação diverge)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Senha atual incorreta ou usuário não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /veiculos:
+    get:
+      summary: Listar veículos. Clientes veem apenas os próprios; mecânicos veem todos.
+      operationId: listarVeiculos
+      tags:
+        - Veículos
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de veículos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DadosVeiculoResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+    post:
+      summary: Realizar o cadastro de um novo veículo. Requer autenticação.
+      operationId: criarVeiculo
+      tags:
+        - Veículos
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CadastrarVeiculoRequest'
+      responses:
+        '201':
+          description: Veículo criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DadosVeiculoResponse'
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Proprietário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /veiculos/{id}:
+    get:
+      summary: Buscar veículo por ID. Requer autenticação.
+      operationId: buscarVeiculo
+      tags:
+        - Veículos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do recurso (UUID).
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Veículo encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DadosVeiculoResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Veículo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+    put:
+      summary: Atualizar as informações de um veículo existente. Requer autenticação.
+      operationId: atualizarVeiculo
+      tags:
+        - Veículos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do recurso (UUID).
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarVeiculoRequest'
+      responses:
+        '200':
+          description: Veículo atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DadosVeiculoResponse'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Operação não permitida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Veículo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+    delete:
+      summary: Excluir um veículo existente. Requer autenticação.
+      operationId: excluirVeiculo
+      tags:
+        - Veículos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do recurso (UUID).
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '204':
+          description: Veículo excluído com sucesso
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Operação não permitida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Veículo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /veiculos/imagens/sugestoes:
+    get:
+      summary: Buscar sugestões de imagens para um veículo via Unsplash.
+      operationId: buscarSugestoesImagens
+      tags:
+        - Veículos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: marca
+          in: query
+          required: true
+          description: Marca/fabricante do veículo usada na busca de imagens.
+          schema:
+            type: string
+            example: Toyota
+        - name: modelo
+          in: query
+          required: true
+          description: Modelo do veículo usado na busca de imagens.
+          schema:
+            type: string
+            example: Corolla
+      responses:
+        '200':
+          description: Lista de URLs de imagens sugeridas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SugestoesImagensResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /servicos:
+    get:
+      summary: Listar todos os serviços. Exclusivo para mecânicos.
+      operationId: listarServicos
+      tags:
+        - Servicos
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de serviços
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServicoResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Acesso restrito a mecânicos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+    post:
+      summary: Criar um novo serviço. Exclusivo para mecânicos.
+      operationId: criarServico
+      tags:
+        - Servicos
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CriarServicoRequest'
+      responses:
+        '201':
+          description: Serviço criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicoResponse'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Acesso restrito a mecânicos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /servicos/{id}:
+    get:
+      summary: Buscar serviço por ID. Exclusivo para mecânicos.
+      operationId: buscarServico
+      tags:
+        - Servicos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do recurso (UUID).
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Serviço encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicoResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Serviço não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+    put:
+      summary: Atualizar serviço. Exclusivo para mecânicos.
+      operationId: atualizarServico
+      tags:
+        - Servicos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do recurso (UUID).
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarServicoRequest'
+      responses:
+        '200':
+          description: Serviço atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicoResponse'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Serviço não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+    delete:
+      summary: Remover serviço. Exclusivo para mecânicos.
+      operationId: removerServico
+      tags:
+        - Servicos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do recurso (UUID).
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '204':
+          description: Serviço removido com sucesso
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Serviço não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /servicos/{id}/tempo-medio-conclusao:
+    get:
+      summary: Retorna o tempo médio de conclusão de um serviço, calculado sobre todos os itens concluídos.
+      operationId: buscarTempoMedioConclusao
+      tags:
+        - Servicos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do serviço (UUID).
+          schema:
+            type: string
+            example: 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+        - name: unidade
+          in: query
+          required: true
+          description: Unidade de tempo para expressar o resultado.
+          schema:
+            type: string
+            enum:
+              - SEGUNDOS
+              - MINUTOS
+              - HORAS
+              - DIAS
+            example: HORAS
+      responses:
+        '200':
+          description: Tempo médio calculado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Tempo médio de conclusão de um serviço.
+                properties:
+                  servicoId:
+                    type: string
+                    description: ID do serviço consultado.
+                    example: 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+                  tempoMedio:
+                    type: number
+                    format: double
+                    description: Tempo médio de conclusão na unidade solicitada.
+                    example: 2.5
+                  unidade:
+                    type: string
+                    enum:
+                      - SEGUNDOS
+                      - MINUTOS
+                      - HORAS
+                      - DIAS
+                    description: Unidade de tempo do resultado.
+                    example: HORAS
+                  totalAmostras:
+                    type: integer
+                    description: Quantidade de itens concluídos considerados no cálculo.
+                    example: 18
+        '400':
+          description: Unidade de tempo inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Serviço não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /insumos:
+    get:
+      summary: Listar todos os insumos. Exclusivo para mecânicos.
+      operationId: listarInsumos
+      tags:
+        - Insumos
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de insumos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InsumoResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Acesso restrito a mecânicos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+    post:
+      summary: Criar um novo insumo. Exclusivo para mecânicos.
+      operationId: criarInsumo
+      tags:
+        - Insumos
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CriarInsumoRequest'
+      responses:
+        '201':
+          description: Insumo criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsumoResponse'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Acesso restrito a mecânicos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /insumos/{id}:
+    get:
+      summary: Buscar insumo por ID. Exclusivo para mecânicos.
+      operationId: buscarInsumo
+      tags:
+        - Insumos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do recurso (UUID).
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Insumo encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsumoResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Insumo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+    put:
+      summary: Atualizar insumo. Exclusivo para mecânicos.
+      operationId: atualizarInsumo
+      tags:
+        - Insumos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do recurso (UUID).
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarInsumoRequest'
+      responses:
+        '200':
+          description: Insumo atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsumoResponse'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Insumo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+    delete:
+      summary: Remover insumo. Exclusivo para mecânicos.
+      operationId: removerInsumo
+      tags:
+        - Insumos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do recurso (UUID).
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '204':
+          description: Insumo removido com sucesso
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Insumo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /catalogo/servicos:
+    get:
+      summary: Listar serviços disponíveis (nome e descrição). Acessível a clientes e mecânicos.
+      operationId: listarCatalogoServicos
+      tags:
+        - Catalogo
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Catálogo de serviços
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CatalogoServicoResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /catalogo/insumos:
+    get:
+      summary: Listar insumos disponíveis (nome e descrição). Acessível a clientes e mecânicos.
+      operationId: listarCatalogoInsumos
+      tags:
+        - Catalogo
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Catálogo de insumos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CatalogoInsumoResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /ordem-servico:
+    post:
+      summary: Criar uma nova ordem de serviço. Exclusivo para clientes.
+      operationId: criarOrdemServico
+      tags:
+        - OrdemServico
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrdemServicoRequest'
+      responses:
+        '201':
+          description: Ordem de serviço criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumoOrdemServicoResponse'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Acesso restrito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /ordem-servico/completa:
+    post:
+      summary: |
+        Abertura completa de OS pelo mecânico.
+        O mecânico abre a OS já com serviços e insumos diagnosticados; a OS nasce em EM_DIAGNOSTICO.
+        O mecânico vinculado é o próprio solicitante autenticado. Exclusivo para mecânicos.
+      operationId: criarOrdemServicoCompleta
+      tags:
+        - OrdemServico
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CriarOrdemServicoCompletaRequest'
+      responses:
+        '201':
+          description: Ordem de serviço criada em diagnóstico com itens associados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponse'
+        '400':
+          description: Dados inválidos, estoque insuficiente ou serviço/insumo inconsistente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Acesso restrito a mecânicos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Cliente, veículo, serviço ou insumo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /ordem-servico/lista:
+    get:
+      summary: Listar ordens de serviço com filtros e paginação. Clientes veem apenas as suas.
+      operationId: listarOrdensServico
+      tags:
+        - OrdemServico
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Filtra as ordens pelo status informado.
+          schema:
+            type: string
+            enum:
+              - RECEBIDA
+              - EM_DIAGNOSTICO
+              - AGUARDANDO_APROVACAO
+              - EM_EXECUCAO
+              - FINALIZADA
+              - ENTREGUE
+              - CANCELADA
+            example: EM_EXECUCAO
+        - name: clienteId
+          in: query
+          required: false
+          description: Ignorado se o solicitante for cliente (usa o próprio ID automaticamente).
+          schema:
+            type: string
+            format: uuid
+            example: 550e8400-e29b-41d4-a716-446655440000
+        - name: mecanicoId
+          in: query
+          required: false
+          description: Filtra as ordens pelo mecânico vinculado.
+          schema:
+            type: string
+            format: uuid
+            example: 550e8400-e29b-41d4-a716-446655440101
+        - name: page
+          in: query
+          required: false
+          description: Índice da página a retornar (base zero).
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+            example: 0
+        - name: size
+          in: query
+          required: false
+          description: Quantidade de itens por página.
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+            example: 20
+      responses:
+        '200':
+          description: Lista paginada de ordens de serviço
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageOrdemServicoResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /ordem-servico/{id}:
+    get:
+      summary: Buscar ordem de serviço por ID. Mecânico vê qualquer OS; cliente vê apenas as suas.
+      operationId: buscarOrdemServico
+      tags:
+        - OrdemServico
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Ordem de serviço encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Acesso restrito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: OS não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /ordem-servico/{id}/diagnostico:
+    post:
+      summary: Enviar OS para diagnóstico. Apenas o mecânico vinculado. Transição RECEBIDA → EM_DIAGNOSTICO.
+      operationId: enviarParaDiagnostico
+      tags:
+        - OrdemServico
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OS enviada para diagnóstico
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumoOrdemServicoResponse'
+        '400':
+          description: Transição de status inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Apenas o mecânico vinculado pode executar esta ação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: OS não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /ordem-servico/{id}/diagnostico/itens:
+    put:
+      summary: |
+        Associar serviços e insumos à OS durante o diagnóstico.
+        Endpoint único (serviços + insumos atomicamente): substitui todos os itens existentes.
+        Requer mínimo de 1 serviço e 1 insumo. Apenas mecânico vinculado.
+      operationId: associarItensOrdemServico
+      tags:
+        - OrdemServico
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssociarItensRequest'
+      responses:
+        '200':
+          description: Itens associados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponse'
+        '400':
+          description: Dados inválidos, estoque insuficiente ou OS em status incorreto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Apenas o mecânico vinculado pode associar itens
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: OS, serviço ou insumo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /ordem-servico/{id}/orcamento:
+    post:
+      summary: |
+        Gerar orçamento da OS. Apenas mecânico vinculado.
+        Pré-condições: status = EM_DIAGNOSTICO, ≥1 serviço e ≥1 insumo associados.
+        Efeitos: reserva insumos no estoque, transição EM_DIAGNOSTICO → AGUARDANDO_APROVACAO.
+      operationId: gerarOrcamento
+      tags:
+        - OrdemServico
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prazoEntrega
+              properties:
+                prazoEntrega:
+                  type: string
+                  format: date
+                  example: '2026-04-30'
+                  description: Data prevista para entrega da OS. Deve ser ≥ data atual.
+      responses:
+        '200':
+          description: Orçamento gerado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponse'
+        '400':
+          description: Pré-condições não satisfeitas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Apenas o mecânico vinculado pode gerar o orçamento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: OS não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /ordem-servico/orcamento/aprovacao:
+    get:
+      summary: |
+        Aprovar orçamento via link do e-mail (magic link). Endpoint público autorizado
+        exclusivamente pelo token dedicado, que só o cliente dono da OS recebe. Transição
+        AGUARDANDO_APROVACAO → EM_EXECUCAO. Retorna uma página HTML de confirmação.
+      operationId: aprovarOrcamentoViaEmail
+      tags:
+        - OrdemServico
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token dedicado de decisão de orçamento
+      responses:
+        '200':
+          description: Página HTML com o resultado da decisão
+          content:
+            text/html:
+              schema:
+                type: string
+        '400':
+          description: Link inválido, expirado ou orçamento em status incorreto
+          content:
+            text/html:
+              schema:
+                type: string
+  /ordem-servico/orcamento/reprovacao:
+    get:
+      summary: |
+        Reprovar orçamento via link do e-mail (magic link). Endpoint público autorizado
+        exclusivamente pelo token dedicado, que só o cliente dono da OS recebe. Transição
+        AGUARDANDO_APROVACAO → CANCELADA (com reposição de estoque). Retorna uma página HTML.
+      operationId: reprovarOrcamentoViaEmail
+      tags:
+        - OrdemServico
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token dedicado de decisão de orçamento
+      responses:
+        '200':
+          description: Página HTML com o resultado da decisão
+          content:
+            text/html:
+              schema:
+                type: string
+        '400':
+          description: Link inválido, expirado ou orçamento em status incorreto
+          content:
+            text/html:
+              schema:
+                type: string
+  /ordem-servico/{id}/orcamento/aprovacao:
+    post:
+      summary: Aprovar orçamento. Apenas o cliente titular da OS. Transição AGUARDANDO_APROVACAO → EM_EXECUCAO.
+      operationId: aprovarOrcamento
+      tags:
+        - OrdemServico
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Orçamento aprovado. OS em execução.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumoOrdemServicoResponse'
+        '400':
+          description: Status inválido para aprovação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Apenas o cliente titular pode aprovar o orçamento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: OS não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /ordem-servico/{id}/orcamento/reprovacao:
+    post:
+      summary: |
+        Reprovar orçamento. Apenas o cliente titular da OS.
+        Efeitos: devolve insumos reservados ao estoque. Transição AGUARDANDO_APROVACAO → CANCELADA.
+      operationId: reprovarOrcamento
+      tags:
+        - OrdemServico
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReprovarOrcamentoRequest'
+      responses:
+        '200':
+          description: Orçamento reprovado. OS cancelada e insumos devolvidos ao estoque.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumoOrdemServicoResponse'
+        '400':
+          description: Status inválido para reprovação ou motivo ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Apenas o cliente titular pode reprovar o orçamento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: OS não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /ordem-servico/{id}/cancelamento:
+    post:
+      summary: |
+        Cancelar OS. Apenas o cliente titular.
+        Permitido nos status: RECEBIDA, AGUARDANDO_APROVACAO.
+        Se AGUARDANDO_APROVACAO: insumos reservados são devolvidos ao estoque.
+      operationId: cancelarOrdemServico
+      tags:
+        - OrdemServico
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelarOsRequest'
+      responses:
+        '200':
+          description: OS cancelada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumoOrdemServicoResponse'
+        '400':
+          description: Status atual não permite cancelamento pelo cliente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Apenas o cliente titular pode cancelar a OS
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: OS não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /ordem-servico/{id}/finalizacao:
+    post:
+      summary: |
+        Finalizar OS. Apenas mecânicos.
+        Valida que todos os serviços da OS foram concluídos (feito = true).
+        Transição EM_EXECUCAO → FINALIZADA.
+      operationId: finalizarOrdemServico
+      tags:
+        - OrdemServico
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OS finalizada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumoOrdemServicoResponse'
+        '400':
+          description: Serviços pendentes ou transição de status inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Apenas mecânicos podem finalizar uma OS
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: OS não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /ordem-servico/{id}/entrega:
+    post:
+      summary: Registrar entrega da OS ao cliente. Apenas mecânicos. Transição FINALIZADA → ENTREGUE.
+      operationId: entregarOrdemServico
+      tags:
+        - OrdemServico
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OS entregue ao cliente com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumoOrdemServicoResponse'
+        '400':
+          description: Transição de status inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Apenas mecânicos podem registrar a entrega
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: OS não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /ordem-servico/{id}/itens/{itemId}/concluir:
+    patch:
+      summary: |
+        Marcar item de serviço como concluído. Apenas o mecânico vinculado à OS.
+        Se o mecânico ainda não estiver vinculado ao item, vincula automaticamente.
+        Requer OS em status EM_EXECUCAO.
+      operationId: concluirItemServico
+      tags:
+        - OrdemServico
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConcluirItemServicoRequest'
+      responses:
+        '200':
+          description: Item de serviço marcado como concluído
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdemServicoResponse'
+        '400':
+          description: Serviço já concluído, mecânico não vinculado, ou OS em status incorreto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Apenas o mecânico vinculado à OS pode concluir itens
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: OS ou item de serviço não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /dashboard/clientes/{id}:
+    get:
+      summary: Buscar dashboard completo do cliente por ID. Exclusivo para clientes.
+      description: |
+        Retorna um dashboard personalizado com resumo de atividades, ordens ativas, histórico recente e lista de veículos.
+        Este endpoint fornece uma visão geral completa do status de todas as ordens de serviço e veículos do cliente autenticado.
+
+        **Apenas clientes podem acessar seus próprios dashboards.**
+      operationId: buscarDashboardCliente
+      tags:
+        - Dashboard
+        - Clientes
+        - Veículos
+        - Ordens de Serviço
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do cliente (deve corresponder ao usuário autenticado)
+          schema:
+            type: string
+            format: uuid
+            example: 550e8400-e29b-41d4-a716-446655440001
+      responses:
+        '200':
+          description: Dashboard do cliente encontrado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Dashboard completo do cliente com todas as informações resumidas
+                properties:
+                  usuario_id:
+                    type: string
+                    format: uuid
+                    description: ID do cliente autenticado
+                    example: 550e8400-e29b-41d4-a716-446655440001
+                  usuario_nome:
+                    type: string
+                    maxLength: 255
+                    description: Nome completo do cliente
+                    example: João Silva
+                  resumo:
+                    $ref: '#/components/schemas/ResumoDashboardResponse'
+                  ordens_ativas:
+                    $ref: '#/components/schemas/OrdensAtivasDashboardResponse'
+                  ordens_recentes:
+                    $ref: '#/components/schemas/OrdensRecentesDashboardResponse'
+                  veiculos:
+                    $ref: '#/components/schemas/VeiculosDashboardResponse'
+                  data_atualizacao:
+                    type: string
+                    format: date-time
+                    description: Data da última atualização dos dados do dashboard
+                    example: '2024-11-16T15:45:30Z'
+                required:
+                  - usuario_id
+                  - resumo
+                  - ordens_ativas
+                  - ordens_recentes
+                  - veiculos
+                example:
+                  usuario_id: 550e8400-e29b-41d4-a716-446655440001
+                  usuario_nome: João Silva
+                  resumo:
+                    ordens_ativas: 3
+                    ordens_concluidas: 12
+                    ordens_canceladas: 1
+                    total_ordens: 16
+                    veiculos_cadastrados: 3
+                  ordens_ativas:
+                    - id: 550e8400-e29b-41d4-a716-446655880001
+                      motivo: Barulho estranho ao acelerar
+                      status: DIAGNOSTICO
+                      veiculo_placa: ABC-1234
+                      dias_em_andamento: 2
+                  ordens_recentes:
+                    - id: 550e8400-e29b-41d4-a716-446655880003
+                      motivo: Troca de pneus
+                      status: FINALIZADA
+                      veiculo_placa: DEF-5678
+                      valor_total: 520
+                  veiculos:
+                    - id: 660e8400-e29b-41d4-a716-446655550001
+                      placa: ABC-1234
+                      marca: Honda
+                      modelo: Civic
+                      ano: 2020
+                      total_ordens: 5
+                      total_gasto: 1850.5
+                  data_atualizacao: '2024-11-16T15:45:30Z'
+        '400':
+          description: ID de cliente inválido ou mal formatado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status_code: 400
+                mensagem: ID de cliente inválido
+        '401':
+          description: Não autorizado - Token inválido, expirado ou ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status_code: 401
+                mensagem: Não autorizado - Token inválido ou expirado
+        '403':
+          description: Acesso proibido - Cliente tentando acessar dashboard de outro cliente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status_code: 403
+                mensagem: Acesso proibido - Você pode acessar apenas seu próprio dashboard
+        '404':
+          description: Cliente não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status_code: 404
+                mensagem: Cliente não encontrado
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status_code: 500
+                mensagem: Erro interno ao processar dashboard
+  /notificacoes:
+    get:
+      summary: Listar notificações do usuário autenticado (paginado). Cada usuário vê apenas as suas.
+      operationId: listarNotificacoes
+      tags:
+        - Notificacao
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: visualizada
+          in: query
+          required: false
+          description: Filtrar por notificações lidas (true) ou não lidas (false).
+          schema:
+            type: boolean
+            example: false
+        - name: page
+          in: query
+          required: false
+          description: Índice da página a retornar (base zero).
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+            example: 0
+        - name: size
+          in: query
+          required: false
+          description: Quantidade de itens por página.
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+            example: 20
+      responses:
+        '200':
+          description: Lista paginada de notificações do usuário
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageNotificacaoResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /notificacoes/{id}:
+    get:
+      summary: Buscar notificação por ID. Usuário vê apenas as suas.
+      operationId: buscarNotificacao
+      tags:
+        - Notificacao
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Notificação encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificacaoResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Notificação não pertence ao usuário
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Notificação não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /notificacoes/{id}/visualizar:
+    patch:
+      summary: Marcar notificação como visualizada. Usuário só pode marcar as suas.
+      operationId: marcarNotificacaoVisualizada
+      tags:
+        - Notificacao
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Notificação marcada como visualizada
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '403':
+          description: Notificação não pertence ao usuário
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+        '404':
+          description: Notificação não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+  /notificacoes/nao-lidas/contagem:
+    get:
+      summary: Contar notificações não lidas do usuário autenticado.
+      operationId: contarNotificacoesNaoLidas
+      tags:
+        - Notificacao
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Contagem de notificações não lidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContadorNaoLidasResponse'
+        '401':
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'Token JWT emitido pelo serviço de autenticação (`POST /autenticacao`, AWS Lambda). Envie no cabeçalho como `Authorization: Bearer <token>`.'
+  schemas:
+    CadastrarClienteRequest:
+      type: object
+      description: Dados necessários para cadastrar um novo cliente.
+      required:
+        - nome
+        - email
+        - senha
+        - dataNascimento
+        - telefone
+        - cpf
+      properties:
+        nome:
+          type: string
+          minLength: 2
+          description: Nome completo do cliente.
+          example: Cláudio da Silva Araújo
+        email:
+          type: string
+          format: email
+          description: E-mail único do cliente, usado para login.
+          example: claudio@email.com
+        senha:
+          type: string
+          format: password
+          minLength: 6
+          description: Senha de acesso. Deve atender à política de senha.
+          example: Senha@123
+        dataNascimento:
+          type: string
+          format: date
+          description: Data de nascimento no formato ISO 8601 (AAAA-MM-DD).
+          example: '1990-01-15'
+        telefone:
+          type: string
+          minLength: 10
+          maxLength: 11
+          description: Telefone de contato (somente dígitos, com DDD).
+          example: '11987654321'
+        cpf:
+          type: string
+          minLength: 11
+          maxLength: 14
+          description: CPF do cliente, com ou sem máscara.
+          example: '54927170063'
+    ClienteResponse:
+      type: object
+      description: Representação de um cliente retornada pela API.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único do cliente.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        nome:
+          type: string
+          description: Nome completo do cliente.
+          example: Cláudio da Silva Araújo
+        email:
+          type: string
+          description: E-mail do cliente.
+          example: claudio@email.com
+        cpf:
+          type: string
+          description: CPF do cliente.
+          example: '54927170063'
+        telefone:
+          type: string
+          description: Telefone de contato do cliente.
+          example: '11987654321'
+        roles:
+          type: array
+          description: Perfis de acesso do cliente.
+          items:
+            type: string
+          example:
+            - CLIENTE
+        ativo:
+          type: boolean
+          description: Indica se o cliente está ativo (false após soft delete).
+          example: true
+    ErroResponse:
+      type: object
+      description: Corpo padrão de resposta para erros da API.
+      properties:
+        mensagem:
+          type: string
+          description: Mensagem resumida e legível descrevendo o erro.
+          example: Email ou CPF já cadastrado
+        detalhe:
+          type: string
+          description: Detalhamento técnico opcional do erro, útil para diagnóstico.
+          example: Usuário com email 'claudio@email.com' e CPF '54927170063' já cadastrado
+    AtualizarClienteRequest:
+      type: object
+      description: Dados atualizáveis de um cliente.
+      required:
+        - nome
+        - email
+        - telefone
+      properties:
+        nome:
+          type: string
+          description: Nome completo do cliente.
+          example: João da Silva
+        email:
+          type: string
+          format: email
+          description: E-mail de contato do cliente.
+          example: joao@email.com
+        telefone:
+          type: string
+          description: Telefone de contato (somente dígitos, com DDD).
+          example: '11999999999'
+    MecanicoResponse:
+      type: object
+      description: Representação de um mecânico retornada pela API.
+      properties:
+        usuarioId:
+          type: string
+          format: uuid
+          description: Identificador único do mecânico (usuário).
+          example: 550e8400-e29b-41d4-a716-446655440000
+        nome:
+          type: string
+          description: Nome completo do mecânico.
+          example: João da Silva
+        email:
+          type: string
+          description: E-mail do mecânico.
+          example: joao@mecanica.com
+        cpf:
+          type: string
+          description: CPF do mecânico.
+          example: '54927170063'
+        telefone:
+          type: string
+          description: Telefone de contato do mecânico.
+          example: '11987654321'
+        nivel:
+          type: string
+          description: Nível de senioridade do mecânico.
+          example: JUNIOR
+        valorHora:
+          type: number
+          format: double
+          description: Valor cobrado por hora de trabalho do mecânico.
+          example: 50
+        roles:
+          type: array
+          description: Perfis de acesso do mecânico.
+          items:
+            type: string
+          example:
+            - MECANICO
+        ativo:
+          type: boolean
+          description: Indica se o mecânico está ativo (false após soft delete).
+          example: true
+    CadastrarMecanicoRequest:
+      type: object
+      description: Dados necessários para cadastrar um novo mecânico.
+      required:
+        - nome
+        - email
+        - senha
+        - dataNascimento
+        - telefone
+        - cpf
+        - nivel
+        - valorHora
+      properties:
+        nome:
+          type: string
+          minLength: 2
+          description: Nome completo do mecânico.
+          example: João da Silva
+        email:
+          type: string
+          format: email
+          description: E-mail único do mecânico, usado para login.
+          example: joao@mecanica.com
+        senha:
+          type: string
+          format: password
+          minLength: 6
+          description: Senha de acesso. Deve atender à política de senha.
+          example: Senha@123
+        dataNascimento:
+          type: string
+          format: date
+          description: Data de nascimento no formato ISO 8601 (AAAA-MM-DD).
+          example: '1985-03-20'
+        telefone:
+          type: string
+          minLength: 10
+          maxLength: 11
+          description: Telefone de contato (somente dígitos, com DDD).
+          example: '11987654321'
+        cpf:
+          type: string
+          minLength: 11
+          maxLength: 14
+          description: CPF do mecânico, com ou sem máscara.
+          example: '54927170063'
+        nivel:
+          type: string
+          enum:
+            - JUNIOR
+            - PLENO
+            - SENIOR
+          description: Nível de senioridade do mecânico.
+          example: JUNIOR
+        valorHora:
+          type: number
+          format: double
+          minimum: 0.01
+          description: Valor cobrado por hora de trabalho do mecânico.
+          example: 50
+    AtualizarMecanicoRequest:
+      type: object
+      description: Campos atualizáveis de um mecânico (nível e valor/hora).
+      required:
+        - nivel
+        - valorHora
+      properties:
+        nivel:
+          type: string
+          enum:
+            - JUNIOR
+            - PLENO
+            - SENIOR
+          description: Nível de senioridade do mecânico.
+          example: PLENO
+        valorHora:
+          type: number
+          format: double
+          minimum: 0.01
+          description: Valor cobrado por hora de trabalho do mecânico.
+          example: 80
+    AlterarSenhaRequest:
+      type: object
+      description: Dados para redefinição de senha do usuário autenticado.
+      required:
+        - senhaAtual
+        - novaSenha
+        - confirmacaoNovaSenha
+      properties:
+        senhaAtual:
+          type: string
+          format: password
+          description: Senha atual do usuário, usada para confirmar a identidade.
+          example: Senha@123
+        novaSenha:
+          type: string
+          format: password
+          description: Nova senha desejada. Deve atender à política de senha.
+          example: NovaSenha@456
+        confirmacaoNovaSenha:
+          type: string
+          format: password
+          description: Repetição da nova senha; deve ser idêntica a novaSenha.
+          example: NovaSenha@456
+    DadosVeiculoResponse:
+      type: object
+      description: Representação de um veículo retornada pela API.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único do veículo.
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        placa:
+          type: string
+          description: Placa do veículo.
+          example: ABC1D23
+        modelo:
+          type: string
+          description: Modelo do veículo.
+          example: Corolla
+        marca:
+          type: string
+          description: Marca/fabricante do veículo.
+          example: Toyota
+        ano:
+          type: integer
+          description: Ano de fabricação do veículo.
+          example: 2022
+        proprietarioId:
+          type: string
+          format: uuid
+          description: ID do cliente proprietário do veículo.
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        urlImagem:
+          type: string
+          nullable: true
+          description: URL da imagem representativa do veículo.
+          example: https://images.unsplash.com/photo-abc123
+        codigoFipe:
+          type: string
+          nullable: true
+          description: Código FIPE do veículo, quando disponível.
+          example: 006009-1
+    CadastrarVeiculoRequest:
+      type: object
+      description: Dados necessários para cadastrar um novo veículo.
+      required:
+        - placa
+        - modelo
+        - marca
+        - ano
+        - proprietarioId
+      properties:
+        placa:
+          type: string
+          description: Placa do veículo (formato brasileiro, com ou sem hífen).
+          example: ABC1D23
+        modelo:
+          type: string
+          description: Modelo do veículo.
+          example: Corolla
+        marca:
+          type: string
+          description: Marca/fabricante do veículo.
+          example: Toyota
+        ano:
+          type: integer
+          minimum: 1886
+          description: Ano de fabricação do veículo.
+          example: 2022
+        proprietarioId:
+          type: string
+          format: uuid
+          description: ID do cliente proprietário do veículo.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        urlImagem:
+          type: string
+          nullable: true
+          description: URL da imagem representativa do veículo.
+          example: https://images.unsplash.com/photo-abc123
+    AtualizarVeiculoRequest:
+      type: object
+      description: Campos atualizáveis de um veículo. Todos são opcionais; apenas os enviados são alterados.
+      properties:
+        placa:
+          type: string
+          description: Placa do veículo (formato brasileiro, com ou sem hífen).
+          example: ABC1D23
+        modelo:
+          type: string
+          description: Modelo do veículo.
+          example: Corolla
+        marca:
+          type: string
+          description: Marca/fabricante do veículo.
+          example: Toyota
+        ano:
+          type: integer
+          minimum: 1886
+          description: Ano de fabricação do veículo.
+          example: 2022
+        urlImagem:
+          type: string
+          nullable: true
+          description: URL da imagem representativa do veículo.
+          example: https://images.unsplash.com/photo-abc123
+    SugestoesImagensResponse:
+      type: object
+      description: Lista de URLs de imagens sugeridas para um veículo (fonte Unsplash).
+      properties:
+        imagens:
+          type: array
+          description: URLs das imagens sugeridas.
+          items:
+            type: string
+            format: uri
+          example:
+            - https://images.unsplash.com/photo-abc123
+            - https://images.unsplash.com/photo-def456
+    ServicoResponse:
+      type: object
+      description: Representação de um serviço do catálogo.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único do serviço.
+          example: 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+        nomeServico:
+          type: string
+          description: Nome do serviço.
+          example: Troca de Óleo
+        descricaoServico:
+          type: string
+          description: Descrição do serviço.
+          example: Substituição do óleo do motor e filtro
+        valorReferencia:
+          type: number
+          format: double
+          description: Valor de referência cobrado pelo serviço.
+          example: 150
+    CriarServicoRequest:
+      type: object
+      description: Dados necessários para cadastrar um novo serviço no catálogo.
+      required:
+        - nomeServico
+        - descricaoServico
+      properties:
+        nomeServico:
+          type: string
+          description: Nome do serviço.
+          example: Troca de Óleo
+        descricaoServico:
+          type: string
+          description: Descrição do serviço.
+          example: Substituição do óleo do motor e filtro
+        valorReferencia:
+          type: number
+          format: double
+          description: Valor de referência cobrado pelo serviço.
+          example: 150
+    AtualizarServicoRequest:
+      type: object
+      description: Campos atualizáveis de um serviço. Todos são opcionais; apenas os enviados são alterados.
+      properties:
+        nomeServico:
+          type: string
+          description: Nome do serviço.
+          example: Troca de Óleo Sintético
+        descricaoServico:
+          type: string
+          description: Descrição do serviço.
+          example: Substituição completa do óleo e filtro
+        valorReferencia:
+          type: number
+          format: double
+          description: Valor de referência cobrado pelo serviço.
+          example: 180
+    InsumoResponse:
+      type: object
+      description: Representação de um insumo, incluindo estoque atual.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único do insumo.
+          example: 9f1c2d3e-4b5a-6c7d-8e9f-0a1b2c3d4e5f
+        nome:
+          type: string
+          description: Nome do insumo.
+          example: Óleo de Motor 5W30
+        descricao:
+          type: string
+          description: Descrição do insumo.
+          example: Óleo sintético para motores a gasolina e flex
+        custo:
+          type: number
+          format: double
+          description: Custo unitário do insumo.
+          example: 35
+        estoqueMinimo:
+          type: integer
+          description: Quantidade mínima em estoque antes de alertar reposição.
+          example: 5
+        qtdEstoque:
+          type: integer
+          description: Quantidade atualmente disponível em estoque.
+          example: 20
+    CriarInsumoRequest:
+      type: object
+      description: Dados necessários para cadastrar um novo insumo.
+      required:
+        - nome
+        - descricao
+        - custo
+      properties:
+        nome:
+          type: string
+          description: Nome do insumo.
+          example: Óleo de Motor 5W30
+        descricao:
+          type: string
+          description: Descrição do insumo.
+          example: Óleo sintético para motores a gasolina e flex
+        custo:
+          type: number
+          format: double
+          description: Custo unitário do insumo.
+          example: 35
+        qtdEstoqueInicial:
+          type: integer
+          minimum: 0
+          default: 0
+          description: Quantidade inicial em estoque no cadastro.
+          example: 10
+        estoqueMinimo:
+          type: integer
+          minimum: 0
+          default: 0
+          description: Quantidade mínima em estoque antes de alertar reposição.
+          example: 5
+    AtualizarInsumoRequest:
+      type: object
+      description: Campos atualizáveis de um insumo. Todos são opcionais; apenas os enviados são alterados.
+      properties:
+        nome:
+          type: string
+          description: Nome do insumo.
+          example: Óleo de Motor 10W40
+        descricao:
+          type: string
+          description: Descrição do insumo.
+          example: Óleo mineral para motores mais antigos
+        custo:
+          type: number
+          format: double
+          description: Custo unitário do insumo.
+          example: 28
+        estoqueMinimo:
+          type: integer
+          minimum: 0
+          description: Quantidade mínima em estoque antes de alertar reposição.
+          example: 3
+    CatalogoServicoResponse:
+      type: object
+      description: Serviço disponível no catálogo (visão simplificada para consulta).
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único do serviço.
+          example: 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+        nomeServico:
+          type: string
+          description: Nome do serviço.
+          example: Troca de Óleo
+        descricaoServico:
+          type: string
+          description: Descrição do serviço.
+          example: Substituição do óleo do motor e filtro
+    CatalogoInsumoResponse:
+      type: object
+      description: Insumo/peça disponível no catálogo (visão simplificada para consulta).
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único do insumo.
+          example: 9f1c2d3e-4b5a-6c7d-8e9f-0a1b2c3d4e5f
+        nome:
+          type: string
+          description: Nome do insumo.
+          example: Óleo de Motor 5W30
+        descricao:
+          type: string
+          description: Descrição do insumo.
+          example: Óleo sintético para motores a gasolina e flex
+    OrdemServicoRequest:
+      type: object
+      description: Dados para abertura de uma ordem de serviço pelo cliente.
+      required:
+        - motivo
+        - clienteId
+        - mecanicoId
+        - veiculoId
+      properties:
+        motivo:
+          type: string
+          description: Motivo/problema relatado que originou a ordem de serviço.
+          example: Barulho estranho ao acelerar
+        clienteId:
+          type: string
+          description: ID do cliente associado à ordem de serviço.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        mecanicoId:
+          type: string
+          description: ID do mecânico associado à ordem de serviço.
+          example: 550e8400-e29b-41d4-a716-446655440101
+        veiculoId:
+          type: string
+          description: ID do veículo associado à ordem de serviço.
+          example: 660e8400-e29b-41d4-a716-446655550001
+        observacao:
+          type: string
+          description: Observação adicional sobre a ordem de serviço.
+          example: Cliente relata que o ruído aumenta em subidas
+    ResumoOrdemServicoResponse:
+      type: object
+      description: Visão resumida de uma ordem de serviço, usada em listagens e transições de status.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único da ordem de serviço.
+          example: 4d32c6ae-46d1-403d-8e65-d9527126d093
+        mecanicoId:
+          type: string
+          format: uuid
+          description: ID do mecânico vinculado à OS.
+          example: 550e8400-e29b-41d4-a716-446655440101
+        clienteId:
+          type: string
+          format: uuid
+          description: ID do cliente titular da OS.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        veiculoId:
+          type: string
+          format: uuid
+          description: ID do veículo atendido.
+          example: 660e8400-e29b-41d4-a716-446655550001
+        motivo:
+          type: string
+          description: Motivo/problema que originou a OS.
+          example: Troca de óleo e revisão geral
+        observacao:
+          type: string
+          description: Observação adicional sobre a OS.
+          example: Veículo apresenta ruído no motor
+        status:
+          type: string
+          enum:
+            - RECEBIDA
+            - EM_DIAGNOSTICO
+            - AGUARDANDO_APROVACAO
+            - EM_EXECUCAO
+            - FINALIZADA
+            - ENTREGUE
+            - CANCELADA
+          description: Estado atual da OS no ciclo de vida.
+          example: RECEBIDA
+    CriarOrdemServicoCompletaRequest:
+      type: object
+      description: |
+        Abertura completa de OS pelo mecânico, já com serviços e insumos diagnosticados.
+        A OS nasce em EM_DIAGNOSTICO e é vinculada ao mecânico autenticado.
+      required:
+        - motivo
+        - clienteId
+        - veiculoId
+        - servicos
+        - insumos
+      properties:
+        motivo:
+          type: string
+          description: Motivo/problema que originou a ordem de serviço.
+          example: Revisão dos 20.000 km
+        clienteId:
+          type: string
+          description: ID do cliente dono do veículo.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        veiculoId:
+          type: string
+          description: ID do veículo atendido.
+          example: 660e8400-e29b-41d4-a716-446655550001
+        observacao:
+          type: string
+          description: Observação adicional sobre a ordem de serviço.
+          example: Cliente solicitou verificação dos freios
+        servicos:
+          type: array
+          minItems: 1
+          description: Serviços diagnosticados pelo mecânico.
+          items:
+            type: object
+            required:
+              - servicoId
+            properties:
+              servicoId:
+                type: string
+                description: ID do serviço do catálogo.
+                example: 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+              valorCobrado:
+                type: number
+                format: double
+                description: Valor cobrado; se omitido, usa o valorReferência do catálogo.
+                example: 150
+        insumos:
+          type: array
+          minItems: 1
+          description: Peças/insumos diagnosticados pelo mecânico.
+          items:
+            type: object
+            required:
+              - insumoId
+              - quantidade
+            properties:
+              insumoId:
+                type: string
+                description: ID do insumo do catálogo.
+                example: 9f1c2d3e-4b5a-6c7d-8e9f-0a1b2c3d4e5f
+              quantidade:
+                type: integer
+                minimum: 1
+                description: Quantidade a utilizar.
+                example: 4
+    OrdemServicoResponse:
+      type: object
+      description: Representação completa de uma ordem de serviço, incluindo itens de serviço, insumos e orçamento.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único da ordem de serviço.
+          example: 4d32c6ae-46d1-403d-8e65-d9527126d093
+        motivo:
+          type: string
+          description: Motivo/problema que originou a OS.
+          example: Troca de óleo e revisão geral
+        observacao:
+          type: string
+          description: Observação adicional sobre a OS.
+          example: Veículo apresenta ruído no motor
+        clienteId:
+          type: string
+          format: uuid
+          description: ID do cliente titular da OS.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        mecanicoId:
+          type: string
+          format: uuid
+          description: ID do mecânico vinculado à OS.
+          example: 550e8400-e29b-41d4-a716-446655440101
+        veiculoId:
+          type: string
+          format: uuid
+          description: ID do veículo atendido.
+          example: 660e8400-e29b-41d4-a716-446655550001
+        status:
+          type: string
+          enum:
+            - RECEBIDA
+            - EM_DIAGNOSTICO
+            - AGUARDANDO_APROVACAO
+            - EM_EXECUCAO
+            - FINALIZADA
+            - ENTREGUE
+            - CANCELADA
+          description: Estado atual da OS no ciclo de vida.
+          example: RECEBIDA
+        dataCriacao:
+          type: string
+          format: date-time
+          description: Data e hora de criação da OS.
+          example: '2024-06-01T14:30:00'
+        dataAtualizacao:
+          type: string
+          format: date-time
+          description: Data e hora da última atualização da OS.
+          example: '2024-06-05T10:15:00'
+        itensServico:
+          type: array
+          description: Itens de serviço associados à OS.
+          items:
+            type: object
+            description: Item de serviço executado (ou a executar) na OS.
+            properties:
+              id:
+                type: string
+                format: uuid
+                description: Identificador único do item de serviço.
+              servicoId:
+                type: string
+                format: uuid
+                description: ID do serviço do catálogo referenciado.
+              valor:
+                type: number
+                format: double
+                description: Valor cobrado por este item de serviço.
+              feito:
+                type: boolean
+                description: Indica se o item de serviço já foi concluído.
+              mecanicoResponsavelId:
+                type: string
+                format: uuid
+                description: ID do mecânico responsável pela execução do item.
+              dataRealizacao:
+                type: string
+                format: date-time
+                description: Data e hora em que o item foi concluído.
+              observacao:
+                type: string
+                description: Observação do mecânico sobre a execução do item.
+        insumos:
+          type: array
+          description: Lista de IDs dos insumos associados à OS (repetidos conforme a quantidade).
+          items:
+            type: string
+            format: uuid
+        orcamento:
+          type: object
+          description: Orçamento da OS, presente após sua geração.
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Identificador único do orçamento.
+            custoMaoDeObra:
+              type: number
+              format: double
+              description: Custo total de mão de obra (serviços).
+            custoInsumos:
+              type: number
+              format: double
+              description: Custo total dos insumos/peças.
+            valorTotal:
+              type: number
+              format: double
+              description: Valor total do orçamento (mão de obra + insumos).
+            aprovado:
+              type: boolean
+              description: Indica se o orçamento foi aprovado pelo cliente.
+            observacao:
+              type: string
+              description: Observação sobre o orçamento.
+            dataCriacao:
+              type: string
+              format: date-time
+              description: Data e hora de criação do orçamento.
+            dataAtualizacao:
+              type: string
+              format: date-time
+              description: Data e hora da última atualização do orçamento.
+    PageOrdemServicoResponse:
+      type: object
+      description: Página de ordens de serviço (resultado paginado).
+      properties:
+        content:
+          type: array
+          description: Ordens de serviço da página atual.
+          items:
+            $ref: '#/components/schemas/ResumoOrdemServicoResponse'
+        page:
+          type: integer
+          description: Índice da página atual (base zero).
+          example: 0
+        size:
+          type: integer
+          description: Quantidade de itens por página.
+          example: 20
+        total:
+          type: integer
+          format: int64
+          description: Total de ordens de serviço disponíveis.
+          example: 42
+        totalPages:
+          type: integer
+          description: Número total de páginas.
+          example: 3
+    AssociarItensRequest:
+      type: object
+      description: |
+        Serviços e insumos a associar à OS durante o diagnóstico.
+        Substitui atomicamente todos os itens já associados. Requer no mínimo 1 serviço e 1 insumo.
+      required:
+        - servicos
+        - insumos
+      properties:
+        servicos:
+          type: array
+          minItems: 1
+          description: Serviços diagnosticados para a OS.
+          items:
+            type: object
+            required:
+              - servicoId
+            properties:
+              servicoId:
+                type: string
+                format: uuid
+                description: ID do serviço do catálogo.
+                example: 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+              valorCobrado:
+                type: number
+                format: double
+                description: Valor cobrado; se omitido, usa o valorReferência do catálogo.
+                example: 150
+        insumos:
+          type: array
+          minItems: 1
+          description: Insumos/peças diagnosticados para a OS.
+          items:
+            type: object
+            required:
+              - insumoId
+              - quantidade
+            properties:
+              insumoId:
+                type: string
+                format: uuid
+                description: ID do insumo do catálogo.
+                example: 9f1c2d3e-4b5a-6c7d-8e9f-0a1b2c3d4e5f
+              quantidade:
+                type: integer
+                minimum: 1
+                description: Quantidade a utilizar.
+                example: 2
+    ReprovarOrcamentoRequest:
+      type: object
+      description: Dados para reprovação do orçamento pelo cliente.
+      required:
+        - motivo
+      properties:
+        motivo:
+          type: string
+          minLength: 1
+          description: Motivo da reprovação do orçamento.
+          example: Valor acima do esperado para o tipo de serviço
+    CancelarOsRequest:
+      type: object
+      description: Dados opcionais para cancelamento de uma OS pelo cliente.
+      properties:
+        motivo:
+          type: string
+          description: Motivo opcional do cancelamento.
+          example: Vou levar o veículo para outra oficina
+    ConcluirItemServicoRequest:
+      type: object
+      description: Dados para marcar um item de serviço da OS como concluído.
+      required:
+        - observacao
+      properties:
+        observacao:
+          type: string
+          minLength: 1
+          description: Observação do mecânico sobre a execução do serviço.
+          example: Troca de óleo realizada conforme especificação do fabricante
+    ResumoDashboardResponse:
+      type: object
+      description: Resumo estatístico do dashboard do cliente
+      properties:
+        ordens_ativas:
+          type: integer
+          minimum: 0
+          description: Número de ordens de serviço em andamento (estados RECEBIDA, EM_DIAGNOSTICO, AGUARDANDO_APROVACAO, EM_EXECUCAO, ENTREGUE)
+          example: 3
+          x-column: Ordens Ativas
+          x-icon: hourglass-active
+        ordens_concluidas:
+          type: integer
+          minimum: 0
+          description: Número de ordens de serviço finalizadas com sucesso (FINALIZADA)
+          example: 12
+          x-column: Ordens Concluídas
+          x-icon: check-circle
+        ordens_canceladas:
+          type: integer
+          minimum: 0
+          description: Número de ordens de serviço canceladas (CANCELADA)
+          example: 1
+          x-column: Canceladas
+          x-icon: x-circle
+        total_ordens:
+          type: integer
+          minimum: 0
+          description: Quantidade total de ordens de serviço (ativas + concluídas + canceladas)
+          example: 16
+          x-column: Total
+          x-icon: list
+        veiculos_cadastrados:
+          type: integer
+          minimum: 0
+          description: Número total de veículos cadastrados pelo cliente
+          example: 3
+          x-column: Veículos
+          x-icon: car
+      required:
+        - ordens_ativas
+        - ordens_concluidas
+        - total_ordens
+        - veiculos_cadastrados
+      example:
+        ordens_ativas: 3
+        ordens_concluidas: 12
+        ordens_canceladas: 1
+        total_ordens: 16
+        veiculos_cadastrados: 3
+    OrdensAtivasDashboardResponse:
+      type: array
+      description: Lista de ordens de serviço em andamento (máximo 10 mais recentes)
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: Identificador único da ordem de serviço
+            example: 550e8400-e29b-41d4-a716-446655880001
+          motivo:
+            type: string
+            maxLength: 500
+            description: Descrição do motivo/problema relatado pelo cliente
+            example: Barulho estranho ao acelerar
+          status:
+            type: string
+            enum:
+              - RECEBIDA
+              - EM_DIAGNOSTICO
+              - AGUARDANDO_APROVACAO
+              - EM_EXECUCAO
+              - ENTREGUE
+            description: Estado atual da ordem de serviço
+            example: EM_DIAGNOSTICO
+          veiculo_id:
+            type: string
+            format: uuid
+            description: ID do veículo associado à ordem
+            example: 660e8400-e29b-41d4-a716-446655550001
+          veiculo_placa:
+            type: string
+            maxLength: 20
+            description: Placa do veículo para referência rápida
+            example: ABC-1234
+          veiculo_modelo:
+            type: string
+            maxLength: 150
+            description: Modelo do veículo
+            example: Civic 2020
+          mecanico_id:
+            type: string
+            format: uuid
+            description: ID do mecânico responsável
+            example: 550e8400-e29b-41d4-a716-446655440101
+          mecanico_nome:
+            type: string
+            maxLength: 255
+            description: Nome do mecânico responsável
+            example: Mário Máquina
+          data_criacao:
+            type: string
+            format: date-time
+            description: Data e hora de criação da ordem (ISO 8601)
+            example: '2024-11-15T10:30:00Z'
+          data_atualizacao:
+            type: string
+            format: date-time
+            description: Última data de atualização (ISO 8601)
+            example: '2024-11-16T14:45:00Z'
+          dias_em_andamento:
+            type: integer
+            minimum: 0
+            description: Número de dias desde a criação da ordem
+            example: 2
+          valor_orcado:
+            type: number
+            format: decimal
+            minimum: 0
+            pattern: ^\d+(\.\d{2})?$
+            description: Valor total estimado (orçamento)
+            example: 450
+            nullable: true
+          prazo_conclusao:
+            type: string
+            format: date-time
+            description: Data prevista para conclusão (ISO 8601)
+            example: '2024-11-18T18:00:00Z'
+            nullable: true
+        required:
+          - id
+          - motivo
+          - status
+          - veiculo_id
+          - data_criacao
+      example:
+        - id: 550e8400-e29b-41d4-a716-446655880001
+          motivo: Barulho estranho ao acelerar
+          status: EM_DIAGNOSTICO
+          veiculo_id: 660e8400-e29b-41d4-a716-446655550001
+          veiculo_placa: ABC-1234
+          veiculo_modelo: Civic 2020
+          mecanico_id: 550e8400-e29b-41d4-a716-446655440101
+          mecanico_nome: Mário Máquina
+          data_criacao: '2024-11-15T10:30:00Z'
+          data_atualizacao: '2024-11-16T14:45:00Z'
+          dias_em_andamento: 2
+          valor_orcado: null
+          prazo_conclusao: null
+        - id: 550e8400-e29b-41d4-a716-446655880002
+          motivo: Troca de pneus
+          status: APROVADO
+          veiculo_id: 660e8400-e29b-41d4-a716-446655550002
+          veiculo_placa: XYZ-9876
+          veiculo_modelo: Gol 2019
+          mecanico_id: 550e8400-e29b-41d4-a716-446655440102
+          mecanico_nome: Técnico João
+          data_criacao: '2024-11-14T09:15:00Z'
+          data_atualizacao: '2024-11-15T16:30:00Z'
+          dias_em_andamento: 3
+          valor_orcado: 400
+          prazo_conclusao: '2024-11-17T18:00:00Z'
+    OrdensRecentesDashboardResponse:
+      type: array
+      description: Lista das 10 ordens de serviço mais recentes (concluídas e ativas)
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: Identificador único da ordem de serviço
+            example: 550e8400-e29b-41d4-a716-446655880003
+          motivo:
+            type: string
+            maxLength: 500
+            description: Motivo/problema da ordem
+            example: Troca de pneus e alinhamento
+          status:
+            type: string
+            enum:
+              - RECEBIDA
+              - DIAGNOSTICO
+              - ORCAMENTO_GERADO
+              - APROVADO
+              - ENTREGUE
+              - FINALIZADA
+              - CANCELADA
+            description: Status atual da ordem
+            example: FINALIZADA
+          veiculo_id:
+            type: string
+            format: uuid
+            description: ID do veículo
+            example: 660e8400-e29b-41d4-a716-446655550003
+          veiculo_placa:
+            type: string
+            maxLength: 20
+            description: Placa do veículo
+            example: DEF-5678
+          veiculo_modelo:
+            type: string
+            maxLength: 150
+            description: Modelo e ano do veículo
+            example: Corolla 2021
+          data_criacao:
+            type: string
+            format: date-time
+            description: Data de criação (ISO 8601)
+            example: '2024-10-20T08:00:00Z'
+          data_conclusao:
+            type: string
+            format: date-time
+            description: Data de conclusão/entrega (ISO 8601)
+            example: '2024-10-22T17:30:00Z'
+            nullable: true
+          dias_para_conclusao:
+            type: integer
+            description: Dias levados para concluir a ordem
+            example: 2
+            nullable: true
+          valor_total:
+            type: number
+            format: decimal
+            minimum: 0
+            pattern: ^\d+(\.\d{2})?$
+            description: Valor final da ordem
+            example: 520
+            nullable: true
+          mecanico_nome:
+            type: string
+            maxLength: 255
+            description: Nome do mecânico que finalizou
+            example: Especialista Diego
+            nullable: true
+        required:
+          - id
+          - motivo
+          - status
+          - veiculo_id
+          - data_criacao
+      example:
+        - id: 550e8400-e29b-41d4-a716-446655880003
+          motivo: Troca de pneus e alinhamento
+          status: FINALIZADA
+          veiculo_id: 660e8400-e29b-41d4-a716-446655550003
+          veiculo_placa: DEF-5678
+          veiculo_modelo: Corolla 2021
+          data_criacao: '2024-10-20T08:00:00Z'
+          data_conclusao: '2024-10-22T17:30:00Z'
+          dias_para_conclusao: 2
+          valor_total: 520
+          mecanico_nome: Especialista Diego
+        - id: 550e8400-e29b-41d4-a716-446655880004
+          motivo: Revisão anual
+          status: FINALIZADA
+          veiculo_id: 660e8400-e29b-41d4-a716-446655550004
+          veiculo_placa: GHI-3456
+          veiculo_modelo: Onix 2022
+          data_criacao: '2024-11-01T10:15:00Z'
+          data_conclusao: '2024-11-03T16:00:00Z'
+          dias_para_conclusao: 2
+          valor_total: 350
+          mecanico_nome: Mestre Rafael
+    VeiculosDashboardResponse:
+      type: array
+      description: Lista de todos os veículos cadastrados pelo cliente
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: Identificador único do veículo
+            example: 660e8400-e29b-41d4-a716-446655550001
+          placa:
+            type: string
+            maxLength: 20
+            pattern: ^[A-Z0-9-]{5,20}$
+            description: Placa do veículo (formato brasileiro)
+            example: ABC-1234
+          marca:
+            type: string
+            maxLength: 100
+            description: Marca/fabricante do veículo
+            example: Honda
+          modelo:
+            type: string
+            maxLength: 150
+            description: Modelo do veículo
+            example: Civic
+          ano:
+            type: integer
+            minimum: 1900
+            maximum: 2100
+            description: Ano de fabricação do veículo
+            example: 2020
+          imagem_url:
+            type: string
+            format: uri
+            maxLength: 2048
+            description: URL da imagem do veículo (thumbnail)
+            example: https://images.unsplash.com/photo-1464219414232-fdb7452e77ca?w=400&h=300&fit=crop
+            nullable: true
+          codigo_fipe:
+            type: string
+            maxLength: 20
+            description: Código FIPE do veículo para consulta de preço
+            example: 221143-5
+            nullable: true
+          ativo:
+            type: boolean
+            description: Status de atividade do veículo (S/N)
+            example: true
+          total_ordens:
+            type: integer
+            minimum: 0
+            description: Número total de ordens de serviço para este veículo
+            example: 5
+          total_gasto:
+            type: number
+            format: decimal
+            minimum: 0
+            pattern: ^\d+(\.\d{2})?$
+            description: Valor total gasto em manutenções deste veículo
+            example: 1850.5
+          data_criacao:
+            type: string
+            format: date-time
+            description: Data de cadastro do veículo
+            example: '2024-09-10T14:20:00Z'
+        required:
+          - id
+          - placa
+          - marca
+          - modelo
+          - ano
+          - ativo
+      example:
+        - id: 660e8400-e29b-41d4-a716-446655550001
+          placa: ABC-1234
+          marca: Honda
+          modelo: Civic
+          ano: 2020
+          imagem_url: https://images.unsplash.com/photo-1464219414232-fdb7452e77ca?w=400&h=300&fit=crop
+          codigo_fipe: 221143-5
+          ativo: true
+          total_ordens: 5
+          total_gasto: 1850.5
+          data_criacao: '2024-09-10T14:20:00Z'
+        - id: 660e8400-e29b-41d4-a716-446655550002
+          placa: XYZ-9876
+          marca: Volkswagen
+          modelo: Gol
+          ano: 2019
+          imagem_url: https://images.unsplash.com/photo-1562162192-3c90c1c1b1fa?w=400&h=300&fit=crop
+          codigo_fipe: 203206-4
+          ativo: true
+          total_ordens: 3
+          total_gasto: 650
+          data_criacao: '2024-08-05T10:15:00Z'
+        - id: 660e8400-e29b-41d4-a716-446655550003
+          placa: DEF-5678
+          marca: Toyota
+          modelo: Corolla
+          ano: 2021
+          imagem_url: https://images.unsplash.com/photo-1605559424843-9e4c3ca4b7f1?w=400&h=300&fit=crop
+          codigo_fipe: 214240-1
+          ativo: true
+          total_ordens: 2
+          total_gasto: 520
+          data_criacao: '2024-09-15T09:30:00Z'
+    NotificacaoResponse:
+      type: object
+      description: Representação de uma notificação do usuário.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único da notificação.
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        titulo:
+          type: string
+          description: Título curto da notificação.
+          example: Ordem de Serviço Atualizada
+        assunto:
+          type: string
+          description: Assunto/resumo da notificação.
+          example: 'Sua OS #1234 mudou de status'
+        descricao:
+          type: string
+          description: Conteúdo detalhado da notificação.
+          example: A ordem de serviço foi aprovada e está em execução.
+        tipoNotificacao:
+          type: string
+          enum:
+            - EMAIL
+          description: Canal de envio da notificação.
+          example: EMAIL
+        tipoConteudo:
+          type: string
+          enum:
+            - MUDANCA_STATUS_OS
+          description: Tipo de conteúdo/evento que originou a notificação.
+          example: MUDANCA_STATUS_OS
+        statusEnvio:
+          type: string
+          enum:
+            - PENDENTE
+            - ENVIADA
+            - FALHA_ENVIO
+          description: Status do envio da notificação.
+          example: ENVIADA
+        visualizada:
+          type: boolean
+          description: Indica se a notificação já foi visualizada pelo usuário.
+          example: false
+        dataCriacao:
+          type: string
+          format: date-time
+          description: Data e hora de criação da notificação.
+          example: '2026-06-19T10:30:00'
+        dataEnvio:
+          type: string
+          format: date-time
+          nullable: true
+          description: Data e hora do envio; nulo se ainda não enviada.
+          example: '2026-06-19T10:30:30'
+        dataVisualizacao:
+          type: string
+          format: date-time
+          nullable: true
+          description: Data e hora da visualização; nulo se ainda não visualizada.
+          example: null
+    PageNotificacaoResponse:
+      type: object
+      description: Página de notificações do usuário (resultado paginado).
+      properties:
+        content:
+          type: array
+          description: Notificações da página atual.
+          items:
+            $ref: '#/components/schemas/NotificacaoResponse'
+        page:
+          type: integer
+          description: Índice da página atual (base zero).
+          example: 0
+        size:
+          type: integer
+          description: Quantidade de itens por página.
+          example: 20
+        total:
+          type: integer
+          format: int64
+          description: Total de notificações disponíveis.
+          example: 5
+        totalPages:
+          type: integer
+          description: Número total de páginas.
+          example: 1
+    ContadorNaoLidasResponse:
+      type: object
+      description: Contagem de notificações não lidas do usuário autenticado.
+      properties:
+        total:
+          type: integer
+          format: int64
+          description: Quantidade de notificações não lidas do usuário.
+          example: 3

@@ -1,6 +1,12 @@
 # ServiceTrack API
 
-Backend para gestão de ordens de serviço de oficinas mecânicas. Responsável por controlar todo o ciclo de vida de uma OS — da abertura ao diagnóstico, orçamento, execução e entrega — com rastreabilidade completa por auditoria.
+Backend para gestão de ordens de serviço de oficinas mecânicas. Responsável por controlar todo o ciclo de vida de uma OS — da abertura ao diagnóstico, orçamento, execução e entrega — com auditoria das operações de negócio.
+
+> **Autenticação não vive mais aqui.** Desde a Fase 3 o login é feito por CPF em uma função
+> serverless externa ([service-track-lambda](https://github.com/Claudio712005/service-track-lambda)),
+> decidido em `GLOBAL-ADR-004`. Esta API **valida** os tokens emitidos por ela e continua
+> assinando apenas o token de decisão de orçamento do magic link ([ADR-014](docs/adr/ADR-014-aprovacao-orcamento-magic-link.md)).
+> A troca de senha do usuário autenticado permanece aqui, em `PUT /usuarios/senha`.
 
 ---
 
@@ -39,7 +45,7 @@ geração do orçamento (`POST /ordem-servico/{id}/orcamento`).
 | Persistência (prod) | PostgreSQL 16 |
 | Persistência (dev/test) | H2 in-memory |
 | ORM | Hibernate ORM (via Quarkus) |
-| Autenticação | JWT RS256 (SmallRye JWT) |
+| Autenticação | JWT RS256 (SmallRye JWT) — **validação**; emissão fica na Lambda |
 | Criptografia de senha | BCrypt |
 | Build | Gradle Kotlin DSL (multi-module) |
 | Containers | Docker + Docker Compose |
@@ -85,11 +91,12 @@ Para detalhes de cada camada, veja:
 | [ADR-002](docs/adr/ADR-002-postgresql.md) | PostgreSQL | Banco relacional robusto para dados transacionais |
 | [ADR-003](docs/adr/ADR-003-kotlin.md) | Kotlin | Expressividade, null safety, value classes |
 | [ADR-004](docs/adr/ADR-004-quarkus.md) | Quarkus | Startup rápido, suporte nativo a CDI/MicroProfile |
-| [ADR-005](docs/adr/ADR-005-autenticacao-jwt.md) | JWT RS256 | Stateless, integrado via SmallRye JWT |
+| [ADR-005](docs/adr/ADR-005-autenticacao-jwt.md) | JWT RS256 | Stateless, integrado via SmallRye JWT · emissão movida para a Lambda em `GLOBAL-ADR-004` |
 | [ADR-015](docs/adr/ADR-015-kubernetes-eks.md) | Kubernetes no EKS | HPA, multi-AZ, alta disponibilidade |
 | [ADR-016](docs/adr/ADR-016-terraform-iac.md) | Terraform (IaC) | Ambiente reproduzível: VPC, EKS, ECR, RDS, ArgoCD |
 | [ADR-017](docs/adr/ADR-017-gitops-argocd.md) | GitOps com ArgoCD | Git como fonte de verdade, auto-sync e self-heal |
 | [ADR-018](docs/adr/ADR-018-bootstrap-scripts-operacionais.md) | Bootstrap de segredos | Segredos/config dinâmica fora do Git, idempotente |
+| [ADR-019](docs/adr/ADR-019-observabilidade-opentelemetry.md) | Observabilidade OpenTelemetry | Vendor-neutral via OTLP; backend por configuração |
 
 ---
 
@@ -199,8 +206,8 @@ http://localhost:8080/q/swagger-ui
 ServiceTrack-API/
 ├── .github/workflows/     # ci, security, cd-app (GitOps), infra (Terraform), bootstrap-prod
 ├── docs/
-│   ├── adr/               # Architecture Decision Records (001–018)
-│   ├── rfc/               # Request for Comments (001–018)
+│   ├── adr/               # Architecture Decision Records (001–019)
+│   ├── rfc/               # Request for Comments (001–019)
 │   ├── c4/                # Diagramas C4 (context, container, components, code)
 │   ├── infra/             # Desenhos renderizados: aws-infra, deployment, ci-cd (PNG/drawio)
 │   ├── mvp-1/ mvp-2/      # Enunciados das fases + colinha do vídeo (mvp-2)
@@ -219,6 +226,7 @@ ServiceTrack-API/
         ├── _infrastructure/ # REST, persistência, JWT, adapters
         ├── openApi/        # Especificações OpenAPI por recurso (contract-first)
         ├── openapi.yaml    # Spec agregada (input do OpenAPI Generator)
+        ├── observability/  # Configs do stack local: otel-collector, prometheus, grafana
         ├── scripts/        # postgres-init (roles), security-scan, convert-to-sarif
         ├── service-track.postman_collection.json  # Collection das APIs
         ├── docker-compose.yaml
@@ -417,6 +425,68 @@ Diagramas C4 da aplicação (contexto/container/componentes) em [docs/c4/](docs/
   `software/service-track-api/openApi/`.
 - **Vídeo demonstrativo (≤15 min):** https://www.youtube.com/watch?v=EXMPSr7ylxg
   — demonstra deploy, execução do CI/CD, consumo das APIs e escalabilidade automática (HPA).
+
+---
+
+## Observabilidade
+
+Instrumentação **vendor-neutral** com **OpenTelemetry**, exportando **traces, métricas e logs**
+via **OTLP**. A aplicação não conhece o backend: a escolha é apenas por configuração
+(desenvolvimento local usa OpenTelemetry; produção usará Datadog). Decisão em
+[ADR-019](docs/adr/ADR-019-observabilidade-opentelemetry.md) e
+[RFC-019](docs/rfc/RFC-019-observabilidade-opentelemetry.md).
+
+### Como a arquitetura foi desacoplada
+
+Toda a observabilidade fica na camada `_infrastructure/.../observability/`
+(`configuration/` + `metrics/`), sem código proprietário espalhado pela aplicação:
+
+- `ObservabilityResourceConfig` — atributos do `Resource` OTel (`service.name`, `namespace`,
+  `deployment.environment`).
+- `OtlpMeterRegistryConfig` — registry de métricas via OTLP.
+- `CommonMetricsTagsConfig` — tags comuns das métricas.
+
+O destino é definido só por variável de ambiente — sem alterar código:
+
+```text
+DEV: OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+PRD: OTEL_EXPORTER_OTLP_ENDPOINT=http://datadog-agent:4317
+```
+
+### Ambiente local (100% offline)
+
+```bash
+cd software/service-track-api
+docker compose --profile observability up --build
+```
+
+Sobe a aplicação + **OpenTelemetry Collector**, **Jaeger**, **Prometheus** e **Grafana** — sem
+Datadog Agent, sem API Key, sem SaaS.
+
+| Sinal | Onde visualizar | URL |
+|---|---|---|
+| **Traces** | Jaeger UI | `http://localhost:16686` |
+| **Métricas** | Prometheus UI | `http://localhost:9090` |
+| **Métricas + Traces** | Grafana (Prometheus + Jaeger provisionados) | `http://localhost:3001` |
+| **Logs** | stdout da aplicação | `docker logs servicetrack-api` |
+
+> A exportação de **logs via OTLP** exige Quarkus 3.16+ (o projeto está em 3.15.1); por ora os
+> logs são consultados pelo stdout da aplicação. O pipeline de logs já está pronto no Collector
+> para quando a plataforma for atualizada. Traces e métricas fluem por OTLP normalmente.
+
+Fluxo: `app --OTLP--> otel-collector --> {Jaeger, Prometheus, logs}`.
+A aplicação roda mesmo sem o stack (os envios OTLP são descartados).
+
+### Futuro: Datadog em produção (só configuração)
+
+O compose traz um profile `datadog` **preparado** (não-default). Nenhuma mudança de código é
+necessária para usar Datadog — basta apontar o endpoint OTLP para o agente:
+
+```bash
+docker compose --profile datadog up   # exige DD_API_KEY no .env
+```
+
+> Esta etapa **não altera** a infraestrutura de produção (Terraform/Kubernetes/pipelines).
 
 ---
 

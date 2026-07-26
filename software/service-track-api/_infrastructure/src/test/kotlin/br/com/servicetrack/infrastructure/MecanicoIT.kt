@@ -1,5 +1,7 @@
 package br.com.servicetrack.infrastructure
 
+import br.com.servicetrack.infrastructure.support.TokenTeste
+
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
@@ -50,28 +52,10 @@ class MecanicoIT {
                 """.trimIndent()
             )
             .post("/clientes")
+        tokenMecanico = TokenTeste.para("mecanico.busca.it@email.com")
+        mecanicoId   = TokenTeste.idDe("mecanico.busca.it@email.com")
 
-        val loginMecanico = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "mecanico.busca.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then()
-            .statusCode(200)
-            .extract()
-            .jsonPath()
-
-        tokenMecanico = loginMecanico.getString("token")
-        mecanicoId   = loginMecanico.getString("usuarioId")
-
-        tokenCliente = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "cliente.mecanico.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then()
-            .statusCode(200)
-            .extract()
-            .jsonPath()
-            .getString("token")
+        tokenCliente = TokenTeste.para("cliente.mecanico.it@email.com")
     }
 
     @Test

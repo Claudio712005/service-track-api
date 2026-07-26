@@ -1,19 +1,25 @@
 type: object
+description: Página de ordens de serviço (resultado paginado).
 properties:
   content:
     type: array
+    description: Ordens de serviço da página atual.
     items:
       $ref: './ResumoOrdemServicoResponse.yaml'
   page:
     type: integer
+    description: Índice da página atual (base zero).
     example: 0
   size:
     type: integer
+    description: Quantidade de itens por página.
     example: 20
   total:
     type: integer
     format: int64
+    description: Total de ordens de serviço disponíveis.
     example: 42
   totalPages:
     type: integer
+    description: Número total de páginas.
     example: 3

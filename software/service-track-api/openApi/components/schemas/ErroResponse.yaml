@@ -1,8 +1,11 @@
 type: object
+description: Corpo padrão de resposta para erros da API.
 properties:
   mensagem:
     type: string
+    description: Mensagem resumida e legível descrevendo o erro.
     example: "Email ou CPF já cadastrado"
   detalhe:
     type: string
+    description: Detalhamento técnico opcional do erro, útil para diagnóstico.
     example: "Usuário com email 'claudio@email.com' e CPF '54927170063' já cadastrado"

@@ -1,4 +1,5 @@
 type: object
+description: Campos atualizáveis de um mecânico (nível e valor/hora).
 required:
   - nivel
   - valorHora
@@ -9,9 +10,11 @@ properties:
       - JUNIOR
       - PLENO
       - SENIOR
+    description: Nível de senioridade do mecânico.
     example: "PLENO"
   valorHora:
     type: number
     format: double
     minimum: 0.01
+    description: Valor cobrado por hora de trabalho do mecânico.
     example: 80.00

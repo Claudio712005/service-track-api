@@ -92,6 +92,11 @@
     {
       "key": "decisaoToken",
       "value": ""
+    },
+    {
+      "key": "cpf",
+      "value": "13646633093",
+      "type": "string"
     }
   ],
   "item": [
@@ -124,7 +129,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{emailMecanico}}\",\n  \"senha\": \"{{senhaMecanico}}\"\n}",
+              "raw": "{\n  \"cpf\": \"{{cpf}}\",\n  \"senha\": \"{{senhaMecanico}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -173,7 +178,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{emailCliente}}\",\n  \"senha\": \"{{senhaCliente}}\"\n}",
+              "raw": "{\n  \"cpf\": \"{{cpf}}\",\n  \"senha\": \"{{senhaCliente}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -208,13 +213,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/autenticacao/reset-senha",
+              "raw": "{{baseUrl}}/usuarios/senha",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "autenticacao",
-                "reset-senha"
+                "usuarios",
+                "senha"
               ]
             },
             "description": "Troca a senha do usuário autenticado.",

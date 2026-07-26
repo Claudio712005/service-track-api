@@ -1,7 +1,9 @@
 type: object
+description: Lista de URLs de imagens sugeridas para um veículo (fonte Unsplash).
 properties:
   imagens:
     type: array
+    description: URLs das imagens sugeridas.
     items:
       type: string
       format: uri

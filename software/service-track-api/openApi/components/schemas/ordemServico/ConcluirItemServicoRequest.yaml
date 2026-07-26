@@ -1,9 +1,10 @@
 type: object
+description: Dados para marcar um item de serviço da OS como concluído.
 required:
   - observacao
 properties:
   observacao:
     type: string
     minLength: 1
-    description: Observação do mecânico sobre a execução do serviço
+    description: Observação do mecânico sobre a execução do serviço.
     example: "Troca de óleo realizada conforme especificação do fabricante"

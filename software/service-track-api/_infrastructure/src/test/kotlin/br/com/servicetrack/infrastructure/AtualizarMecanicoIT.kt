@@ -1,5 +1,7 @@
 package br.com.servicetrack.infrastructure
 
+import br.com.servicetrack.infrastructure.support.TokenTeste
+
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
@@ -69,33 +71,12 @@ class AtualizarMecanicoIT {
                 """.trimIndent()
             )
             .post("/clientes")
+        tokenSenior = TokenTeste.para("senior.atualiza.it@email.com")
+        mecanicoSeniorId = TokenTeste.idDe("senior.atualiza.it@email.com")
+        tokenJunior = TokenTeste.para("junior.alvo.it@email.com")
+        mecanicoJuniorId = TokenTeste.idDe("junior.alvo.it@email.com")
 
-        val loginSenior = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "senior.atualiza.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath()
-
-        tokenSenior = loginSenior.getString("token")
-        mecanicoSeniorId = loginSenior.getString("usuarioId")
-
-        val loginJunior = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "junior.alvo.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath()
-
-        tokenJunior = loginJunior.getString("token")
-        mecanicoJuniorId = loginJunior.getString("usuarioId")
-
-        tokenCliente = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "cliente.atualiza.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath().getString("token")
+        tokenCliente = TokenTeste.para("cliente.atualiza.it@email.com")
     }
 
     @Test

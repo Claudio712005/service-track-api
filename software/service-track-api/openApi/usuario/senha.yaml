@@ -1,8 +1,8 @@
-post:
-  summary: Redefinir senha do usuário autenticado. Requer senha atual, nova senha e confirmação.
-  operationId: resetarSenha
+put:
+  summary: Alterar a senha do usuário autenticado. Requer senha atual, nova senha e confirmação.
+  operationId: alterarSenha
   tags:
-    - Login
+    - Usuario
   security:
     - bearerAuth: []
   requestBody:
@@ -10,10 +10,10 @@ post:
     content:
       application/json:
         schema:
-          $ref: '../components/schemas/autenticacao/ResetarSenhaRequest.yaml'
+          $ref: '../components/schemas/usuario/AlterarSenhaRequest.yaml'
   responses:
     '204':
-      description: Senha redefinida com sucesso
+      description: Senha alterada com sucesso
     '400':
       description: Dados de entrada inválidos (nova senha não atende à política ou confirmação diverge)
       content:

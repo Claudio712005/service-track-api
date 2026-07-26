@@ -9,8 +9,10 @@ get:
     - name: id
       in: path
       required: true
+      description: Identificador único do recurso (UUID).
       schema:
         type: string
+        example: "550e8400-e29b-41d4-a716-446655440000"
   responses:
     '200':
       description: Insumo encontrado
@@ -42,8 +44,10 @@ put:
     - name: id
       in: path
       required: true
+      description: Identificador único do recurso (UUID).
       schema:
         type: string
+        example: "550e8400-e29b-41d4-a716-446655440000"
   requestBody:
     required: true
     content:
@@ -87,8 +91,10 @@ delete:
     - name: id
       in: path
       required: true
+      description: Identificador único do recurso (UUID).
       schema:
         type: string
+        example: "550e8400-e29b-41d4-a716-446655440000"
   responses:
     '204':
       description: Insumo removido com sucesso

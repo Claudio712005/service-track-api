@@ -1,5 +1,7 @@
 package br.com.servicetrack.infrastructure
 
+import br.com.servicetrack.infrastructure.support.TokenTeste
+
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
@@ -59,18 +61,8 @@ class DashboardClienteIT {
             .post("/clientes")
             .then()
             .statusCode(201)
-
-        val loginCliente = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "$emailCliente", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then()
-            .statusCode(200)
-            .extract()
-            .jsonPath()
-
-        tokenCliente = loginCliente.getString("token")
-        clienteId = loginCliente.getString("usuarioId")
+        tokenCliente = TokenTeste.para("$emailCliente")
+        clienteId = TokenTeste.idDe("$emailCliente")
 
         given()
             .contentType(ContentType.JSON)
@@ -91,18 +83,8 @@ class DashboardClienteIT {
             .post("/mecanicos")
             .then()
             .statusCode(201)
-
-        val loginMecanico = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "$emailMecanico", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then()
-            .statusCode(200)
-            .extract()
-            .jsonPath()
-
-        tokenMecanico = loginMecanico.getString("token")
-        mecanicoId = loginMecanico.getString("usuarioId")
+        tokenMecanico = TokenTeste.para("$emailMecanico")
+        mecanicoId = TokenTeste.idDe("$emailMecanico")
 
         veiculoId = given()
             .contentType(ContentType.JSON)

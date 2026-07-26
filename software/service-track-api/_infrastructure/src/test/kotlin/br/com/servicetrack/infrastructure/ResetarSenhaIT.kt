@@ -1,5 +1,7 @@
 package br.com.servicetrack.infrastructure
 
+import br.com.servicetrack.infrastructure.support.TokenTeste
+
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
@@ -29,12 +31,7 @@ class ResetarSenhaIT {
             )
             .post("/clientes")
 
-        tokenCliente = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "cliente.reset.senha.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath().getString("token")
+        tokenCliente = TokenTeste.para("cliente.reset.senha.it@email.com")
     }
 
     @Test
@@ -55,12 +52,7 @@ class ResetarSenhaIT {
             )
             .post("/clientes")
 
-        val token = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "cliente.resetar.senha.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath().getString("token")
+        val token = TokenTeste.para("cliente.resetar.senha.it@email.com")
 
         given()
             .header("Authorization", "Bearer $token")
@@ -75,59 +67,11 @@ class ResetarSenhaIT {
                 """.trimIndent()
             )
         .`when`()
-            .post("/autenticacao/reset-senha")
+            .put("/usuarios/senha")
         .then()
             .statusCode(204)
     }
 
-    @Test
-    fun `deve permitir login com nova senha apos reset`() {
-        given()
-            .contentType(ContentType.JSON)
-            .body(
-                """
-                {
-                  "nome": "Cliente Nova Senha IT",
-                  "email": "cliente.nova.senha.it@email.com",
-                  "senha": "#Tiee123456",
-                  "telefone": "11900010000",
-                  "cpf": "17070707096",
-                  "dataNascimento": "1994-09-20"
-                }
-                """.trimIndent()
-            )
-            .post("/clientes")
-
-        val token = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "cliente.nova.senha.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath().getString("token")
-
-        given()
-            .header("Authorization", "Bearer $token")
-            .contentType(ContentType.JSON)
-            .body(
-                """
-                {
-                  "senhaAtual": "#Tiee123456",
-                  "novaSenha": "NovaSenha@999",
-                  "confirmacaoNovaSenha": "NovaSenha@999"
-                }
-                """.trimIndent()
-            )
-            .post("/autenticacao/reset-senha")
-            .then().statusCode(204)
-
-        given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "cliente.nova.senha.it@email.com", "senha": "NovaSenha@999"}""")
-        .`when`()
-            .post("/autenticacao")
-        .then()
-            .statusCode(200)
-    }
 
     @Test
     fun `deve retornar 401 quando senha atual incorreta`() {
@@ -144,7 +88,7 @@ class ResetarSenhaIT {
                 """.trimIndent()
             )
         .`when`()
-            .post("/autenticacao/reset-senha")
+            .put("/usuarios/senha")
         .then()
             .statusCode(401)
     }
@@ -164,7 +108,7 @@ class ResetarSenhaIT {
                 """.trimIndent()
             )
         .`when`()
-            .post("/autenticacao/reset-senha")
+            .put("/usuarios/senha")
         .then()
             .statusCode(400)
     }
@@ -184,7 +128,7 @@ class ResetarSenhaIT {
                 """.trimIndent()
             )
         .`when`()
-            .post("/autenticacao/reset-senha")
+            .put("/usuarios/senha")
         .then()
             .statusCode(400)
     }
@@ -203,7 +147,7 @@ class ResetarSenhaIT {
                 """.trimIndent()
             )
         .`when`()
-            .post("/autenticacao/reset-senha")
+            .put("/usuarios/senha")
         .then()
             .statusCode(401)
     }
