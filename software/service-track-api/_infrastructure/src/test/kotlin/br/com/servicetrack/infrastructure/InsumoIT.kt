@@ -1,5 +1,7 @@
 package br.com.servicetrack.infrastructure
 
+import br.com.servicetrack.infrastructure.support.TokenTeste
+
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
@@ -33,15 +35,7 @@ class InsumoIT {
             )
             .post("/mecanicos")
 
-        tokenMecanico = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "mecanico.insumo.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then()
-            .statusCode(200)
-            .extract()
-            .jsonPath()
-            .getString("token")
+        tokenMecanico = TokenTeste.para("mecanico.insumo.it@email.com")
     }
 
     @Test

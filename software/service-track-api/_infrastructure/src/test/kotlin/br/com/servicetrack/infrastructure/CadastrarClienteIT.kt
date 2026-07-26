@@ -1,5 +1,7 @@
 package br.com.servicetrack.infrastructure
 
+import br.com.servicetrack.infrastructure.support.TokenTeste
+
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
@@ -89,16 +91,8 @@ class CadastrarClienteIT {
             )
             .post("/clientes")
             .then().statusCode(201)
-
-        val loginJson = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "reativar.original.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath()
-
-        val token = loginJson.getString("token")
-        val id = loginJson.getString("usuarioId")
+        val token = TokenTeste.para("reativar.original.it@email.com")
+        val id = TokenTeste.idDe("reativar.original.it@email.com")
 
         given()
             .header("Authorization", "Bearer $token")

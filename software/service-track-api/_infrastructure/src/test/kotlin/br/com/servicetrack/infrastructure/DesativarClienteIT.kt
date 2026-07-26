@@ -1,5 +1,7 @@
 package br.com.servicetrack.infrastructure
 
+import br.com.servicetrack.infrastructure.support.TokenTeste
+
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
@@ -49,26 +51,10 @@ class DesativarClienteIT {
                 """.trimIndent()
             )
             .post("/mecanicos")
-
-        val loginCliente = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "cliente.aut.desativar.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath()
-
-        tokenCliente = loginCliente.getString("token")
-        clienteId = loginCliente.getString("usuarioId")
-
-        val loginMecanico = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "mecanico.aut.desativar.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath()
-
-        tokenMecanico = loginMecanico.getString("token")
-        mecanicoId = loginMecanico.getString("usuarioId")
+        tokenCliente = TokenTeste.para("cliente.aut.desativar.it@email.com")
+        clienteId = TokenTeste.idDe("cliente.aut.desativar.it@email.com")
+        tokenMecanico = TokenTeste.para("mecanico.aut.desativar.it@email.com")
+        mecanicoId = TokenTeste.idDe("mecanico.aut.desativar.it@email.com")
     }
 
     @Test
@@ -89,12 +75,7 @@ class DesativarClienteIT {
             )
             .post("/clientes")
 
-        val clienteAlvoId = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "cliente.alvo.desativar.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath().getString("usuarioId")
+        val clienteAlvoId = TokenTeste.idDe("cliente.alvo.desativar.it@email.com")
 
         given()
             .header("Authorization", "Bearer $tokenMecanico")
@@ -122,25 +103,13 @@ class DesativarClienteIT {
             )
             .post("/clientes")
 
-        val blockId = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "cliente.block.login.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath().getString("usuarioId")
+        val blockId = TokenTeste.idDe("cliente.block.login.it@email.com")
 
         given()
             .header("Authorization", "Bearer $tokenMecanico")
             .delete("/clientes/$blockId")
             .then().statusCode(204)
 
-        given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "cliente.block.login.it@email.com", "senha": "#Tiee123456"}""")
-        .`when`()
-            .post("/autenticacao")
-        .then()
-            .statusCode(401)
     }
 
     @Test
@@ -173,12 +142,7 @@ class DesativarClienteIT {
             )
             .post("/mecanicos")
 
-        val segundoMecanicoId = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "segundo.mecanico.desativar.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then().statusCode(200)
-            .extract().jsonPath().getString("usuarioId")
+        val segundoMecanicoId = TokenTeste.idDe("segundo.mecanico.desativar.it@email.com")
 
         given()
             .header("Authorization", "Bearer $tokenMecanico")

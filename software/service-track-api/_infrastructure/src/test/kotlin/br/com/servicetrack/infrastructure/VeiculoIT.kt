@@ -1,5 +1,7 @@
 package br.com.servicetrack.infrastructure
 
+import br.com.servicetrack.infrastructure.support.TokenTeste
+
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
@@ -50,28 +52,10 @@ class VeiculoIT {
                 """.trimIndent()
             )
             .post("/mecanicos")
+        tokenCliente = TokenTeste.para("cliente.veiculo.it@email.com")
+        clienteId    = TokenTeste.idDe("cliente.veiculo.it@email.com")
 
-        val loginCliente = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "cliente.veiculo.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then()
-            .statusCode(200)
-            .extract()
-            .jsonPath()
-
-        tokenCliente = loginCliente.getString("token")
-        clienteId    = loginCliente.getString("usuarioId")
-
-        tokenMecanico = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "mecanico.veiculo.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then()
-            .statusCode(200)
-            .extract()
-            .jsonPath()
-            .getString("token")
+        tokenMecanico = TokenTeste.para("mecanico.veiculo.it@email.com")
     }
 
     @Test
@@ -175,15 +159,7 @@ class VeiculoIT {
             )
             .post("/clientes")
 
-        val outroClienteId = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "outro.cliente.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then()
-            .statusCode(200)
-            .extract()
-            .jsonPath()
-            .getString("usuarioId")
+        val outroClienteId = TokenTeste.idDe("outro.cliente.it@email.com")
 
         given()
             .contentType(ContentType.JSON)
@@ -338,15 +314,7 @@ class VeiculoIT {
             )
             .post("/clientes")
 
-        val tokenOutroCliente = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "outro.proprietario.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then()
-            .statusCode(200)
-            .extract()
-            .jsonPath()
-            .getString("token")
+        val tokenOutroCliente = TokenTeste.para("outro.proprietario.it@email.com")
 
         val veiculoId = given()
             .contentType(ContentType.JSON)
@@ -650,15 +618,7 @@ class VeiculoIT {
             )
             .post("/clientes")
 
-        val tokenOutroDono = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "outro.dono.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then()
-            .statusCode(200)
-            .extract()
-            .jsonPath()
-            .getString("token")
+        val tokenOutroDono = TokenTeste.para("outro.dono.it@email.com")
 
         val veiculoId = given()
             .contentType(ContentType.JSON)

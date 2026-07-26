@@ -1,5 +1,7 @@
 package br.com.servicetrack.infrastructure.notificacao
 
+import br.com.servicetrack.infrastructure.support.TokenTeste
+
 import br.com.servicetrack.application.notificacao.dto.EnfileirarNotificacaoCommand
 import br.com.servicetrack.application.notificacao.ports.`in`.EnfileirarNotificacaoUseCase
 import br.com.servicetrack.domain.notificacao.TipoConteudoNotificacao
@@ -82,29 +84,9 @@ class NotificacaoResourceIT {
                 """.trimIndent()
             )
             .post("/mecanicos")
-
-        val loginCliente = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "cliente.notif.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then()
-            .statusCode(200)
-            .extract()
-            .jsonPath()
-
-        tokenCliente = loginCliente.getString("token")
-        clienteId = loginCliente.getString("usuarioId")
-
-        val loginMecanico = given()
-            .contentType(ContentType.JSON)
-            .body("""{"email": "mecanico.notif.it@email.com", "senha": "#Tiee123456"}""")
-            .post("/autenticacao")
-            .then()
-            .statusCode(200)
-            .extract()
-            .jsonPath()
-
-        tokenMecanico = loginMecanico.getString("token")
+        tokenCliente = TokenTeste.para("cliente.notif.it@email.com")
+        clienteId = TokenTeste.idDe("cliente.notif.it@email.com")
+        tokenMecanico = TokenTeste.para("mecanico.notif.it@email.com")
 
         notificacaoId = QuarkusTransaction.requiringNew().call {
             enfileirarUseCase.executar(
