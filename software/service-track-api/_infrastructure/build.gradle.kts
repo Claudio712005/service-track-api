@@ -13,6 +13,10 @@ dependencies {
     implementation(project(":_domain"))
     implementation(project(":_application"))
 
+    implementation("io.quarkus:quarkus-opentelemetry")
+    implementation("io.quarkus:quarkus-micrometer")
+    implementation("io.micrometer:micrometer-registry-otlp:1.13.3")
+
     implementation(enforcedPlatform("$qGroupId:$qArtifactId:$qVersion"))
     implementation("io.quarkus:quarkus-qute")
     implementation("io.quarkus:quarkus-mailer")
@@ -42,7 +46,6 @@ dependencies {
     testImplementation("io.rest-assured:rest-assured")
     testImplementation("io.quarkus:quarkus-jacoco")
 }
-
 allOpen {
     annotation("jakarta.ws.rs.Path")
     annotation("jakarta.enterprise.context.ApplicationScoped")
@@ -50,6 +53,7 @@ allOpen {
     annotation("jakarta.persistence.MappedSuperclass")
     annotation("jakarta.persistence.Embeddable")
 }
+
 
 openApiGenerate {
     inputSpec.set(rootProject.file("openapi.yaml").absolutePath)
