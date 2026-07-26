@@ -5,7 +5,6 @@ import br.com.servicetrack.application.usuario.ports.`in`.AtualizarUsuarioUseCas
 import br.com.servicetrack.application.usuario.ports.`in`.BuscarClienteUseCase
 import br.com.servicetrack.application.usuario.ports.`in`.CriarUsuarioUseCase
 import br.com.servicetrack.application.usuario.ports.`in`.DesativarUsuarioUseCase
-import br.com.servicetrack.application.usuario.ports.`in`.LoginUsuarioUseCase
 import br.com.servicetrack.application.usuario.ports.`in`.ResetarSenhaUseCase
 import br.com.servicetrack.application.usuario.ports.out.CriptografiaPort
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
@@ -15,7 +14,6 @@ import br.com.servicetrack.application.usuario.service.AtualizarUsuarioService
 import br.com.servicetrack.application.usuario.service.BuscarClienteService
 import br.com.servicetrack.application.usuario.service.CriarUsuarioService
 import br.com.servicetrack.application.usuario.service.DesativarUsuarioService
-import br.com.servicetrack.application.usuario.service.LoginService
 import br.com.servicetrack.application.usuario.service.ResetarSenhaService
 import br.com.servicetrack.infrastructure.auditoria.AuditoriaProxy
 import jakarta.enterprise.context.ApplicationScoped
@@ -33,19 +31,6 @@ class UsuarioServiceConfig {
     ): CriarUsuarioUseCase = AuditoriaProxy.envolver(
         CriarUsuarioService(repository, criptografia),
         CriarUsuarioUseCase::class.java,
-        auditoria
-    )
-
-    @Produces
-    @ApplicationScoped
-    fun loginUsuarioUseCase(
-        usuarioRepository: UsuarioRepositoryPort,
-        criptografia: CriptografiaPort,
-        jwt: JwtPort,
-        auditoria: RegistrarAuditoriaPort
-    ): LoginUsuarioUseCase = AuditoriaProxy.envolver(
-        LoginService(usuarioRepository, criptografia, jwt),
-        LoginUsuarioUseCase::class.java,
         auditoria
     )
 
