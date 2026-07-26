@@ -57,7 +57,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: "Token JWT obtido em `POST /autenticacao`. Envie no cabeçalho como `Authorization: Bearer <token>`."
+      description: "Token JWT emitido pelo serviço de autenticação (`POST /autenticacao`, AWS Lambda). Envie no cabeçalho como `Authorization: Bearer <token>`."
 
 paths:
   /clientes:
@@ -68,10 +68,8 @@ paths:
     $ref: './openApi/mecanicos/mecanicos.yaml'
   /mecanicos/{id}:
     $ref: './openApi/mecanicos/mecanico_id.yaml'
-  /autenticacao:
-    $ref: './openApi/autenticacao/login.yaml'
-  /autenticacao/reset-senha:
-    $ref: './openApi/autenticacao/reset_senha.yaml'
+  /usuarios/senha:
+    $ref: './openApi/usuario/senha.yaml'
   /veiculos:
     $ref: './openApi/veiculo/veiculo.yaml'
   /veiculos/{id}:

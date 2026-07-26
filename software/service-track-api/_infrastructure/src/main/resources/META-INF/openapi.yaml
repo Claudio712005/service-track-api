@@ -367,46 +367,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErroResponse'
-  /autenticacao:
-    post:
-      summary: Realiza o login de um cliente/mecânico e retorna um token JWT e informações básicas do usuário. Não requer autenticação.
-      operationId: login
+  /usuarios/senha:
+    put:
+      summary: Alterar a senha do usuário autenticado. Requer senha atual, nova senha e confirmação.
+      operationId: alterarSenha
       tags:
-        - Login
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginRequest'
-      responses:
-        '200':
-          description: Login bem-sucedido, token JWT e informações do usuário retornados
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LoginResponse'
-        '400':
-          description: Dados de entrada inválidos (falha de validação)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErroResponse'
-        '401':
-          description: Credenciais inválidas (email ou senha incorretos)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErroResponse'
-        '500':
-          description: Erro interno do servidor
-  /autenticacao/reset-senha:
-    post:
-      summary: Redefinir senha do usuário autenticado. Requer senha atual, nova senha e confirmação.
-      operationId: resetarSenha
-      tags:
-        - Login
+        - Usuario
       security:
         - bearerAuth: []
       requestBody:
@@ -414,10 +380,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ResetarSenhaRequest'
+              $ref: '#/components/schemas/AlterarSenhaRequest'
       responses:
         '204':
-          description: Senha redefinida com sucesso
+          description: Senha alterada com sucesso
         '400':
           description: Dados de entrada inválidos (nova senha não atende à política ou confirmação diverge)
           content:
@@ -2156,7 +2122,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: 'Token JWT obtido em `POST /autenticacao`. Envie no cabeçalho como `Authorization: Bearer <token>`.'
+      description: 'Token JWT emitido pelo serviço de autenticação (`POST /autenticacao`, AWS Lambda). Envie no cabeçalho como `Authorization: Bearer <token>`.'
   schemas:
     CadastrarClienteRequest:
       type: object
@@ -2397,54 +2363,7 @@ components:
           minimum: 0.01
           description: Valor cobrado por hora de trabalho do mecânico.
           example: 80
-    LoginRequest:
-      type: object
-      description: Credenciais de acesso para autenticação do usuário.
-      required:
-        - email
-        - senha
-      properties:
-        email:
-          type: string
-          format: email
-          description: E-mail cadastrado do usuário.
-          example: clausilvaaraujo11@gmail.com
-        senha:
-          type: string
-          format: password
-          minLength: 6
-          description: Senha de acesso do usuário.
-          example: Senha@123
-    LoginResponse:
-      type: object
-      description: Dados retornados após autenticação bem-sucedida, incluindo o token JWT.
-      properties:
-        token:
-          type: string
-          description: Token JWT a ser enviado no cabeçalho Authorization dos próximos requests.
-          example: eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c3VhcmlvIn0...
-        usuarioId:
-          type: string
-          format: uuid
-          description: Identificador único do usuário autenticado.
-          example: 550e8400-e29b-41d4-a716-446655440000
-        nome:
-          type: string
-          description: Nome completo do usuário autenticado.
-          example: Cláudio da Silva Araújo
-        email:
-          type: string
-          format: email
-          description: E-mail do usuário autenticado.
-          example: clausilvaaraujo11@gmail.com
-        roles:
-          type: array
-          description: Perfis de acesso do usuário (ex. CLIENTE, MECANICO).
-          items:
-            type: string
-          example:
-            - CLIENTE
-    ResetarSenhaRequest:
+    AlterarSenhaRequest:
       type: object
       description: Dados para redefinição de senha do usuário autenticado.
       required:
