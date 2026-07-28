@@ -320,63 +320,50 @@ Pipeline em `.github/workflows/security.yml`. Executa nos mesmos branches do CI.
 
 ## Observabilidade
 
-Instrumentação **vendor-neutral** com **OpenTelemetry**, exportando **traces, métricas e logs**
-via **OTLP**. A aplicação não conhece o backend: a escolha é apenas por configuração
-(desenvolvimento local usa OpenTelemetry; produção usará Datadog). Decisão em
-[ADR-019](docs/adr/ADR-019-observabilidade-opentelemetry.md) e
-[RFC-019](docs/rfc/RFC-019-observabilidade-opentelemetry.md).
+Instrumentação **vendor-neutral** com OpenTelemetry, exportando traces e métricas por OTLP.
+A aplicação não conhece o backend: quem responde no endpoint OTLP é uma decisão de ambiente
+([ADR-019](docs/adr/ADR-019-observabilidade-opentelemetry.md)).
 
-### Como a arquitetura foi desacoplada
+### Local: Grafana ou Datadog, mesma aplicação
 
-Toda a observabilidade fica na camada `_infrastructure/.../observability/`
-(`configuration/` + `metrics/`), sem código proprietário espalhado pela aplicação:
-
-- `ObservabilityResourceConfig` — atributos do `Resource` OTel (`service.name`, `namespace`,
-  `deployment.environment`).
-- `OtlpMeterRegistryConfig` — registry de métricas via OTLP.
-- `CommonMetricsTagsConfig` — tags comuns das métricas.
-
-O destino é definido só por variável de ambiente — sem alterar código:
-
-```text
-DEV: OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-PRD: OTEL_EXPORTER_OTLP_ENDPOINT=http://datadog-agent:4317
-```
-
-### Ambiente local (100% offline)
+O compose sobe **um dos dois**, e a aplicação não muda de configuração. Os dois backends
+respondem pelo mesmo nome de rede, `coletor-otlp`:
 
 ```bash
-cd software/service-track-api
-docker compose --profile observability up --build
+docker compose --profile grafana up --build     # padrão para desenvolvimento
+docker compose --profile datadog up --build     # exige DD_API_KEY no .env
 ```
 
-Sobe a aplicação + **OpenTelemetry Collector**, **Jaeger**, **Prometheus** e **Grafana** — sem
-Datadog Agent, sem API Key, sem SaaS.
-
-| Sinal | Onde visualizar | URL |
+| Profile | O que sobe | Onde ver |
 |---|---|---|
-| **Traces** | Jaeger UI | `http://localhost:16686` |
-| **Métricas** | Prometheus UI | `http://localhost:9090` |
-| **Métricas + Traces** | Grafana (Prometheus + Jaeger provisionados) | `http://localhost:3001` |
-| **Logs** | stdout da aplicação | `docker logs servicetrack-api` |
+| `grafana` | OpenTelemetry Collector, Jaeger, Prometheus, Grafana | Jaeger `:16686` · Prometheus `:9090` · Grafana `:3001` |
+| `datadog` | Datadog Agent com OTLP, APM e coleta de logs | app.datadoghq.com |
 
-> A exportação de **logs via OTLP** exige Quarkus 3.16+ (o projeto está em 3.15.1); por ora os
-> logs são consultados pelo stdout da aplicação. O pipeline de logs já está pronto no Collector
-> para quando a plataforma for atualizada. Traces e métricas fluem por OTLP normalmente.
+`grafana` é o padrão para teste local: roda **100% offline**, sem conta, sem chave, sem SaaS.
+`datadog` existe para reproduzir localmente o que roda em `hml` e `prd`.
 
-Fluxo: `app --OTLP--> otel-collector --> {Jaeger, Prometheus, logs}`.
-A aplicação roda mesmo sem o stack (os envios OTLP são descartados).
+> Subir os dois profiles ao mesmo tempo faz o alias `coletor-otlp` ficar ambíguo. Suba um de
+> cada vez.
 
-### Futuro: Datadog em produção (só configuração)
+### Logs estruturados
 
-O compose traz um profile `datadog` **preparado** (não-default). Nenhuma mudança de código é
-necessária para usar Datadog — basta apontar o endpoint OTLP para o agente:
+No perfil `prod` os logs saem em **JSON**, com `traceId` e `spanId` no MDC — o que liga cada
+linha de log ao trace que a originou. Em modo de desenvolvimento os logs seguem legíveis.
 
-```bash
-docker compose --profile datadog up   # exige DD_API_KEY no .env
-```
+### Em nuvem
 
-> Esta etapa **não altera** a infraestrutura de produção (Terraform/Kubernetes/pipelines).
+Datadog em `hml` e `prd`, provisionado por Terraform no
+[service-track-aws-iac](https://github.com/Claudio712005/service-track-aws-iac). A aplicação
+envia OTLP para o agente do **próprio node**, via `status.hostIP` — nenhuma configuração da
+aplicação muda entre local e nuvem, apenas o endereço.
+
+Variáveis que o ambiente fornece:
+
+| Variável | De onde vem |
+|---|---|
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `status.hostIP` do node, no Deployment |
+| `OTEL_ENVIRONMENT` | ConfigMap do overlay (`local`, `hml`, `prd`) |
+| `OTEL_SERVICE_NAME` | Deployment |
 
 ---
 
