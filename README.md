@@ -117,6 +117,7 @@ Para detalhes de cada camada, veja:
 | [ADR-004](docs/adr/ADR-004-quarkus.md) | Quarkus | Startup rápido, suporte nativo a CDI/MicroProfile |
 | [ADR-005](docs/adr/ADR-005-autenticacao-jwt.md) | JWT RS256 | Stateless, integrado via SmallRye JWT · emissão movida para a Lambda em `GLOBAL-ADR-004` |
 | [ADR-019](docs/adr/ADR-019-observabilidade-opentelemetry.md) | Observabilidade OpenTelemetry | Vendor-neutral via OTLP; backend por configuração |
+| [ADR-020](docs/adr/ADR-020-aplicacao-nao-e-dona-de-infraestrutura.md) | Aplicação sem infraestrutura | Uma única descrição da infra; CD delega o deploy |
 
 As decisões de infraestrutura tomadas na Fase 2 — [ADR-015](docs/adr/ADR-015-kubernetes-eks.md)
 (EKS), [ADR-016](docs/adr/ADR-016-terraform-iac.md) (Terraform),
