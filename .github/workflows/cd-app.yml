@@ -1,31 +1,52 @@
-name: CD - App (GitOps)
+name: CD - App
 
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - 'infra/k8s/overlays/prod/kustomization.yaml'
+    paths:
+      - 'software/service-track-api/**'
+      - '.github/workflows/cd-app.yml'
   workflow_dispatch:
+    inputs:
+      env:
+        description: Ambiente alvo
+        required: true
+        type: choice
+        options: [hml, prd]
+        default: hml
+      image_tag:
+        description: Tag ja publicada a promover. Vazio constroi a partir do commit atual.
+        required: false
+        type: string
 
 permissions:
-  contents: write  
+  contents: read
 
 env:
   AWS_REGION: us-east-1
   APP_DIR: software/service-track-api
-  ECR_REPO: service-track-app
-  OVERLAY_DIR: infra/k8s/overlays/prod
-  CLUSTER_NAME: servicetrack-dev
+  IAC_REPO: Claudio712005/service-track-aws-iac
 
 jobs:
-  build-and-bump:
-    name: Build, push e bump (GitOps)
+  publicar:
+    name: Publica a imagem e dispara o deploy
     runs-on: ubuntu-latest
+    environment: ${{ inputs.env || 'hml' }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0
+
+      - name: Definir ambiente e tag
+        id: alvo
+        run: |
+          AMBIENTE="${{ inputs.env || 'hml' }}"
+          TAG="${{ inputs.image_tag }}"
+          if [ -n "$TAG" ]; then PROMOVER=true; else TAG="${{ github.sha }}"; PROMOVER=false; fi
+          {
+            echo "ambiente=$AMBIENTE"
+            echo "tag=$TAG"
+            echo "repositorio=servicetrack-$AMBIENTE-app"
+            echo "promover=$PROMOVER"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Configurar credenciais AWS
         uses: aws-actions/configure-aws-credentials@v4
@@ -39,104 +60,77 @@ jobs:
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Definir referencia da imagem
-        run: |
-          echo "IMAGE=${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPO }}:${{ github.sha }}" >> "$GITHUB_ENV"
-
       - name: Setup Buildx
+        if: steps.alvo.outputs.promover == 'false'
         uses: docker/setup-buildx-action@v3
 
       - name: Build e push da imagem
+        if: steps.alvo.outputs.promover == 'false'
         uses: docker/build-push-action@v6
         with:
           context: ${{ env.APP_DIR }}
           platforms: linux/amd64
           push: true
-          tags: ${{ env.IMAGE }}
+          tags: ${{ steps.ecr.outputs.registry }}/${{ steps.alvo.outputs.repositorio }}:${{ steps.alvo.outputs.tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Instalar kustomize
+      - name: Confirmar que a tag existe no ECR
         run: |
-          KUSTOMIZE_VERSION=5.4.3
-          curl -sfL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" -o kustomize.tar.gz
-          tar -xzf kustomize.tar.gz
-          sudo mv kustomize /usr/local/bin/
-          kustomize version
+          aws ecr describe-images \
+            --repository-name "${{ steps.alvo.outputs.repositorio }}" \
+            --image-ids imageTag="${{ steps.alvo.outputs.tag }}" >/dev/null
 
-      - name: Bump da imagem no overlay (GitOps)
+      - name: Portao de vulnerabilidade
         run: |
-          cd "$OVERLAY_DIR"
-          kustomize edit set image servicetrack-api="${IMAGE}"
+          REPO="${{ steps.alvo.outputs.repositorio }}"
+          TAG="${{ steps.alvo.outputs.tag }}"
+          STATUS=PENDING
 
-      - name: Commit e push do bump
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "$OVERLAY_DIR/kustomization.yaml"
-          if git diff --cached --quiet; then
-            echo "Sem mudanca de imagem; nada a commitar."
-          else
-            git commit -m "chore(cd): deploy image ${{ github.sha }} [skip ci]"
-            git push origin main
+          for i in $(seq 1 30); do
+            STATUS="$(aws ecr describe-image-scan-findings \
+              --repository-name "$REPO" --image-id imageTag="$TAG" \
+              --query imageScanStatus.status --output text 2>/dev/null || echo PENDING)"
+            case "$STATUS" in
+              COMPLETE) break ;;
+              FAILED) echo "::warning::scan do ECR falhou; seguindo sem o portao"; exit 0 ;;
+              *) echo "aguardando scan do ECR... ($i/30)"; sleep 10 ;;
+            esac
+          done
+
+          if [ "$STATUS" != "COMPLETE" ]; then
+            echo "::warning::scan do ECR nao concluiu a tempo; seguindo sem o portao"
+            exit 0
           fi
 
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v4
+          CRITICAS="$(aws ecr describe-image-scan-findings \
+            --repository-name "$REPO" --image-id imageTag="$TAG" \
+            --query 'imageScanFindings.findingSeverityCounts.CRITICAL' --output text)"
+          [ "$CRITICAS" = "None" ] && CRITICAS=0
 
-      - name: Registrar AppProject + Application no ArgoCD
-        run: |
-          aws eks update-kubeconfig --name "$CLUSTER_NAME" --region "$AWS_REGION"
-          kubectl apply -f infra/argocd/projects/service-track.appproject.yaml
-          kubectl apply -f infra/argocd/applications/service-track-prod.application.yaml
-          kubectl -n argocd get applications
-
-      - name: Resumo (imagem + URLs + acesso)
-        run: |
-
-          # Bootstrap ja rodou? (secrets obrigatorios do app)
-          BOOTSTRAP_OK=true
-          kubectl -n service-track get secret service-track-secret >/dev/null 2>&1 || BOOTSTRAP_OK=false
-          kubectl -n service-track get secret service-track-jwt    >/dev/null 2>&1 || BOOTSTRAP_OK=false
-          kubectl -n service-track get configmap service-track-runtime >/dev/null 2>&1 || BOOTSTRAP_OK=false
-
-          # Espera o hostname do LB da API (ELB leva ~1-3 min) — so faz sentido pos-bootstrap.
-          API_HOST=""
-          if [ "$BOOTSTRAP_OK" = true ]; then
-            for i in $(seq 1 18); do
-              API_HOST="$(kubectl -n service-track get svc service-track-app-lb \
-                -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)"
-              [ -n "$API_HOST" ] && break
-              echo "aguardando hostname do LB da API... ($i/18)"; sleep 10
-            done
+          echo "vulnerabilidades criticas: $CRITICAS"
+          if [ "$CRITICAS" -gt 0 ]; then
+            echo "::error::imagem com $CRITICAS vulnerabilidade(s) CRITICAL; deploy interrompido"
+            exit 1
           fi
 
-          ARGO_HOST="$(kubectl -n argocd get svc argocd-server \
-            -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)"
-          ARGO_PASS="$(kubectl -n argocd get secret argocd-initial-admin-secret \
-            -o jsonpath='{.data.password}' 2>/dev/null | base64 -d || true)"
+      - name: Disparar o deploy no repositorio de infraestrutura
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.IAC_REPO_TOKEN }}
+          repository: ${{ env.IAC_REPO }}
+          event-type: image-published
+          client-payload: '{"environment": "${{ steps.alvo.outputs.ambiente }}", "image_tag": "${{ steps.alvo.outputs.tag }}"}'
 
-          APP_STATUS="$(kubectl -n argocd get application service-track-prod \
-            -o jsonpath='{.status.sync.status}/{.status.health.status}' 2>/dev/null || echo 'nao registrada')"
-
+      - name: Resumo
+        run: |
           {
-            echo "## ServiceTrack — Deploy (GitOps)"
-            echo ""
-            echo "| Item | Valor |"
-            echo "|---|---|"
-            echo "| Imagem | \`${IMAGE}\` |"
-            echo "| ArgoCD app | service-track-prod — ${APP_STATUS} |"
-            echo "| API publica | ${API_HOST:+http://$API_HOST} |"
-            echo "| Swagger | ${API_HOST:+http://$API_HOST/q/swagger-ui} |"
-            echo "| ArgoCD | ${ARGO_HOST:+http://$ARGO_HOST} |"
-            echo "| ArgoCD login | admin / ${ARGO_PASS:-<ver secret argocd-initial-admin-secret>} |"
-            echo ""
-            if [ "$BOOTSTRAP_OK" = false ]; then
-              echo "> ❌ **Bootstrap Prod ainda nao rodou** (secrets/config de runtime ausentes)."
-              echo "> Sem ele os pods nao sobem (CrashLoop) e a API nao tera URL."
-              echo "> Rode: Actions → **Bootstrap Prod (secrets + DB roles + ArgoCD app)** → Run workflow."
-            elif [ -z "$API_HOST" ]; then
-              echo "> ⏳ LB da API ainda provisionando. Aguarde ~2 min e recarregue, ou re-execute o workflow."
-            fi
-            echo ""
-            echo "> ⚠️ Ambiente de lab: a senha do ArgoCD e exibida para facilitar o teste."
-            echo "> Em producao, remova esta linha e troque a senha do admin apos o 1o login."
+            echo "### Imagem publicada"
+            echo
+            echo "- ambiente: \`${{ steps.alvo.outputs.ambiente }}\`"
+            echo "- repositorio ECR: \`${{ steps.alvo.outputs.repositorio }}\`"
+            echo "- tag: \`${{ steps.alvo.outputs.tag }}\`"
+            echo
+            echo "O deploy foi delegado a [${{ env.IAC_REPO }}](https://github.com/${{ env.IAC_REPO }}),"
+            echo "que atualiza o overlay do ambiente e deixa o ArgoCD sincronizar."
           } >> "$GITHUB_STEP_SUMMARY"
