@@ -2,11 +2,36 @@
 
 Backend para gestão de ordens de serviço de oficinas mecânicas. Responsável por controlar todo o ciclo de vida de uma OS — da abertura ao diagnóstico, orçamento, execução e entrega — com auditoria das operações de negócio.
 
-> **Autenticação não vive mais aqui.** Desde a Fase 3 o login é feito por CPF em uma função
-> serverless externa ([service-track-lambda](https://github.com/Claudio712005/service-track-lambda)),
-> decidido em `GLOBAL-ADR-004`. Esta API **valida** os tokens emitidos por ela e continua
-> assinando apenas o token de decisão de orçamento do magic link ([ADR-014](docs/adr/ADR-014-aprovacao-orcamento-magic-link.md)).
-> A troca de senha do usuário autenticado permanece aqui, em `PUT /usuarios/senha`.
+**Este repositório contém apenas a aplicação.** Infraestrutura, banco e autenticação vivem em
+repositórios próprios — ver [O sistema](#o-sistema).
+
+---
+
+## O sistema
+
+O ServiceTrack é distribuído em quatro repositórios. Cada um tem um dono claro, e nenhum
+provisiona o que pertence a outro.
+
+| Repositório | É dono de |
+|---|---|
+| **service-track-api** *(este)* | domínio, casos de uso, API REST, migrations Flyway |
+| [service-track-aws-iac](https://github.com/Claudio712005/service-track-aws-iac) | rede, EKS, API Gateway, contrato de exposição, manifestos Kubernetes, ArgoCD |
+| [service-track-db-infra](https://github.com/Claudio712005/service-track-db-infra) | RDS PostgreSQL, orçamento de conexões, roles de runtime |
+| [service-track-lambda](https://github.com/Claudio712005/service-track-lambda) | autenticação serverless por CPF e emissão de JWT |
+
+**O que saiu desta aplicação:**
+
+- **Infraestrutura e Kubernetes.** Terraform, manifestos e ArgoCD estão em
+  `service-track-aws-iac`. Este repositório não provisiona nada.
+- **Autenticação.** O login por CPF é da função serverless. Esta API **valida** os tokens
+  emitidos por ela e assina apenas o token de decisão de orçamento do magic link
+  ([ADR-014](docs/adr/ADR-014-aprovacao-orcamento-magic-link.md)). A troca de senha do usuário
+  autenticado permanece aqui, em `PUT /usuarios/senha`.
+- **Banco de dados.** A instância, as roles e o teto de conexões são de `service-track-db-infra`.
+  O **schema** continua aqui, nas migrations Flyway.
+
+Ordem de subida de um ambiente — rede → banco → stack — documentada no README do
+`service-track-aws-iac`.
 
 ---
 
@@ -49,9 +74,8 @@ geração do orçamento (`POST /ordem-servico/{id}/orcamento`).
 | Criptografia de senha | BCrypt |
 | Build | Gradle Kotlin DSL (multi-module) |
 | Containers | Docker + Docker Compose |
-| Orquestração (prod) | Kubernetes — Amazon EKS 1.30, multi-AZ + HPA |
-| IaC | Terraform (VPC, EKS, ECR, RDS, ArgoCD) — state em S3 |
-| CD / GitOps | ArgoCD (auto-sync, self-heal) + GitHub Actions |
+| Orquestração (prod) | Kubernetes — provisionado em `service-track-aws-iac` |
+| CD | GitHub Actions publica a imagem no ECR e delega o deploy ao repositório de infraestrutura |
 | Qualidade | JaCoCo + SonarCloud |
 | Segurança (SAST) | Semgrep |
 | CI | GitHub Actions |
@@ -92,11 +116,14 @@ Para detalhes de cada camada, veja:
 | [ADR-003](docs/adr/ADR-003-kotlin.md) | Kotlin | Expressividade, null safety, value classes |
 | [ADR-004](docs/adr/ADR-004-quarkus.md) | Quarkus | Startup rápido, suporte nativo a CDI/MicroProfile |
 | [ADR-005](docs/adr/ADR-005-autenticacao-jwt.md) | JWT RS256 | Stateless, integrado via SmallRye JWT · emissão movida para a Lambda em `GLOBAL-ADR-004` |
-| [ADR-015](docs/adr/ADR-015-kubernetes-eks.md) | Kubernetes no EKS | HPA, multi-AZ, alta disponibilidade |
-| [ADR-016](docs/adr/ADR-016-terraform-iac.md) | Terraform (IaC) | Ambiente reproduzível: VPC, EKS, ECR, RDS, ArgoCD |
-| [ADR-017](docs/adr/ADR-017-gitops-argocd.md) | GitOps com ArgoCD | Git como fonte de verdade, auto-sync e self-heal |
-| [ADR-018](docs/adr/ADR-018-bootstrap-scripts-operacionais.md) | Bootstrap de segredos | Segredos/config dinâmica fora do Git, idempotente |
 | [ADR-019](docs/adr/ADR-019-observabilidade-opentelemetry.md) | Observabilidade OpenTelemetry | Vendor-neutral via OTLP; backend por configuração |
+
+As decisões de infraestrutura tomadas na Fase 2 — [ADR-015](docs/adr/ADR-015-kubernetes-eks.md)
+(EKS), [ADR-016](docs/adr/ADR-016-terraform-iac.md) (Terraform),
+[ADR-017](docs/adr/ADR-017-gitops-argocd.md) (GitOps) e
+[ADR-018](docs/adr/ADR-018-bootstrap-scripts-operacionais.md) (bootstrap) — continuam válidas
+como decisão, mas **a execução delas vive em `service-track-aws-iac`**. Os documentos ficam
+aqui por serem o registro histórico de quando foram tomadas.
 
 ---
 
@@ -204,21 +231,15 @@ http://localhost:8080/q/swagger-ui
 
 ```
 ServiceTrack-API/
-├── .github/workflows/     # ci, security, cd-app (GitOps), infra (Terraform), bootstrap-prod
+├── .github/workflows/     # ci, security, cd-app
 ├── docs/
 │   ├── adr/               # Architecture Decision Records (001–019)
 │   ├── rfc/               # Request for Comments (001–019)
 │   ├── c4/                # Diagramas C4 (context, container, components, code)
-│   ├── infra/             # Desenhos renderizados: aws-infra, deployment, ci-cd (PNG/drawio)
+│   ├── infra/             # Desenhos renderizados da Fase 2 (histórico)
 │   ├── mvp-1/ mvp-2/      # Enunciados das fases + colinha do vídeo (mvp-2)
 │   ├── template/          # Templates de ADR/RFC
 │   └── srs.md             # Software Requirements Specification
-├── infra/
-│   ├── terraform/         # IaC: VPC, EKS, ECR, RDS, ArgoCD, metrics-server
-│   ├── k8s/               # base/ + overlays/{local,prod} (Kustomize) + db-init-job
-│   ├── argocd/            # bootstrap, AppProject, Applications (local e prod)
-│   └── kind/              # cluster local de validação
-├── scripts/               # aws-student-login, tf, bootstrap-prod, aws-lb-cleanup, db-seed, demo-hpa
 └── software/
     └── service-track-api/
         ├── _domain/        # Regras de negócio puras
@@ -236,9 +257,11 @@ ServiceTrack-API/
 
 ---
 
-## CI
+## CI e CD
 
-Pipeline em `.github/workflows/ci.yml`. Executa em pushes para `main`, `develop` e `fase-*`.
+### CI — `.github/workflows/ci.yml`
+
+Executa em pushes para `main`, `develop` e `fase-*`.
 
 **Jobs (encadeados):**
 
@@ -248,6 +271,37 @@ Pipeline em `.github/workflows/ci.yml`. Executa em pushes para `main`, `develop`
 | Application Coverage | `./gradlew :_application:test :_application:jacocoTestReport` |
 | Infrastructure Coverage | Gera chaves JWT temporárias via OpenSSL, executa `./gradlew :_infrastructure:test :_infrastructure:jacocoTestReport` |
 | Sonar Analysis | Agrega os três relatórios e envia para SonarCloud |
+
+### CD — `.github/workflows/cd-app.yml`
+
+Este repositório **publica a imagem e delega o deploy**. Não aplica Terraform nem toca no
+cluster.
+
+```
+push na main ──► build ──► push no ECR servicetrack-<env>-app (tag = commit SHA)
+                              │
+                              ├─ portão: falha se o scan do ECR apontar CRITICAL
+                              │
+                              └─ repository_dispatch (image-published)
+                                        │
+                                        ▼
+                   service-track-aws-iac reescreve a tag do overlay
+                                        │
+                                        ▼
+                            ArgoCD sincroniza o cluster
+```
+
+| Gatilho | Ambiente |
+|---|---|
+| push na `main` | `hml`, automático |
+| **Run workflow** | `hml` ou `prd`; informando `image_tag`, promove uma imagem já publicada sem reconstruir |
+
+Segredos necessários: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` por
+environment, e `IAC_REPO_TOKEN` — um token fino com `contents: write` apenas no repositório de
+infraestrutura. Se vazar, o dano máximo é um commit de bump, revertível.
+
+O portão de vulnerabilidade é responsabilidade desta esteira, por decisão registrada no
+repositório de infraestrutura: ele só recebe uma tag já aprovada.
 
 ---
 
@@ -260,171 +314,6 @@ Pipeline em `.github/workflows/security.yml`. Executa nos mesmos branches do CI.
 - Gera relatórios JSON e SARIF
 - **Bloqueia o pipeline** se houver findings Critical/High
 - SARIF enviado ao GitHub Code Scanning (Security tab)
-
----
-
-## Fase 2 — Infraestrutura, Deploy e GitOps
-
-Evolução da Fase 1 para atender escalabilidade dinâmica, alta disponibilidade e deploy
-automatizado ([enunciado](docs/mvp-2/CASE.md)). Decisões completas em
-[ADR-015](docs/adr/ADR-015-kubernetes-eks.md) (EKS), [ADR-016](docs/adr/ADR-016-terraform-iac.md)
-(Terraform), [ADR-017](docs/adr/ADR-017-gitops-argocd.md) (ArgoCD) e
-[ADR-018](docs/adr/ADR-018-bootstrap-scripts-operacionais.md) (bootstrap/scripts).
-
-### Descrição da solução e objetivos
-
-Com o aumento de demanda e a expansão para novas unidades, a oficina precisava de um ambiente
-resiliente e elástico. Esta fase evolui a API da Fase 1 sem alterar o domínio, focando em
-**infraestrutura, automação e escalabilidade**:
-
-- **Escalabilidade dinâmica** — HPA escala a aplicação de 2 a 10 réplicas conforme CPU/memória,
-  suportando picos de ordens de serviço sem intervenção manual.
-- **Alta disponibilidade** — cluster EKS multi-AZ (2 zonas), réplicas espalhadas por AZ e RDS
-  gerenciado; a queda de uma zona não derruba o serviço.
-- **Provisionamento automatizado** — toda a infraestrutura é descrita em Terraform (IaC),
-  reproduzível e versionada.
-- **Deploy automatizado (GitOps)** — o Git é a fonte da verdade; ArgoCD sincroniza o cluster a
-  cada commit, com rolling update e self-heal.
-- **Qualidade sustentável** — arquitetura hexagonal, testes automatizados (unitários e de
-  integração), cobertura no SonarCloud e SAST com Semgrep na esteira.
-
-### Desenho da arquitetura proposta
-
-**Componentes da aplicação** — monólito modular em Kotlin/Quarkus, três módulos Gradle alinhados
-à Arquitetura Hexagonal (`_domain → _application → _infrastructure`, ver
-[Arquitetura](#arquitetura)). Exposta via REST (contract-first OpenAPI), autenticação JWT RS256,
-persistência em PostgreSQL e notificações por e-mail (Resend). Diagramas C4 em
-[docs/c4/](docs/c4/) (contexto, container e componentes por módulo).
-
-**Infraestrutura provisionada** — VPC multi-AZ na AWS, cluster EKS com a aplicação em pods
-gerenciados por HPA, RDS PostgreSQL privado, imagens no ECR e ArgoCD no cluster.
-
-![Infraestrutura AWS](docs/infra/aws-infra.drawio.png)
-
-**Deployment (C4)** — distribuição dos artefatos em execução no cluster.
-
-![Deployment](docs/infra/deployment.png)
-
-**Fluxo de deploy (esteira CI/CD + GitOps)**
-
-![Esteira CI/CD](docs/infra/ci-cd.png)
-
-### Componentes da infraestrutura
-
-| Componente | Detalhe |
-|---|---|
-| VPC | `10.0.0.0/16`, 2 AZs (us-east-1a/b), subnets públicas + privadas, NAT único |
-| EKS 1.30 | node group `t3.medium` (2 nós, um por AZ) com `LabRole` |
-| Aplicação | Deployment `service-track-app` (2–10 réplicas via **HPA** CPU 70%/mem 80%), probes `/q/health/*`, réplicas espalhadas por AZ |
-| Banco | RDS PostgreSQL 16 privado (acesso só do SG do cluster), roles `flyway_user`/`app_user` |
-| Registro | ECR `service-track-app` (tag = git-sha, scan on push) |
-| GitOps | ArgoCD (chart 7.7.0 via Terraform/Helm), auto-sync + self-heal do overlay `prod` |
-| Métricas | metrics-server (requisito do HPA) |
-
-### Fluxo de deploy (GitOps)
-
-```
-push na main ──► CD (cd-app.yml): build ──► push ECR ──► bump da tag no overlay (commit [skip ci])
-                                                                    │
-                                                                    ▼
-                                          ArgoCD (in-cluster) detecta o commit e sincroniza
-                                                                    │
-                                                                    ▼
-                                    EKS: rolling update · HPA mantém 2–10 réplicas por carga
-```
-
-Pipelines: `infra.yml` (Terraform plan/apply/destroy — manual), `bootstrap-prod.yml`
-(segredos + roles no RDS + registro no ArgoCD — manual, 1x após o apply) e `cd-app.yml`
-(contínuo). Ordem da primeira subida: **Infra → Bootstrap → push/CD**.
-
-### Instruções de execução
-
-Resumo por cenário; os passos detalhados de cada um estão nas subseções abaixo.
-
-| Cenário | Guia |
-|---|---|
-| Execução local (docker-compose ou quarkusDev) | [1. Execução local](#1-execução-local) |
-| Provisionamento AWS (Terraform) | [2. Provisionamento da infraestrutura com Terraform](#2-provisionamento-da-infraestrutura-com-terraform) |
-| Deploy em produção (K8s + GitOps) | [3. Deploy em Kubernetes](#3-deploy-em-kubernetes) · [ADR-017](docs/adr/ADR-017-gitops-argocd.md) |
-| Kubernetes local (kind + ArgoCD) | `infra/k8s/overlays/local/` + `infra/argocd/applications/service-track-local.application.yaml` |
-| Demonstração de escalabilidade (HPA) | `scripts/demo-hpa.sh` (carga autenticada + `watch kubectl get hpa,pods`) |
-
-#### 1. Execução local
-
-Ver [Como rodar o projeto](#como-rodar-o-projeto): `docker compose up --build` (com Postgres) ou
-`./gradlew :_infrastructure:quarkusDev` (H2 in-memory). Swagger em `http://localhost:8080/q/swagger-ui`.
-
-#### 2. Provisionamento da infraestrutura com Terraform
-
-Provisiona VPC, EKS, RDS, ECR e ArgoCD. State remoto em S3. Requer AWS CLI autenticada
-(`scripts/aws-student-login.sh`). Decisão em [ADR-016](docs/adr/ADR-016-terraform-iac.md).
-
-```bash
-# scripts/tf.sh encapsula `terraform -chdir=infra/terraform` com o profile aws-student
-./scripts/tf.sh init
-./scripts/tf.sh plan
-./scripts/tf.sh apply        # cria toda a infra (~15 min p/ o EKS)
-
-# destruir o ambiente
-./scripts/tf.sh destroy
-```
-
-Recursos criados (documentados em `infra/terraform/*.tf`): `vpc.tf`, `eks.tf`, `rds.tf`,
-`ecr.tf`, `argocd.tf`. Variáveis em `variables.tf` (exemplo em `terraform.tfvars.example`).
-
-#### 3. Deploy em Kubernetes
-
-Manifestos em `infra/k8s/` (Kustomize: `base/` + `overlays/{local,prod}`). Em produção o deploy
-é **contínuo via GitOps** — não se aplica YAML na mão; o ArgoCD sincroniza o overlay `prod`.
-**Ordem da primeira subida: Infra → Bootstrap → CD.**
-
-```bash
-# ordem obrigatoria na primeira subida:
-# 1) Infra (acima)   2) Bootstrap   3) CD (push na main)
-
-# 2) Bootstrap (1x): cria Secrets, ConfigMaps, roles no RDS e registra o app no ArgoCD
-#    via Actions → "Bootstrap Prod" → Run workflow, ou localmente:
-./scripts/bootstrap-prod.sh
-
-# 3) Deploy contínuo: qualquer push na main dispara cd-app.yml (build → ECR → bump → ArgoCD)
-
-# inspecionar o cluster:
-kubectl -n service-track get deploy,pods,svc,hpa
-kubectl -n argocd get application service-track-prod
-
-# render local dos manifestos (sem aplicar), para revisão:
-kubectl kustomize infra/k8s/overlays/prod
-```
-
-> Sem o Bootstrap os pods não sobem (faltam os Secrets/ConfigMap de runtime e as roles do RDS).
-
-#### Demonstração de escalabilidade (HPA)
-
-```bash
-# terminal A — acompanha o scale em tempo real
-watch -n2 'kubectl -n service-track get hpa,pods'
-
-# terminal B — gera carga autenticada (usa `hey` por baixo)
-API_URL="http://<elb-da-api>" EMAIL="<email>" SENHA="<senha>" ./scripts/demo-hpa.sh 180 60
-```
-
-### Diagramas
-
-Artefatos renderizados em [docs/infra/](docs/infra/): infraestrutura AWS
-(`aws-infra.drawio.png`, fonte editável `aws-infra.drawio.xml`), deployment C4
-(`deployment.png`) e esteira CI/CD (`ci-cd.png`).
-Diagramas C4 da aplicação (contexto/container/componentes) em [docs/c4/](docs/c4/).
-
-### Entregáveis
-
-- **Collection completa das APIs (Postman):**
-  [service-track.postman_collection.json](software/service-track-api/service-track.postman_collection.json)
-  — importar no Postman; inclui todo o fluxo da OS, scripts de autenticação e variáveis com defaults.
-  Alternativa viva: **Swagger UI** em `http://<elb-da-api>/q/swagger-ui` (local:
-  `http://localhost:8080/q/swagger-ui`). Contratos OpenAPI versionados em
-  `software/service-track-api/openApi/`.
-- **Vídeo demonstrativo (≤15 min):** https://www.youtube.com/watch?v=EXMPSr7ylxg
-  — demonstra deploy, execução do CI/CD, consumo das APIs e escalabilidade automática (HPA).
 
 ---
 
@@ -500,10 +389,11 @@ Medida por módulo com JaCoCo e consolidada no SonarCloud. Exclusões: DTOs, ent
 
 | Item | Status |
 |---|---|
-| Infraestrutura como código (Terraform) | **Implementado** — [ADR-016](docs/adr/ADR-016-terraform-iac.md), `infra/terraform/` |
-| Kubernetes (EKS) + HPA multi-AZ | **Implementado** — [ADR-015](docs/adr/ADR-015-kubernetes-eks.md), `infra/k8s/` |
-| Pipeline de CD / deploy automatizado (GitOps) | **Implementado** — [ADR-017](docs/adr/ADR-017-gitops-argocd.md), `.github/workflows/cd-app.yml` |
 | Notificações ao cliente (e-mail) | **Implementado** — [ADR-009](docs/adr/ADR-009-notificacoes-email.md), [ADR-014](docs/adr/ADR-014-aprovacao-orcamento-magic-link.md) |
-| External Secrets / Sealed Secrets | Possível evolução ([ADR-018](docs/adr/ADR-018-bootstrap-scripts-operacionais.md)) |
-| Cluster Autoscaler / Karpenter | Possível evolução |
+| Observabilidade OpenTelemetry | **Implementado** — [ADR-019](docs/adr/ADR-019-observabilidade-opentelemetry.md) |
+| Logs estruturados em JSON com correlação | Pendente |
 | Migração para microsserviços | Possível evolução pós-validação do monólito |
+
+Itens de infraestrutura — Terraform, Kubernetes com HPA, GitOps e secrets — são acompanhados
+nos repositórios donos: [service-track-aws-iac](https://github.com/Claudio712005/service-track-aws-iac)
+e [service-track-db-infra](https://github.com/Claudio712005/service-track-db-infra).
