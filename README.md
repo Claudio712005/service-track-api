@@ -336,8 +336,14 @@ docker compose --profile datadog up --build     # exige DD_API_KEY no .env
 
 | Profile | O que sobe | Onde ver |
 |---|---|---|
-| `grafana` | OpenTelemetry Collector, Jaeger, Prometheus, Grafana | Jaeger `:16686` · Prometheus `:9090` · Grafana `:3001` |
+| `grafana` | Collector, Jaeger, Prometheus, **Loki**, **Promtail**, Grafana | Grafana `:3001` (traces, métricas e logs) · Jaeger `:16686` · Prometheus `:9090` |
 | `datadog` | Datadog Agent com OTLP, APM e coleta de logs | app.datadoghq.com |
+
+Traces e métricas chegam por OTLP. **Logs chegam por outro caminho:** a aplicação escreve JSON
+no stdout e o Promtail lê pelo socket do Docker, empurrando para o Loki — o mesmo princípio que
+o agente do Datadog usa na nuvem. Exportar log por OTLP exigiria Quarkus 3.16+.
+
+No Grafana, o campo `traceId` do log é clicável e leva ao trace no Jaeger.
 
 `grafana` é o padrão para teste local: roda **100% offline**, sem conta, sem chave, sem SaaS.
 `datadog` existe para reproduzir localmente o que roda em `hml` e `prd`.
@@ -345,10 +351,26 @@ docker compose --profile datadog up --build     # exige DD_API_KEY no .env
 > Subir os dois profiles ao mesmo tempo faz o alias `coletor-otlp` ficar ambíguo. Suba um de
 > cada vez.
 
-### Logs estruturados
+### Logs estruturados e rastreabilidade dos casos de uso
 
-No perfil `prod` os logs saem em **JSON**, com `traceId` e `spanId` no MDC — o que liga cada
-linha de log ao trace que a originou. Em modo de desenvolvimento os logs seguem legíveis.
+No perfil `prod` os logs saem em **JSON**, com `traceId` e `spanId` no MDC. Em modo de
+desenvolvimento seguem legíveis.
+
+Todo caso de uso da camada de aplicação é observado por um proxy dinâmico (`UseCaseProxy`),
+que emite três sinais sem que o caso de uso saiba disso:
+
+| Sinal | Nome |
+|---|---|
+| Span | código do caso de uso, por exemplo `OS_CRIAR` |
+| Log | `use_case`, `entidade`, `duracao_ms`, `erro_codigo`, `erro_tipo` + campos marcados |
+| Métrica | `servicetrack.usecase.duracao` e `servicetrack.usecase.execucoes`, com tags `use_case`, `entidade` e `resultado` |
+
+O que aparece do payload é **decidido por anotação, e o padrão é não aparecer**: só campos
+marcados com `@Rastreavel` são logados, e `@Mascarado` revela apenas os últimos dígitos. Senha
+não tem anotação nenhuma — não aparece nem mascarada.
+
+Mensagem de exceção só é logada quando a exceção vem dos pacotes da aplicação ou do domínio.
+Erro de terceiro registra apenas o tipo, porque a mensagem pode carregar dado do usuário.
 
 ### Em nuvem
 
