@@ -8,6 +8,8 @@ import br.com.servicetrack.application.dashboard.dto.response.VeiculoDashResDTO
 import br.com.servicetrack.application.dashboard.ports.`in`.BuscarResumoDashClienteUseCase
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.ordemServico.ports.out.OrdemServicoRepositoryPort
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
@@ -39,6 +41,8 @@ class BuscarResumoDashClienteService(
         StatusOrdemServicoEnum.ENTREGUE,
         StatusOrdemServicoEnum.CANCELADA,
     )
+
+    @Observavel(codigo = CodigoUseCase.DASHBOARD_RESUMO_CLIENTE)
 
     override fun buscarResumo(clienteId: String): ResumoDashClienteResDTO {
         val solicitanteId = jwt.getUsuarioId()

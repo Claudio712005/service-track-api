@@ -1,5 +1,7 @@
 package br.com.servicetrack.application.dashboard.dto.response
 
+import br.com.servicetrack.application.observabilidade.annotation.Mascarado
+import br.com.servicetrack.application.observabilidade.annotation.Rastreavel
 import br.com.servicetrack.domain.ordemServico.StatusOrdemServicoEnum
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -13,12 +15,16 @@ data class ResumoResDTO(
 )
 
 data class OrdensAtivasResDTO(
+    @field:Rastreavel
     val id: String,
     val motivo: String,
+    @field:Rastreavel
     val status: String,
+    @field:Rastreavel
     val veiculoId: String,
     val veiculoPlaca: String,
     val veiculoModelo: String,
+    @field:Rastreavel
     val mecanicoId: String,
     val mecanicoNome: String,
     val dataCriacao: LocalDateTime,
@@ -29,9 +35,12 @@ data class OrdensAtivasResDTO(
 )
 
 data class OrdensRecentesResDTO(
+    @field:Rastreavel
     val id: String,
     val motivo: String,
+    @field:Rastreavel
     val status: StatusOrdemServicoEnum,
+    @field:Rastreavel
     val veiculoId: String,
     val veiculoPlaca: String,
     val veiculoModelo: String,
@@ -43,7 +52,9 @@ data class OrdensRecentesResDTO(
 )
 
 data class VeiculoDashResDTO(
+    @field:Rastreavel
     val id: String,
+    @field:Mascarado(visiveis = 3)
     val placa: String,
     val marca: String,
     val modelo: String,
@@ -57,6 +68,7 @@ data class VeiculoDashResDTO(
 )
 
 data class ResumoDashClienteResDTO(
+    @field:Rastreavel
     val usuarioId: String,
     val usuarioNome: String,
     val resumo: ResumoResDTO,

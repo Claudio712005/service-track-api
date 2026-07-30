@@ -1,6 +1,8 @@
 package br.com.servicetrack.application.servico.service
 
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.ordemServico.ports.out.ItemOrdemServicoRepositoryPort
 import br.com.servicetrack.application.servico.dto.TempoMedioResDTO
 import br.com.servicetrack.application.servico.ports.`in`.BuscarTempoMedioConclusaoUseCase
@@ -13,6 +15,8 @@ class BuscarTempoMedioConclusaoService(
     private val servicoRepository: ServicoRepositoryPort,
     private val itemOrdemServicoRepository: ItemOrdemServicoRepositoryPort,
 ) : BuscarTempoMedioConclusaoUseCase {
+
+    @Observavel(codigo = CodigoUseCase.SERVICO_TEMPO_MEDIO)
 
     override fun buscarTempoMedio(servicoId: String, unidade: UnidadeTempoEnum): TempoMedioResDTO {
         val id = ServicoId(servicoId)

@@ -4,6 +4,8 @@ import br.com.servicetrack.application.notificacao.dto.FiltroNotificacaoDTO
 import br.com.servicetrack.application.notificacao.dto.NotificacaoResDTO
 import br.com.servicetrack.application.notificacao.ports.`in`.ListarNotificacoesUseCase
 import br.com.servicetrack.application.notificacao.ports.out.NotificacaoRepositoryPort
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.shared.dto.PageResDTO
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 
@@ -11,6 +13,8 @@ class ListarNotificacoesUseCaseImpl(
     private val repository: NotificacaoRepositoryPort,
     private val jwt: JwtPort,
 ) : ListarNotificacoesUseCase {
+
+    @Observavel(codigo = CodigoUseCase.NOTIFICACAO_LISTAR)
 
     override fun executar(visualizada: Boolean?, page: Int, size: Int): PageResDTO<NotificacaoResDTO> {
         val usuarioId = jwt.getUsuarioId()

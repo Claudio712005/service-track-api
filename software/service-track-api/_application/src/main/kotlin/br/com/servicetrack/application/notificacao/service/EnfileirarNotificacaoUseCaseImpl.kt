@@ -4,6 +4,8 @@ import br.com.servicetrack.application.annotation.ApplicationService
 import br.com.servicetrack.application.notificacao.dto.EnfileirarNotificacaoCommand
 import br.com.servicetrack.application.notificacao.ports.`in`.EnfileirarNotificacaoUseCase
 import br.com.servicetrack.application.notificacao.ports.out.NotificacaoRepositoryPort
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.domain.notificacao.Notificacao
 import br.com.servicetrack.domain.notificacao.vo.NotificacaoId
 
@@ -11,6 +13,8 @@ import br.com.servicetrack.domain.notificacao.vo.NotificacaoId
 class EnfileirarNotificacaoUseCaseImpl(
     private val repository: NotificacaoRepositoryPort,
 ) : EnfileirarNotificacaoUseCase {
+
+    @Observavel(codigo = CodigoUseCase.NOTIFICACAO_ENFILEIRAR)
 
     override fun executar(comando: EnfileirarNotificacaoCommand): NotificacaoId {
         val notificacao = Notificacao.gerar(

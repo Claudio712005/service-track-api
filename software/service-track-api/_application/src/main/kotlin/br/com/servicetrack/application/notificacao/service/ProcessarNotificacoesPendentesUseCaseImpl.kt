@@ -9,6 +9,8 @@ import br.com.servicetrack.application.notificacao.ports.out.EmailDestinatarioRe
 import br.com.servicetrack.application.notificacao.ports.out.EmailGatewayPort
 import br.com.servicetrack.application.notificacao.ports.out.NotificacaoRepositoryPort
 import br.com.servicetrack.application.notificacao.ports.out.TemplateRendererPort
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.shared.ports.out.TransactionRunnerPort
 import br.com.servicetrack.domain.notificacao.Notificacao
 
@@ -20,6 +22,8 @@ class ProcessarNotificacoesPendentesUseCaseImpl(
     private val destinatarioResolver: EmailDestinatarioResolverPort,
     private val transactionRunner: TransactionRunnerPort,
 ) : ProcessarNotificacoesPendentesUseCase {
+
+    @Observavel(codigo = CodigoUseCase.NOTIFICACAO_PROCESSAR_PENDENTES)
 
     override fun executar(): ResultadoLote {
         val pendentes = repository.buscarPendentesParaEnvio(limite = TAMANHO_LOTE)
