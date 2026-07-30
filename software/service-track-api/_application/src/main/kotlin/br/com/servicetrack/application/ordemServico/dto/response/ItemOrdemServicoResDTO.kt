@@ -1,11 +1,14 @@
 package br.com.servicetrack.application.ordemServico.dto.response
 
+import br.com.servicetrack.application.observabilidade.annotation.Rastreavel
 import br.com.servicetrack.domain.ordemServico.ItemOrdemServico
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class ItemOrdemServicoResDTO(
+    @field:Rastreavel
     val id: String,
+    @field:Rastreavel
     val servicoId: String,
     val valor: BigDecimal,
     val feito: Boolean,
