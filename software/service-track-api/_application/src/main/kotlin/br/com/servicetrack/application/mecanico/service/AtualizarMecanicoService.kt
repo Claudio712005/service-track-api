@@ -7,6 +7,8 @@ import br.com.servicetrack.application.mecanico.dto.request.AtualizarMecanicoReq
 import br.com.servicetrack.application.mecanico.dto.response.MecanicoResDTO
 import br.com.servicetrack.application.mecanico.ports.`in`.AtualizarMecanicoUseCase
 import br.com.servicetrack.application.mecanico.ports.out.MecanicoRepositoryPort
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
 import br.com.servicetrack.domain.auditoria.enums.TipoEntidade
@@ -24,6 +26,7 @@ class AtualizarMecanicoService(
 ) : AtualizarMecanicoUseCase {
 
     @Auditavel(entidade = TipoEntidade.MECANICO, evento = TipoEventoAuditoria.ATUALIZADO)
+    @Observavel(codigo = CodigoUseCase.MECANICO_ATUALIZAR)
     override fun atualizarMecanico(id: String, req: AtualizarMecanicoReqDTO): MecanicoResDTO {
         val idUsuarioLogado = jwt.getUsuarioId()
 

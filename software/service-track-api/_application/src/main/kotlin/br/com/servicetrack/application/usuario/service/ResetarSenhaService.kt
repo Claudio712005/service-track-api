@@ -3,6 +3,8 @@ package br.com.servicetrack.application.usuario.service
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.exception.CredenciaisInvalidasException
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.usuario.dto.request.ResetarSenhaReqDTO
 import br.com.servicetrack.application.usuario.ports.`in`.ResetarSenhaUseCase
 import br.com.servicetrack.application.usuario.ports.out.CriptografiaPort
@@ -21,6 +23,7 @@ class ResetarSenhaService(
 ) : ResetarSenhaUseCase {
 
     @Auditavel(entidade = TipoEntidade.USUARIO, evento = TipoEventoAuditoria.ATUALIZADO)
+    @Observavel(codigo = CodigoUseCase.CLIENTE_RESETAR_SENHA)
     override fun resetarSenha(req: ResetarSenhaReqDTO) {
         val usuarioId = jwt.getUsuarioId()
 

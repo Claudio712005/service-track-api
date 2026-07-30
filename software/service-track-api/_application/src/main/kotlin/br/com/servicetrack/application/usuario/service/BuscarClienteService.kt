@@ -2,6 +2,8 @@ package br.com.servicetrack.application.usuario.service
 
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.usuario.dto.response.ClienteResDTO
 import br.com.servicetrack.application.usuario.ports.`in`.BuscarClienteUseCase
 import br.com.servicetrack.application.usuario.ports.`out`.JwtPort
@@ -13,6 +15,8 @@ class BuscarClienteService(
     private val usuarioRepository: UsuarioRepositoryPort,
     private val jwt: JwtPort
 ) : BuscarClienteUseCase {
+
+    @Observavel(codigo = CodigoUseCase.CLIENTE_BUSCAR)
 
     override fun buscarCliente(id: UsuarioId): ClienteResDTO {
         val solicitanteId = jwt.getUsuarioId()

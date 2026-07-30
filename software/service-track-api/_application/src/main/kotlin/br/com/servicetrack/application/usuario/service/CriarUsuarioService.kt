@@ -3,6 +3,8 @@ package br.com.servicetrack.application.usuario.service
 import br.com.servicetrack.application.annotation.ApplicationService
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.exception.UsuarioJaExisteException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.usuario.dto.request.CadastrarClienteReqDTO
 import br.com.servicetrack.application.usuario.dto.response.ClienteResDTO
 import br.com.servicetrack.application.usuario.mapper.toDomain
@@ -25,6 +27,7 @@ class CriarUsuarioService(
         TipoEntidade.CLIENTE,
         TipoEventoAuditoria.CRIADO
     )
+    @Observavel(codigo = CodigoUseCase.CLIENTE_CRIAR)
     override fun criarUsuario(req: CadastrarClienteReqDTO): ClienteResDTO {
         if (repository.existePorEmailOuCpf(req.email, req.cpf)) {
             throw UsuarioJaExisteException(req.email, req.cpf)

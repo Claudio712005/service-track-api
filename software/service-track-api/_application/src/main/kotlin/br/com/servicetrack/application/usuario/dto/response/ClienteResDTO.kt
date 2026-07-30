@@ -1,12 +1,16 @@
 package br.com.servicetrack.application.usuario.dto.response
 
+import br.com.servicetrack.application.observabilidade.annotation.Mascarado
+import br.com.servicetrack.application.observabilidade.annotation.Rastreavel
 import br.com.servicetrack.domain.shared.enums.Role
 import br.com.servicetrack.domain.usuario.Usuario
 
 data class ClienteResDTO(
+    @field:Rastreavel
     val id: String,
     val nome: String,
     val email: String,
+    @field:Mascarado(visiveis = 2)
     val cpf: String,
     val telefone: String,
     val roles: Set<Role>,
