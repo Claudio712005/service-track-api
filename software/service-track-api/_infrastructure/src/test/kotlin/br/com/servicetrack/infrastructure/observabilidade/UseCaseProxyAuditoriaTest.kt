@@ -1,23 +1,24 @@
-package br.com.servicetrack.infrastructure
+package br.com.servicetrack.infrastructure.observabilidade
 
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.auditoria.context.AuditoriaContextoHolder
 import br.com.servicetrack.application.auditoria.ports.out.RegistrarAuditoriaPort
 import br.com.servicetrack.domain.auditoria.enums.TipoEntidade
 import br.com.servicetrack.domain.auditoria.enums.TipoEventoAuditoria
-import br.com.servicetrack.infrastructure.auditoria.AuditoriaProxy
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.mockk.clearMocks
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import io.opentelemetry.api.trace.TracerProvider
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class AuditoriaProxyTest {
+class UseCaseProxyAuditoriaTest {
 
     data class RespostaDTO(val id: String, val valor: String)
 
@@ -40,10 +41,12 @@ class AuditoriaProxyTest {
     private val auditoriaPort = mockk<RegistrarAuditoriaPort>()
     private lateinit var proxy: ServicoTeste
 
+    private fun fabrica() = UseCaseProxy(SimpleMeterRegistry(), TracerProvider.noop().get("teste"))
+
     @BeforeEach
     fun setup() {
         clearMocks(auditoriaPort)
-        proxy = AuditoriaProxy.envolver(ServicoTesteImpl(), ServicoTeste::class.java, auditoriaPort)
+        proxy = fabrica().envolver(ServicoTesteImpl(), ServicoTeste::class.java, auditoriaPort)
     }
 
     @Test
@@ -117,7 +120,7 @@ class AuditoriaProxyTest {
     @Test
     fun `deve capturar estado anterior via antesProvider`() {
         val estadoAnterior = RespostaDTO("antes-id", "estado anterior")
-        val proxyComProvider = AuditoriaProxy.envolver(
+        val proxyComProvider = fabrica().envolver(
             ServicoTesteImpl(),
             ServicoTeste::class.java,
             auditoriaPort,
@@ -136,7 +139,7 @@ class AuditoriaProxyTest {
     @Test
     fun `deve passar argumentos corretos para antesProvider`() {
         val argsCapturados = mutableListOf<Array<Any?>>()
-        val proxyComProvider = AuditoriaProxy.envolver(
+        val proxyComProvider = fabrica().envolver(
             ServicoTesteImpl(),
             ServicoTeste::class.java,
             auditoriaPort,
@@ -155,7 +158,7 @@ class AuditoriaProxyTest {
 
     @Test
     fun `deve tratar erro no antesProvider sem impedir execucao`() {
-        val proxyComProvider = AuditoriaProxy.envolver(
+        val proxyComProvider = fabrica().envolver(
             ServicoTesteImpl(),
             ServicoTeste::class.java,
             auditoriaPort,
@@ -171,7 +174,7 @@ class AuditoriaProxyTest {
 
     @Test
     fun `deve funcionar sem antesProvider mantendo compatibilidade`() {
-        val proxyPadrao = AuditoriaProxy.envolver(
+        val proxyPadrao = fabrica().envolver(
             ServicoTesteImpl(),
             ServicoTeste::class.java,
             auditoriaPort,
