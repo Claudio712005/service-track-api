@@ -96,6 +96,31 @@ services:
     ports:
       - "9090:9090"     # Prometheus UI (metrics)
 
+  loki:
+    image: grafana/loki:3.1.1
+    container_name: servicetrack-loki
+    restart: unless-stopped
+    profiles: ["grafana"]
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - servicetrack-network
+    ports:
+      - "3100:3100"
+
+  promtail:
+    image: grafana/promtail:3.1.1
+    container_name: servicetrack-promtail
+    restart: unless-stopped
+    profiles: ["grafana"]
+    command: -config.file=/etc/promtail/config.yaml
+    networks:
+      - servicetrack-network
+    volumes:
+      - ./observability/promtail.yaml:/etc/promtail/config.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - loki
+
   grafana:
     image: grafana/grafana:11.2.0
     container_name: servicetrack-grafana
