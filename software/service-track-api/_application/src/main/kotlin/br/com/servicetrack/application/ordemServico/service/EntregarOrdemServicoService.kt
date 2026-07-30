@@ -4,6 +4,8 @@ import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.ordemServico.dto.response.ResumoOrdemServicoResDTO
 import br.com.servicetrack.application.ordemServico.ports.`in`.EntregarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`out`.OrdemServicoRepositoryPort
@@ -22,6 +24,7 @@ class EntregarOrdemServicoService(
 ) : EntregarOrdemServicoUseCase {
 
     @Auditavel(entidade = TipoEntidade.ORDEM_SERVICO, evento = TipoEventoAuditoria.ATUALIZADO)
+    @Observavel(codigo = CodigoUseCase.OS_ENTREGAR)
     override fun entregarOrdemServico(ordemServicoId: String): ResumoOrdemServicoResDTO {
         val solicitanteId = jwt.getUsuarioId()
 

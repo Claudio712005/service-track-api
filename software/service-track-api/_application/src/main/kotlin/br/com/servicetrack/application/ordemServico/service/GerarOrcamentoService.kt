@@ -5,6 +5,8 @@ import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.insumo.ports.`out`.InsumoRepositoryPort
 import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.ordemServico.dto.response.OrdemServicoResDTO
 import br.com.servicetrack.application.ordemServico.ports.`in`.GerarOrcamentoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`out`.OrdemServicoRepositoryPort
@@ -29,6 +31,7 @@ class GerarOrcamentoService(
 ) : GerarOrcamentoUseCase {
 
     @Auditavel(entidade = TipoEntidade.ORCAMENTO, evento = TipoEventoAuditoria.CRIADO)
+    @Observavel(codigo = CodigoUseCase.ORCAMENTO_GERAR)
     override fun gerarOrcamento(ordemServicoId: String, prazoConclusao: LocalDate): OrdemServicoResDTO {
         val solicitanteId = jwt.getUsuarioId()
 

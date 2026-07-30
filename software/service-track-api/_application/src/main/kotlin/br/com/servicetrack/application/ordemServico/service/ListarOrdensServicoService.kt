@@ -1,6 +1,8 @@
 package br.com.servicetrack.application.ordemServico.service
 
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.ordemServico.dto.request.FiltroOrdemServicoDTO
 import br.com.servicetrack.application.ordemServico.dto.response.ResumoOrdemServicoResDTO
 import br.com.servicetrack.application.ordemServico.ports.`in`.ListarOrdensServicoUseCase
@@ -14,6 +16,8 @@ class ListarOrdensServicoService(
     private val usuarioRepository: UsuarioRepositoryPort,
     private val jwt: JwtPort,
 ) : ListarOrdensServicoUseCase {
+
+    @Observavel(codigo = CodigoUseCase.OS_LISTAR)
 
     override fun listarOrdensServico(filtro: FiltroOrdemServicoDTO): PageResDTO<ResumoOrdemServicoResDTO> {
         val solicitanteId = jwt.getUsuarioId()

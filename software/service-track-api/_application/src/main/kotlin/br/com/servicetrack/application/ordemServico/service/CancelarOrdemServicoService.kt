@@ -5,6 +5,8 @@ import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.insumo.ports.`out`.InsumoRepositoryPort
 import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.ordemServico.dto.request.CancelarOsReqDTO
 import br.com.servicetrack.application.ordemServico.dto.response.ResumoOrdemServicoResDTO
 import br.com.servicetrack.application.ordemServico.ports.`in`.CancelarOrdemServicoUseCase
@@ -29,6 +31,7 @@ class CancelarOrdemServicoService(
     )
 
     @Auditavel(entidade = TipoEntidade.ORDEM_SERVICO, evento = TipoEventoAuditoria.ATUALIZADO)
+    @Observavel(codigo = CodigoUseCase.OS_CANCELAR)
     override fun cancelarOrdemServico(ordemServicoId: String, req: CancelarOsReqDTO): ResumoOrdemServicoResDTO {
         val solicitanteId = jwt.getUsuarioId()
 

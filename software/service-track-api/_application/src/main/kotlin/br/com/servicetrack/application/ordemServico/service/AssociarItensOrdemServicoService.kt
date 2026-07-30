@@ -3,6 +3,8 @@ package br.com.servicetrack.application.ordemServico.service
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.ordemServico.dto.request.AssociarItensReqDTO
 import br.com.servicetrack.application.ordemServico.dto.response.OrdemServicoResDTO
 import br.com.servicetrack.application.ordemServico.ports.`in`.AssociarItensOrdemServicoUseCase
@@ -21,6 +23,7 @@ class AssociarItensOrdemServicoService(
 ) : AssociarItensOrdemServicoUseCase {
 
     @Auditavel(entidade = TipoEntidade.ORDEM_SERVICO, evento = TipoEventoAuditoria.ATUALIZADO)
+    @Observavel(codigo = CodigoUseCase.OS_ASSOCIAR_ITENS)
     override fun associarItens(ordemServicoId: String, req: AssociarItensReqDTO): OrdemServicoResDTO {
         val solicitanteId = jwt.getUsuarioId()
 

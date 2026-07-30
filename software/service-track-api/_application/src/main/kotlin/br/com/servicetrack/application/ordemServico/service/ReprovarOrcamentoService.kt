@@ -3,6 +3,8 @@ package br.com.servicetrack.application.ordemServico.service
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.ordemServico.dto.request.ReprovarOrcamentoReqDTO
 import br.com.servicetrack.application.ordemServico.dto.response.ResumoOrdemServicoResDTO
 import br.com.servicetrack.application.ordemServico.ports.`in`.ReprovarOrcamentoUseCase
@@ -20,6 +22,7 @@ class ReprovarOrcamentoService(
 ) : ReprovarOrcamentoUseCase {
 
     @Auditavel(entidade = TipoEntidade.ORCAMENTO, evento = TipoEventoAuditoria.ATUALIZADO)
+    @Observavel(codigo = CodigoUseCase.ORCAMENTO_REPROVAR)
     override fun reprovarOrcamento(ordemServicoId: String, req: ReprovarOrcamentoReqDTO): ResumoOrdemServicoResDTO {
         val solicitanteId = jwt.getUsuarioId()
 

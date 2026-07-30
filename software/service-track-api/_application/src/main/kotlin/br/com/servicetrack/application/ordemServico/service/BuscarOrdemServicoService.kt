@@ -2,6 +2,8 @@ package br.com.servicetrack.application.ordemServico.service
 
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.ordemServico.dto.response.OrdemServicoResDTO
 import br.com.servicetrack.application.ordemServico.ports.`in`.BuscarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`out`.OrdemServicoRepositoryPort
@@ -14,6 +16,8 @@ class BuscarOrdemServicoService(
     private val usuarioRepository: UsuarioRepositoryPort,
     private val jwt: JwtPort,
 ) : BuscarOrdemServicoUseCase {
+
+    @Observavel(codigo = CodigoUseCase.OS_BUSCAR)
 
     override fun buscarOrdemServico(ordemServicoId: String): OrdemServicoResDTO {
         val solicitanteId = jwt.getUsuarioId()
