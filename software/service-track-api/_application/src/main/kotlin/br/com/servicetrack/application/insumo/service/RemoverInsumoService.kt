@@ -5,6 +5,8 @@ import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.insumo.dto.InsumoResDTO
 import br.com.servicetrack.application.insumo.ports.`in`.RemoverInsumoUseCase
 import br.com.servicetrack.application.insumo.ports.`out`.InsumoRepositoryPort
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.domain.auditoria.enums.TipoEntidade
 import br.com.servicetrack.domain.auditoria.enums.TipoEventoAuditoria
 import br.com.servicetrack.domain.insumo.Insumo
@@ -15,6 +17,7 @@ class RemoverInsumoService(
 ) : RemoverInsumoUseCase {
 
     @Auditavel(entidade = TipoEntidade.INSUMO, evento = TipoEventoAuditoria.REMOVIDO)
+    @Observavel(codigo = CodigoUseCase.INSUMO_REMOVER)
     override fun removerInsumo(id: InsumoId) {
         val existente = repository.buscarPorId(id)
             ?: throw EntidadeNaoEncontradaException(Insumo::class.java.name, arrayOf(id.valor))

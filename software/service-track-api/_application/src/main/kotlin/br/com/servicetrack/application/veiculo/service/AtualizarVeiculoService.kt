@@ -4,6 +4,8 @@ import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.MarcaInvalidaFipeException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.usuario.ports.`out`.JwtPort
 import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
 import br.com.servicetrack.application.veiculo.dto.request.AtualizarVeiculoReqDTO
@@ -27,6 +29,7 @@ class AtualizarVeiculoService(
 ) : AtualizarVeiculoUseCase {
 
     @Auditavel(entidade = TipoEntidade.VEICULO, evento = TipoEventoAuditoria.ATUALIZADO)
+    @Observavel(codigo = CodigoUseCase.VEICULO_ATUALIZAR)
     override fun atualizarVeiculo(id: VeiculoId, req: AtualizarVeiculoReqDTO): DadosveiculoResDTO {
         val usuarioId = jwt.getUsuarioId()
         val usuario = usuarioRepository.buscarPorId(usuarioId)

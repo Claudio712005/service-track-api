@@ -5,6 +5,8 @@ import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.MarcaInvalidaFipeException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.exception.VeiculoJaExisteException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.usuario.ports.`out`.JwtPort
 import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
 import br.com.servicetrack.application.veiculo.dto.request.CadastrarVeiculoReqDTO
@@ -26,6 +28,7 @@ class CadastrarVeiculoService(
 ) : CadastrarVeiculoUseCase {
 
     @Auditavel(entidade = TipoEntidade.VEICULO, evento = TipoEventoAuditoria.CRIADO)
+    @Observavel(codigo = CodigoUseCase.VEICULO_CADASTRAR)
     override fun cadastrarVeiculo(req: CadastrarVeiculoReqDTO): DadosveiculoResDTO {
 
         validarMarcaFipe(req.marca)

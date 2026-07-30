@@ -3,6 +3,8 @@ package br.com.servicetrack.application.veiculo.service
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.usuario.ports.`out`.JwtPort
 import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
 import br.com.servicetrack.application.veiculo.ports.`in`.RemoverVeiculoUseCase
@@ -19,6 +21,7 @@ class RemoverVeiculoService(
 ): RemoverVeiculoUseCase {
 
     @Auditavel(evento = TipoEventoAuditoria.REMOVIDO, entidade = TipoEntidade.VEICULO)
+    @Observavel(codigo = CodigoUseCase.VEICULO_REMOVER)
     override fun  removerVeiculo(veiculo: VeiculoId) {
         val usuarioId = jwt.getUsuarioId()
         val usuario = usuarioRepository.buscarPorId(usuarioId) ?: throw OperacaoNegadaException("remoção de veículo", "Usuário não encontrado para o token fornecido")

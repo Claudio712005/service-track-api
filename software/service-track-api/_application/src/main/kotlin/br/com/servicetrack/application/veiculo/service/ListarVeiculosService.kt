@@ -1,6 +1,8 @@
 package br.com.servicetrack.application.veiculo.service
 
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.usuario.ports.`out`.JwtPort
 import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
 import br.com.servicetrack.application.veiculo.dto.response.DadosveiculoResDTO
@@ -13,6 +15,8 @@ class ListarVeiculosService(
     private val usuarioRepository: UsuarioRepositoryPort,
     private val jwt: JwtPort
 ) : ListarVeiculosUseCase {
+
+    @Observavel(codigo = CodigoUseCase.VEICULO_LISTAR)
 
     override fun listarVeiculos(): List<DadosveiculoResDTO> {
         val usuarioId = jwt.getUsuarioId()
