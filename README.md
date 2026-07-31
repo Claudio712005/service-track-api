@@ -119,12 +119,27 @@ Para detalhes de cada camada, veja:
 | [ADR-019](docs/adr/ADR-019-observabilidade-opentelemetry.md) | Observabilidade OpenTelemetry | Vendor-neutral via OTLP; backend por configuração |
 | [ADR-020](docs/adr/ADR-020-aplicacao-nao-e-dona-de-infraestrutura.md) | Aplicação sem infraestrutura | Uma única descrição da infra; CD delega o deploy |
 
-As decisões de infraestrutura tomadas na Fase 2 — [ADR-015](docs/adr/ADR-015-kubernetes-eks.md)
-(EKS), [ADR-016](docs/adr/ADR-016-terraform-iac.md) (Terraform),
-[ADR-017](docs/adr/ADR-017-gitops-argocd.md) (GitOps) e
-[ADR-018](docs/adr/ADR-018-bootstrap-scripts-operacionais.md) (bootstrap) — continuam válidas
-como decisão, mas **a execução delas vive em `service-track-aws-iac`**. Os documentos ficam
-aqui por serem o registro histórico de quando foram tomadas.
+### Decisões que saíram deste repositório
+
+As decisões de infraestrutura tomadas na Fase 2 foram transferidas para
+`service-track-aws-iac`, que é quem as executa. O conteúdo foi preservado; mudou a numeração,
+para não colidir com os ADRs que já existiam lá.
+
+| Era aqui | Passou a ser | Assunto |
+|---|---|---|
+| `API-ADR-015` / `API-RFC-015` | `IAC-ADR-019` / `IAC-RFC-002` | Kubernetes no EKS |
+| `API-ADR-016` / `API-RFC-016` | `IAC-ADR-020` / `IAC-RFC-003` | Terraform |
+| `API-ADR-017` / `API-RFC-017` | `IAC-ADR-021` / `IAC-RFC-004` | GitOps com ArgoCD |
+| `API-ADR-018` / `API-RFC-018` | `IAC-ADR-022` / `IAC-RFC-005` | Bootstrap de segredos |
+
+A numeração local **não foi reaproveitada**: 015 a 018 seguem vagos, para que referências
+antigas — inclusive as dos relatórios em PDF das Fases 1 e 2 — continuem apontando para o
+lugar certo pela tabela acima.
+
+Os desenhos de rede, deployment e CI/CD da Fase 2 estão em
+[`docs/mvp-2/infra-fase-2/`](docs/mvp-2/infra-fase-2/). Descrevem o cluster `servicetrack-dev`,
+que não existe mais — valem como registro da entrega, não como referência. Os diagramas atuais
+estão em `service-track-aws-iac/docs/diagramas/`.
 
 ---
 
@@ -234,11 +249,11 @@ http://localhost:8080/q/swagger-ui
 ServiceTrack-API/
 ├── .github/workflows/     # ci, security, cd-app
 ├── docs/
-│   ├── adr/               # Architecture Decision Records (001–019)
-│   ├── rfc/               # Request for Comments (001–019)
+│   ├── adr/               # Architecture Decision Records (001–014, 019, 020)
+│   ├── rfc/               # Request for Comments (001–014, 019)
 │   ├── c4/                # Diagramas C4 (context, container, components, code)
-│   ├── infra/             # Desenhos renderizados da Fase 2 (histórico)
 │   ├── mvp-1/ mvp-2/      # Enunciados das fases + colinha do vídeo (mvp-2)
+│   │   └── infra-fase-2/  # Desenhos de rede/deploy da Fase 2 (histórico)
 │   ├── template/          # Templates de ADR/RFC
 │   └── srs.md             # Software Requirements Specification
 └── software/
