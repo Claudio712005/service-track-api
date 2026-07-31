@@ -66,9 +66,9 @@ services:
     volumes:
       - ./observability/otel-collector.yaml:/etc/otel/config.yaml:ro
     ports:
-      - "4317:4317"   # OTLP gRPC (traces/logs)
-      - "4318:4318"   # OTLP HTTP (metrics)
-      - "8889:8889"   # Prometheus exporter (scrape do Prometheus)
+      - "4317:4317"
+      - "4318:4318"
+      - "8889:8889"
     depends_on:
       - jaeger
 
@@ -82,7 +82,7 @@ services:
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
     ports:
-      - "16686:16686"   # Jaeger UI (traces)
+      - "16686:16686"
 
   prometheus:
     image: prom/prometheus:v2.54.1
@@ -94,7 +94,7 @@ services:
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
-      - "9090:9090"     # Prometheus UI (metrics)
+      - "9090:9090"
 
   loki:
     image: grafana/loki:3.1.1
@@ -135,11 +135,13 @@ services:
       GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
     volumes:
       - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
     ports:
-      - "3001:3000"     # Grafana UI (dashboards)
+      - "3001:3000"
     depends_on:
       - prometheus
       - jaeger
+      - loki
 
   datadog-agent:
     image: gcr.io/datadoghq/agent:7
@@ -151,8 +153,8 @@ services:
         aliases:
           - coletor-otlp
     ports:
-      - "4317:4317"   # OTLP gRPC
-      - "4318:4318"   # OTLP HTTP
+      - "4317:4317"
+      - "4318:4318"
     environment:
       DD_API_KEY: ${DD_API_KEY:-}
       DD_SITE: ${DD_SITE:-datadoghq.com}
