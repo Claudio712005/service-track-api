@@ -46,9 +46,17 @@ A esteira de CD passa a **publicar a imagem e delegar o deploy**:
 Push na `main` entrega em `hml`. Promoção para `prd` é manual, e pode promover uma tag já
 publicada sem reconstruir a imagem.
 
-As decisões de infraestrutura das fases anteriores — `ADR-015` a `ADR-018` — permanecem neste
-repositório como registro histórico de quando foram tomadas. A **execução** delas vive em
+As decisões de infraestrutura das fases anteriores — `API-ADR-015` a `API-ADR-018` — permanecem
+neste repositório como registro histórico de quando foram tomadas. A **execução** delas vive em
 `service-track-aws-iac`.
+
+> **Emenda de 30/07/2026 (`GLOBAL-RFC-006`).** O parágrafo acima foi revisto. Manter o registro
+> aqui e a execução lá provou-se pior do que mover: quem alterava a infraestrutura tinha de
+> lembrar de atualizar um ADR em outro repositório, e não lembrava. `API-ADR-015` a
+> `API-ADR-018` foram transferidos para `service-track-aws-iac` como `IAC-ADR-019` a
+> `IAC-ADR-022`, com os RFCs correspondentes. A numeração 015–018 **não é reaproveitada** aqui.
+> O princípio da decisão não muda — só passou a valer também para a documentação, não apenas
+> para o código.
 
 ---
 
