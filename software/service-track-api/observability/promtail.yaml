@@ -23,11 +23,10 @@ scrape_configs:
       - json:
           expressions:
             level: level
-            traceId: traceId
-            spanId: spanId
-            use_case: use_case
-            erro_codigo: erro_codigo
+            timestamp: timestamp
       - labels:
           level:
-          use_case:
-          erro_codigo:
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+          action_on_failure: skip
