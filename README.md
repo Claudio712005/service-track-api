@@ -363,8 +363,34 @@ No Grafana, o campo `traceId` do log é clicável e leva ao trace no Jaeger.
 `grafana` é o padrão para teste local: roda **100% offline**, sem conta, sem chave, sem SaaS.
 `datadog` existe para reproduzir localmente o que roda em `hml` e `prd`.
 
+> **O `--profile` não é opcional.** Todo o stack de observabilidade está atrás de profile.
+> `docker compose up` sem profile sobe apenas `postgres` e `api`, e a aplicação passa a repetir
+> `UnknownHostException: coletor-otlp` a cada 15 segundos — o coletor simplesmente não existe.
+> Não é defeito de configuração; é o profile faltando.
+
 > Subir os dois profiles ao mesmo tempo faz o alias `coletor-otlp` ficar ambíguo. Suba um de
 > cada vez.
+
+#### O que abrir no Grafana
+
+`http://localhost:3001` (admin/admin, ou leitura anônima). O dashboard **ServiceTrack — visão
+geral** é provisionado automaticamente, na pasta `ServiceTrack`:
+
+| Seção | O que mostra |
+|---|---|
+| Casos de uso | execuções por minuto, taxa de erro, p95 global, p95 e média por caso de uso, erros por entidade |
+| HTTP | p95 por rota e requisições por status |
+| Logs | volume por nível e as linhas dos casos de uso, vindas do Loki |
+| Runtime | memória da JVM, threads e CPU |
+
+Se o dashboard aparecer vazio, o motivo quase sempre é um destes: subiu sem `--profile`, ou
+ainda não passaram os 15 segundos do primeiro ciclo de exportação de métricas, ou não houve
+tráfego — o agendador de notificações gera dado sozinho depois de ~30 s.
+
+As métricas chegam ao Prometheus com o nome achatado pelo collector:
+`servicetrack.usecase.duracao` vira `servicetrack_usecase_duracao_milliseconds_*` e
+`servicetrack.usecase.execucoes` vira `servicetrack_usecase_execucoes_total`. Ao escrever
+consulta nova, usar o nome achatado.
 
 ### Logs estruturados e rastreabilidade dos casos de uso
 
