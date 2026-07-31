@@ -50,14 +50,14 @@ class UseCaseProxy(
         val amostra = Timer.start(registry)
         val campos = ExtratorDeCampos.extrair(metodo, argumentos, null)
 
+        val escopo = span.makeCurrent()
+
         comContexto(codigo.name, codigo.entidade.name, campos) {
             log.info("inicio do caso de uso")
         }
 
         try {
-            val resultado = span.makeCurrent().use {
-                invocar(instancia, metodo, argumentos, metodoImpl, auditoriaPort, antesProvider)
-            }
+            val resultado = invocar(instancia, metodo, argumentos, metodoImpl, auditoriaPort, antesProvider)
             val duracao = registrar(amostra, codigo, "sucesso")
             val camposFinais = campos + ExtratorDeCampos.extrair(metodo, argumentos, resultado)
             comContexto(codigo.name, codigo.entidade.name, camposFinais, duracao) {
@@ -83,6 +83,7 @@ class UseCaseProxy(
             }
             throw erro
         } finally {
+            escopo.close()
             span.end()
         }
     } as T
