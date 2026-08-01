@@ -263,7 +263,8 @@ ServiceTrack-API/
         ├── _infrastructure/ # REST, persistência, JWT, adapters
         ├── openApi/        # Especificações OpenAPI por recurso (contract-first)
         ├── openapi.yaml    # Spec agregada (input do OpenAPI Generator)
-        ├── observability/  # Configs do stack local: otel-collector, prometheus, grafana
+        ├── observability/  # Stack local: otel-collector, prometheus, loki, promtail,
+        │                   #   datasources e dashboard provisionados do Grafana
         ├── scripts/        # postgres-init (roles), security-scan, convert-to-sarif
         ├── service-track.postman_collection.json  # Collection das APIs
         ├── docker-compose.yaml
