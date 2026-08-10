@@ -55,6 +55,7 @@ Thumbs.db
 reports/
 *.sarif
 *.json
+!software/service-track-api/observability/grafana/dashboards/*.json
 
 ### Terraform ###
 **/.terraform/*

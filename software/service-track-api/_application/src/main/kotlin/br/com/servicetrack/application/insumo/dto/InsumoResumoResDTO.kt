@@ -1,8 +1,10 @@
 package br.com.servicetrack.application.insumo.dto
 
+import br.com.servicetrack.application.observabilidade.annotation.Rastreavel
 import br.com.servicetrack.domain.insumo.Insumo
 
 data class InsumoResumoResDTO(
+    @field:Rastreavel
     val id: String,
     val nome: String,
     val descricao: String

@@ -3,6 +3,8 @@ package br.com.servicetrack.application.usuario.service
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.usuario.dto.request.AtualizarUsuarioReqDTO
 import br.com.servicetrack.application.usuario.dto.response.ClienteResDTO
 import br.com.servicetrack.application.usuario.ports.`in`.AtualizarUsuarioUseCase
@@ -22,6 +24,7 @@ class AtualizarUsuarioService(
 ) : AtualizarUsuarioUseCase {
 
     @Auditavel(entidade = TipoEntidade.CLIENTE, evento = TipoEventoAuditoria.ATUALIZADO)
+    @Observavel(codigo = CodigoUseCase.CLIENTE_ATUALIZAR)
     override fun atualizarUsuario(id: UsuarioId, req: AtualizarUsuarioReqDTO): ClienteResDTO {
         val solicitanteId = jwt.getUsuarioId()
 

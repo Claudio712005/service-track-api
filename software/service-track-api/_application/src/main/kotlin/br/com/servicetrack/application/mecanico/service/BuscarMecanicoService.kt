@@ -4,6 +4,8 @@ import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.mecanico.dto.response.MecanicoResDTO
 import br.com.servicetrack.application.mecanico.ports.`in`.BuscarMecanicoUseCase
 import br.com.servicetrack.application.mecanico.ports.`out`.MecanicoRepositoryPort
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
 import br.com.servicetrack.domain.usuario.Usuario
 import br.com.servicetrack.domain.usuario.vo.UsuarioId
@@ -12,6 +14,8 @@ class BuscarMecanicoService(
     private val mecanicoRepository: MecanicoRepositoryPort,
     private val usuarioRepository: UsuarioRepositoryPort
 ) : BuscarMecanicoUseCase {
+
+    @Observavel(codigo = CodigoUseCase.MECANICO_BUSCAR)
 
     override fun buscarMecanico(id: String): MecanicoResDTO {
         val mecanico = mecanicoRepository.buscarPorId(id)

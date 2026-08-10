@@ -5,6 +5,8 @@ import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.notificacao.dto.NotificacaoResDTO
 import br.com.servicetrack.application.notificacao.ports.`in`.BuscarNotificacaoUseCase
 import br.com.servicetrack.application.notificacao.ports.out.NotificacaoRepositoryPort
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.domain.notificacao.vo.NotificacaoId
 import java.util.UUID
@@ -13,6 +15,8 @@ class BuscarNotificacaoUseCaseImpl(
     private val repository: NotificacaoRepositoryPort,
     private val jwt: JwtPort,
 ) : BuscarNotificacaoUseCase {
+
+    @Observavel(codigo = CodigoUseCase.NOTIFICACAO_BUSCAR)
 
     override fun executar(id: String): NotificacaoResDTO {
         val usuarioId = jwt.getUsuarioId()

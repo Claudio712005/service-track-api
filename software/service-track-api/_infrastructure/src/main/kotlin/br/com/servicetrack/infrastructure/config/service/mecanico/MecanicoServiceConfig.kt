@@ -13,12 +13,15 @@ import br.com.servicetrack.application.mecanico.service.ListarMecanicosService
 import br.com.servicetrack.application.usuario.ports.out.CriptografiaPort
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
-import br.com.servicetrack.infrastructure.auditoria.AuditoriaProxy
+import br.com.servicetrack.infrastructure.observabilidade.UseCaseProxy
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Produces
 
 @ApplicationScoped
-class MecanicoServiceConfig {
+class MecanicoServiceConfig(
+    private val proxy: UseCaseProxy,
+    private val auditoria: RegistrarAuditoriaPort,
+) {
 
     @Produces
     @ApplicationScoped
@@ -27,7 +30,7 @@ class MecanicoServiceConfig {
         mecanicoRepository: MecanicoRepositoryPort,
         criptografia: CriptografiaPort,
         auditoria: RegistrarAuditoriaPort
-    ): CadastrarMecanicoUseCase = AuditoriaProxy.envolver(
+    ): CadastrarMecanicoUseCase = proxy.envolver(
         CadastrarMecanicoService(usuarioRepository, mecanicoRepository, criptografia),
         CadastrarMecanicoUseCase::class.java,
         auditoria
@@ -39,14 +42,22 @@ class MecanicoServiceConfig {
         mecanicoRepository: MecanicoRepositoryPort,
         usuarioRepository: UsuarioRepositoryPort,
         auditoria: RegistrarAuditoriaPort
-    ): BuscarMecanicoUseCase = BuscarMecanicoService(mecanicoRepository, usuarioRepository)
+    ): BuscarMecanicoUseCase = proxy.envolver(
+        BuscarMecanicoService(mecanicoRepository, usuarioRepository),
+        BuscarMecanicoUseCase::class.java,
+        auditoria,
+    )
 
     @Produces
     @ApplicationScoped
     fun listarMecanicosUseCase(
         mecanicoRepository: MecanicoRepositoryPort,
         usuarioRepository: UsuarioRepositoryPort,
-    ): ListarMecanicosUseCase = ListarMecanicosService(mecanicoRepository, usuarioRepository)
+    ): ListarMecanicosUseCase = proxy.envolver(
+        ListarMecanicosService(mecanicoRepository, usuarioRepository),
+        ListarMecanicosUseCase::class.java,
+        auditoria,
+    )
 
     @Produces
     @ApplicationScoped
@@ -55,7 +66,7 @@ class MecanicoServiceConfig {
         usuarioRepository: UsuarioRepositoryPort,
         jwt: JwtPort,
         auditoria: RegistrarAuditoriaPort
-    ): AtualizarMecanicoUseCase = AuditoriaProxy.envolver(
+    ): AtualizarMecanicoUseCase = proxy.envolver(
         AtualizarMecanicoService(mecanicoRepository, usuarioRepository, jwt),
         AtualizarMecanicoUseCase::class.java,
         auditoria,

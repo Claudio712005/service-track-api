@@ -1,5 +1,6 @@
 package br.com.servicetrack.application.ordemServico.dto.response
 
+import br.com.servicetrack.application.observabilidade.annotation.Rastreavel
 import br.com.servicetrack.application.orcamento.dto.res.OrcamentoResDTO
 import br.com.servicetrack.domain.ordemServico.OrdemServico
 import br.com.servicetrack.domain.ordemServico.StatusOrdemServicoEnum
@@ -7,12 +8,17 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class OrdemServicoResDTO(
+    @field:Rastreavel
     val id: String,
     val motivo: String,
     val observacao: String,
+    @field:Rastreavel
     val clienteId: String,
+    @field:Rastreavel
     val mecanicoId: String,
+    @field:Rastreavel
     val veiculoId: String,
+    @field:Rastreavel
     val status: StatusOrdemServicoEnum,
     val dataCriacao: LocalDateTime,
     val dataAtualizacao: LocalDateTime,
@@ -53,6 +59,7 @@ data class OrdemServicoResDTO(
 }
 
 data class OrcamentoDetalhesResDTO(
+    @field:Rastreavel
     val id: String,
     val custoMaoDeObra: BigDecimal,
     val custoInsumos: BigDecimal,

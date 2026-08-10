@@ -10,18 +10,21 @@ import br.com.servicetrack.application.veiculo.ports.`in`.ListarVeiculosUseCase
 import br.com.servicetrack.application.veiculo.ports.`in`.RemoverVeiculoUseCase
 import br.com.servicetrack.application.veiculo.ports.out.FipePort
 import br.com.servicetrack.application.veiculo.ports.out.VeiculoRepositoryPort
-import br.com.servicetrack.domain.veiculo.vo.VeiculoId
 import br.com.servicetrack.application.veiculo.service.AtualizarVeiculoService
 import br.com.servicetrack.application.veiculo.service.BuscarVeiculoService
 import br.com.servicetrack.application.veiculo.service.CadastrarVeiculoService
 import br.com.servicetrack.application.veiculo.service.ListarVeiculosService
 import br.com.servicetrack.application.veiculo.service.RemoverVeiculoService
-import br.com.servicetrack.infrastructure.auditoria.AuditoriaProxy
+import br.com.servicetrack.domain.veiculo.vo.VeiculoId
+import br.com.servicetrack.infrastructure.observabilidade.UseCaseProxy
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Produces
 
 @ApplicationScoped
-class VeiculoServiceConfig {
+class VeiculoServiceConfig(
+    private val proxy: UseCaseProxy,
+    private val auditoria: RegistrarAuditoriaPort,
+) {
 
     @Produces
     @ApplicationScoped
@@ -31,7 +34,7 @@ class VeiculoServiceConfig {
         jwt: JwtPort,
         fipe: FipePort,
         auditoria: RegistrarAuditoriaPort
-    ): CadastrarVeiculoUseCase = AuditoriaProxy.envolver(
+    ): CadastrarVeiculoUseCase = proxy.envolver(
         CadastrarVeiculoService(veiculoRepository, usuarioRepository, jwt, fipe),
         CadastrarVeiculoUseCase::class.java,
         auditoria
@@ -44,7 +47,7 @@ class VeiculoServiceConfig {
         repository: VeiculoRepositoryPort,
         usuarioRepository: UsuarioRepositoryPort,
         auditoria: RegistrarAuditoriaPort
-    ): RemoverVeiculoUseCase = AuditoriaProxy.envolver(
+    ): RemoverVeiculoUseCase = proxy.envolver(
         RemoverVeiculoService(jwt, repository, usuarioRepository),
         RemoverVeiculoUseCase::class.java,
         auditoria,
@@ -55,7 +58,11 @@ class VeiculoServiceConfig {
     @ApplicationScoped
     fun buscarVeiculoUseCase(
         repository: VeiculoRepositoryPort
-    ): BuscarVeiculoUseCase = BuscarVeiculoService(repository)
+    ): BuscarVeiculoUseCase = proxy.envolver(
+        BuscarVeiculoService(repository),
+        BuscarVeiculoUseCase::class.java,
+        auditoria,
+    )
 
     @Produces
     @ApplicationScoped
@@ -63,7 +70,11 @@ class VeiculoServiceConfig {
         repository: VeiculoRepositoryPort,
         usuarioRepository: UsuarioRepositoryPort,
         jwt: JwtPort
-    ): ListarVeiculosUseCase = ListarVeiculosService(repository, usuarioRepository, jwt)
+    ): ListarVeiculosUseCase = proxy.envolver(
+        ListarVeiculosService(repository, usuarioRepository, jwt),
+        ListarVeiculosUseCase::class.java,
+        auditoria,
+    )
 
     @Produces
     @ApplicationScoped
@@ -73,7 +84,7 @@ class VeiculoServiceConfig {
         jwt: JwtPort,
         fipe: FipePort,
         auditoria: RegistrarAuditoriaPort
-    ): AtualizarVeiculoUseCase = AuditoriaProxy.envolver(
+    ): AtualizarVeiculoUseCase = proxy.envolver(
         AtualizarVeiculoService(repository, usuarioRepository, jwt, fipe),
         AtualizarVeiculoUseCase::class.java,
         auditoria,

@@ -1,9 +1,11 @@
 package br.com.servicetrack.application.notificacao.dto
 
+import br.com.servicetrack.application.observabilidade.annotation.Rastreavel
 import br.com.servicetrack.domain.notificacao.Notificacao
 import java.time.LocalDateTime
 
 data class NotificacaoResDTO(
+    @field:Rastreavel
     val id: String,
     val titulo: String,
     val assunto: String,

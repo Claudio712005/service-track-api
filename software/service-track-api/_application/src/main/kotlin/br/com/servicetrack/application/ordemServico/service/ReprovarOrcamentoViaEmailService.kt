@@ -1,6 +1,8 @@
 package br.com.servicetrack.application.ordemServico.service
 
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.ordemServico.dto.response.ResumoOrdemServicoResDTO
 import br.com.servicetrack.application.ordemServico.ports.`in`.ReprovarOrcamentoViaEmailUseCase
 import br.com.servicetrack.application.ordemServico.service.support.DecididorOrcamento
@@ -18,6 +20,7 @@ class ReprovarOrcamentoViaEmailService(
     }
 
     @Auditavel(entidade = TipoEntidade.ORCAMENTO, evento = TipoEventoAuditoria.ATUALIZADO)
+    @Observavel(codigo = CodigoUseCase.ORCAMENTO_REPROVAR_EMAIL)
     override fun reprovar(token: String): ResumoOrdemServicoResDTO {
         val os = resolvedor.resolver(token)
         return ResumoOrdemServicoResDTO.de(decididor.reprovar(os, MOTIVO_PADRAO))

@@ -1,10 +1,14 @@
 package br.com.servicetrack.application.veiculo.dto.response
 
+import br.com.servicetrack.application.observabilidade.annotation.Mascarado
+import br.com.servicetrack.application.observabilidade.annotation.Rastreavel
 import br.com.servicetrack.domain.veiculo.Veiculo
 
 data class DadosveiculoResDTO(
+    @field:Rastreavel
     val id: String,
     val proprietarioId: String,
+    @field:Mascarado(visiveis = 3)
     val placa: String,
     val modelo: String,
     val marca: String,

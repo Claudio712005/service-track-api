@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":_application"))
 
     implementation("io.quarkus:quarkus-opentelemetry")
+    implementation("io.quarkus:quarkus-logging-json")
     implementation("io.quarkus:quarkus-micrometer")
     implementation("io.micrometer:micrometer-registry-otlp:1.13.3")
 

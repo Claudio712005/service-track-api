@@ -1,9 +1,11 @@
 package br.com.servicetrack.application.servico.dto
 
+import br.com.servicetrack.application.observabilidade.annotation.Rastreavel
 import br.com.servicetrack.domain.servico.Servico
 import java.math.BigDecimal
 
 data class ServicoResDTO(
+    @field:Rastreavel
     val id: String,
     val nomeServico: String,
     val descricaoServico: String,

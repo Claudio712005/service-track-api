@@ -1,6 +1,8 @@
 package br.com.servicetrack.application.servico.service
 
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.servico.dto.CriarServicoReqDTO
 import br.com.servicetrack.application.servico.dto.ServicoResDTO
 import br.com.servicetrack.application.servico.ports.`in`.CriarServicoUseCase
@@ -15,6 +17,7 @@ class CriarServicoService(
 ) : CriarServicoUseCase {
 
     @Auditavel(evento = TipoEventoAuditoria.CRIADO, entidade = TipoEntidade.SERVICO)
+    @Observavel(codigo = CodigoUseCase.SERVICO_CRIAR)
     override fun criarServico(req: CriarServicoReqDTO): ServicoResDTO {
         val servico = Servico.gerar(
             nomeServico = req.nomeServico,

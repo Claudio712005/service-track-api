@@ -3,6 +3,8 @@ package br.com.servicetrack.application.ordemServico.service
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.ordemServico.dto.request.OrdemServicoReqDTO
 import br.com.servicetrack.application.ordemServico.dto.response.ResumoOrdemServicoResDTO
 import br.com.servicetrack.application.ordemServico.ports.`in`.CriarOrdemServicoUseCase
@@ -21,6 +23,7 @@ class CriarOrdemServicoService(
 ) : CriarOrdemServicoUseCase {
 
     @Auditavel(entidade = TipoEntidade.ORDEM_SERVICO, evento = TipoEventoAuditoria.CRIADO)
+    @Observavel(codigo = CodigoUseCase.OS_CRIAR)
     override fun criarOrdemServico(req: OrdemServicoReqDTO): ResumoOrdemServicoResDTO {
         val jwtIdToken = jwt.getUsuarioId()
 

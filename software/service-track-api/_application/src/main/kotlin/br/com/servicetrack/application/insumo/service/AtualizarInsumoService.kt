@@ -6,6 +6,8 @@ import br.com.servicetrack.application.insumo.dto.AtualizarInsumoReqDTO
 import br.com.servicetrack.application.insumo.dto.InsumoResDTO
 import br.com.servicetrack.application.insumo.ports.`in`.AtualizarInsumoUseCase
 import br.com.servicetrack.application.insumo.ports.`out`.InsumoRepositoryPort
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.domain.auditoria.enums.TipoEntidade
 import br.com.servicetrack.domain.auditoria.enums.TipoEventoAuditoria
 import br.com.servicetrack.domain.insumo.Insumo
@@ -17,6 +19,7 @@ class AtualizarInsumoService(
 ) : AtualizarInsumoUseCase {
 
     @Auditavel(entidade = TipoEntidade.INSUMO, evento = TipoEventoAuditoria.ATUALIZADO)
+    @Observavel(codigo = CodigoUseCase.INSUMO_ATUALIZAR)
     override fun atualizarInsumo(id: InsumoId, req: AtualizarInsumoReqDTO): InsumoResDTO {
         val existente = repository.buscarPorId(id)
             ?: throw EntidadeNaoEncontradaException(Insumo::class.java.name, arrayOf(id.valor))

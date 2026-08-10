@@ -1,9 +1,11 @@
 package br.com.servicetrack.application.insumo.dto
 
+import br.com.servicetrack.application.observabilidade.annotation.Rastreavel
 import br.com.servicetrack.domain.insumo.Insumo
 import java.math.BigDecimal
 
 data class InsumoResDTO(
+    @field:Rastreavel
     val id: String,
     val nome: String,
     val descricao: String,

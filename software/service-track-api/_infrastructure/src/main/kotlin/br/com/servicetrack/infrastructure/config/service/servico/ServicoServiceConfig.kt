@@ -2,6 +2,7 @@ package br.com.servicetrack.infrastructure.config.service.servico
 
 import br.com.servicetrack.application.auditoria.ports.out.RegistrarAuditoriaPort
 import br.com.servicetrack.application.ordemServico.ports.out.ItemOrdemServicoRepositoryPort
+import br.com.servicetrack.application.servico.dto.ServicoResDTO
 import br.com.servicetrack.application.servico.ports.`in`.AtualizarServicoUseCase
 import br.com.servicetrack.application.servico.ports.`in`.BuscarServicoUseCase
 import br.com.servicetrack.application.servico.ports.`in`.BuscarTempoMedioConclusaoUseCase
@@ -14,22 +15,24 @@ import br.com.servicetrack.application.servico.service.BuscarServicoService
 import br.com.servicetrack.application.servico.service.BuscarTempoMedioConclusaoService
 import br.com.servicetrack.application.servico.service.CriarServicoService
 import br.com.servicetrack.application.servico.service.ListarServicosService
-import br.com.servicetrack.application.servico.dto.ServicoResDTO
 import br.com.servicetrack.application.servico.service.RemoverServicoService
 import br.com.servicetrack.domain.servico.vo.ServicoId
-import br.com.servicetrack.infrastructure.auditoria.AuditoriaProxy
+import br.com.servicetrack.infrastructure.observabilidade.UseCaseProxy
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Produces
 
 @ApplicationScoped
-class ServicoServiceConfig {
+class ServicoServiceConfig(
+    private val proxy: UseCaseProxy,
+    private val auditoria: RegistrarAuditoriaPort,
+) {
 
     @Produces
     @ApplicationScoped
     fun criarServicoUseCase(
         repository: ServicoRepositoryPort,
         auditoria: RegistrarAuditoriaPort
-    ): CriarServicoUseCase = AuditoriaProxy.envolver(
+    ): CriarServicoUseCase = proxy.envolver(
         CriarServicoService(repository),
         CriarServicoUseCase::class.java,
         auditoria
@@ -39,20 +42,28 @@ class ServicoServiceConfig {
     @ApplicationScoped
     fun buscarServicoUseCase(
         repository: ServicoRepositoryPort,
-    ): BuscarServicoUseCase = BuscarServicoService(repository)
+    ): BuscarServicoUseCase = proxy.envolver(
+        BuscarServicoService(repository),
+        BuscarServicoUseCase::class.java,
+        auditoria,
+    )
 
     @Produces
     @ApplicationScoped
     fun listarServicosUseCase(
         repository: ServicoRepositoryPort
-    ): ListarServicosUseCase = ListarServicosService(repository)
+    ): ListarServicosUseCase = proxy.envolver(
+        ListarServicosService(repository),
+        ListarServicosUseCase::class.java,
+        auditoria,
+    )
 
     @Produces
     @ApplicationScoped
     fun atualizarServicoUseCase(
         repository: ServicoRepositoryPort,
         auditoria: RegistrarAuditoriaPort
-    ): AtualizarServicoUseCase = AuditoriaProxy.envolver(
+    ): AtualizarServicoUseCase = proxy.envolver(
         AtualizarServicoService(repository),
         AtualizarServicoUseCase::class.java,
         auditoria,
@@ -64,7 +75,7 @@ class ServicoServiceConfig {
     fun removerServicoUseCase(
         repository: ServicoRepositoryPort,
         auditoria: RegistrarAuditoriaPort
-    ): RemoverServicoUseCase = AuditoriaProxy.envolver(
+    ): RemoverServicoUseCase = proxy.envolver(
         RemoverServicoService(repository),
         RemoverServicoUseCase::class.java,
         auditoria,
@@ -76,6 +87,10 @@ class ServicoServiceConfig {
     fun buscarTempoMedioConclusaoUseCase(
         servicoRepository: ServicoRepositoryPort,
         itemOrdemServicoRepository: ItemOrdemServicoRepositoryPort,
-    ): BuscarTempoMedioConclusaoUseCase = BuscarTempoMedioConclusaoService(servicoRepository, itemOrdemServicoRepository)
+    ): BuscarTempoMedioConclusaoUseCase = proxy.envolver(
+        BuscarTempoMedioConclusaoService(servicoRepository, itemOrdemServicoRepository),
+        BuscarTempoMedioConclusaoUseCase::class.java,
+        auditoria,
+    )
 
 }

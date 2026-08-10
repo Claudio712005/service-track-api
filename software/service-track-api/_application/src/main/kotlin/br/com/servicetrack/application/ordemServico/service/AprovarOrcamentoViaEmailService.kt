@@ -1,6 +1,8 @@
 package br.com.servicetrack.application.ordemServico.service
 
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.ordemServico.dto.response.ResumoOrdemServicoResDTO
 import br.com.servicetrack.application.ordemServico.ports.`in`.AprovarOrcamentoViaEmailUseCase
 import br.com.servicetrack.application.ordemServico.service.support.DecididorOrcamento
@@ -14,6 +16,7 @@ class AprovarOrcamentoViaEmailService(
 ) : AprovarOrcamentoViaEmailUseCase {
 
     @Auditavel(entidade = TipoEntidade.ORCAMENTO, evento = TipoEventoAuditoria.ATUALIZADO)
+    @Observavel(codigo = CodigoUseCase.ORCAMENTO_APROVAR_EMAIL)
     override fun aprovar(token: String): ResumoOrdemServicoResDTO {
         val os = resolvedor.resolver(token)
         return ResumoOrdemServicoResDTO.de(decididor.aprovar(os))

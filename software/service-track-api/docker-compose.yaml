@@ -44,11 +44,8 @@ services:
       RESEND_API_KEY: ${RESEND_API_KEY}
       QUARKUS_MAILER_FROM: ${QUARKUS_MAILER_FROM:-no-reply@clausilva.com.br}
       SERVICETRACK_API_BASE_URL: ${SERVICETRACK_API_BASE_URL:-http://localhost:8080}
-      # Observabilidade vendor-neutral (OpenTelemetry). Aponta para o coletor OTLP.
-      # Sem o profile 'observability' ativo, os envios OTLP sao descartados e a
-      # aplicacao roda normalmente (offline-friendly).
-      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4317}
-      OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-http://otel-collector:4318/v1/metrics}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://coletor-otlp:4317}
+      OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-http://coletor-otlp:4318/v1/metrics}
       OTEL_ENVIRONMENT: ${OTEL_ENVIRONMENT:-local}
     ports:
       - "8080:8080"
@@ -56,24 +53,22 @@ services:
       postgres:
         condition: service_healthy
 
-  # ---------------------------------------------------------------------------
-  # Profile 'observability' — stack local OpenTelemetry (100% offline).
-  # Subir com: docker compose --profile observability up
-  # ---------------------------------------------------------------------------
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.109.0
     container_name: servicetrack-otel-collector
     restart: unless-stopped
-    profiles: ["observability"]
+    profiles: ["grafana"]
     command: ["--config=/etc/otel/config.yaml"]
     networks:
-      - servicetrack-network
+      servicetrack-network:
+        aliases:
+          - coletor-otlp
     volumes:
       - ./observability/otel-collector.yaml:/etc/otel/config.yaml:ro
     ports:
-      - "4317:4317"   # OTLP gRPC (traces/logs)
-      - "4318:4318"   # OTLP HTTP (metrics)
-      - "8889:8889"   # Prometheus exporter (scrape do Prometheus)
+      - "4317:4317"
+      - "4318:4318"
+      - "8889:8889"
     depends_on:
       - jaeger
 
@@ -81,31 +76,56 @@ services:
     image: jaegertracing/all-in-one:1.60
     container_name: servicetrack-jaeger
     restart: unless-stopped
-    profiles: ["observability"]
+    profiles: ["grafana"]
     networks:
       - servicetrack-network
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
     ports:
-      - "16686:16686"   # Jaeger UI (traces)
+      - "16686:16686"
 
   prometheus:
     image: prom/prometheus:v2.54.1
     container_name: servicetrack-prometheus
     restart: unless-stopped
-    profiles: ["observability"]
+    profiles: ["grafana"]
     networks:
       - servicetrack-network
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
-      - "9090:9090"     # Prometheus UI (metrics)
+      - "9090:9090"
+
+  loki:
+    image: grafana/loki:3.1.1
+    container_name: servicetrack-loki
+    restart: unless-stopped
+    profiles: ["grafana"]
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - servicetrack-network
+    ports:
+      - "3100:3100"
+
+  promtail:
+    image: grafana/promtail:3.1.1
+    container_name: servicetrack-promtail
+    restart: unless-stopped
+    profiles: ["grafana"]
+    command: -config.file=/etc/promtail/config.yaml
+    networks:
+      - servicetrack-network
+    volumes:
+      - ./observability/promtail.yaml:/etc/promtail/config.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - loki
 
   grafana:
     image: grafana/grafana:11.2.0
     container_name: servicetrack-grafana
     restart: unless-stopped
-    profiles: ["observability"]
+    profiles: ["grafana"]
     networks:
       - servicetrack-network
     environment:
@@ -115,33 +135,38 @@ services:
       GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
     volumes:
       - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
     ports:
-      - "3001:3000"     # Grafana UI (dashboards)
+      - "3001:3000"
     depends_on:
       - prometheus
       - jaeger
+      - loki
 
-  # ---------------------------------------------------------------------------
-  # Profile 'datadog' — PREPARACAO para producao. Nao sobe por padrao.
-  # A aplicacao nao muda: basta apontar OTEL_EXPORTER_OTLP_ENDPOINT para o agente.
-  # Subir com: docker compose --profile datadog up   (exige DD_API_KEY)
-  # ---------------------------------------------------------------------------
   datadog-agent:
     image: gcr.io/datadoghq/agent:7
     container_name: dd-agent
     restart: unless-stopped
     profiles: ["datadog"]
     networks:
-      - servicetrack-network
+      servicetrack-network:
+        aliases:
+          - coletor-otlp
     ports:
-      - "4317:4317"   # OTLP gRPC
-      - "4318:4318"   # OTLP HTTP
+      - "4317:4317"
+      - "4318:4318"
     environment:
       DD_API_KEY: ${DD_API_KEY:-}
       DD_SITE: ${DD_SITE:-datadoghq.com}
       DD_HOSTNAME: servicetrack-local
       DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_GRPC_ENDPOINT: "0.0.0.0:4317"
       DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_HTTP_ENDPOINT: "0.0.0.0:4318"
+      DD_APM_ENABLED: "true"
+      DD_LOGS_ENABLED: "true"
+      DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: "true"
+      DD_ENV: ${OTEL_ENVIRONMENT:-local}
+      DD_SERVICE: service-track-api
+      DD_CONTAINER_EXCLUDE: "name:dd-agent"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /proc/:/host/proc/:ro

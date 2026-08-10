@@ -4,6 +4,8 @@ import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
 import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.ordemServico.dto.request.CriarOrdemServicoCompletaReqDTO
 import br.com.servicetrack.application.ordemServico.dto.response.OrdemServicoResDTO
 import br.com.servicetrack.application.ordemServico.ports.`in`.CriarOrdemServicoCompletaUseCase
@@ -26,6 +28,7 @@ class CriarOrdemServicoCompletaService(
 ) : CriarOrdemServicoCompletaUseCase {
 
     @Auditavel(entidade = TipoEntidade.ORDEM_SERVICO, evento = TipoEventoAuditoria.CRIADO)
+    @Observavel(codigo = CodigoUseCase.OS_CRIAR_COMPLETA)
     override fun criarOrdemServicoCompleta(req: CriarOrdemServicoCompletaReqDTO): OrdemServicoResDTO {
         val solicitanteId = jwt.getUsuarioId()
 

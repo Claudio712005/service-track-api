@@ -5,52 +5,55 @@ import br.com.servicetrack.application.insumo.ports.`out`.InsumoRepositoryPort
 import br.com.servicetrack.application.notificacao.event.OrdemServicoStatusAlteradoEvent
 import br.com.servicetrack.application.notificacao.ports.`in`.EnfileirarNotificacaoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.AprovarOrcamentoUseCase
-import br.com.servicetrack.application.ordemServico.ports.`in`.ConcluirItemServicoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.AprovarOrcamentoViaEmailUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.AssociarItensOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.BuscarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.CancelarOrdemServicoUseCase
+import br.com.servicetrack.application.ordemServico.ports.`in`.ConcluirItemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.CriarOrdemServicoCompletaUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.CriarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.EntregarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.EnviarParaDiagnosticoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.FinalizarOrdemServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.GerarOrcamentoUseCase
-import br.com.servicetrack.application.ordemServico.ports.`in`.AprovarOrcamentoViaEmailUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.ListarOrdensServicoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.ReprovarOrcamentoUseCase
 import br.com.servicetrack.application.ordemServico.ports.`in`.ReprovarOrcamentoViaEmailUseCase
 import br.com.servicetrack.application.ordemServico.ports.out.OrdemServicoRepositoryPort
 import br.com.servicetrack.application.ordemServico.ports.out.TokenDecisaoOrcamentoPort
 import br.com.servicetrack.application.ordemServico.service.AprovarOrcamentoService
-import br.com.servicetrack.application.ordemServico.service.ConcluirItemServicoService
+import br.com.servicetrack.application.ordemServico.service.AprovarOrcamentoViaEmailService
 import br.com.servicetrack.application.ordemServico.service.AssociarItensOrdemServicoService
 import br.com.servicetrack.application.ordemServico.service.BuscarOrdemServicoService
 import br.com.servicetrack.application.ordemServico.service.CancelarOrdemServicoService
-import br.com.servicetrack.application.ordemServico.service.AprovarOrcamentoViaEmailService
+import br.com.servicetrack.application.ordemServico.service.ConcluirItemServicoService
 import br.com.servicetrack.application.ordemServico.service.CriarOrdemServicoCompletaService
 import br.com.servicetrack.application.ordemServico.service.CriarOrdemServicoService
-import br.com.servicetrack.application.ordemServico.service.ReprovarOrcamentoViaEmailService
-import br.com.servicetrack.application.ordemServico.service.support.AbridorOrdemServico
-import br.com.servicetrack.application.ordemServico.service.support.AssociadorItensOrdemServico
-import br.com.servicetrack.application.ordemServico.service.support.DecididorOrcamento
-import br.com.servicetrack.application.ordemServico.service.support.ResolvedorOrdemServicoPorToken
 import br.com.servicetrack.application.ordemServico.service.EntregarOrdemServicoService
 import br.com.servicetrack.application.ordemServico.service.EnviarParaDiagnosticoService
 import br.com.servicetrack.application.ordemServico.service.FinalizarOrdemServicoService
 import br.com.servicetrack.application.ordemServico.service.GerarOrcamentoService
 import br.com.servicetrack.application.ordemServico.service.ListarOrdensServicoService
 import br.com.servicetrack.application.ordemServico.service.ReprovarOrcamentoService
+import br.com.servicetrack.application.ordemServico.service.ReprovarOrcamentoViaEmailService
+import br.com.servicetrack.application.ordemServico.service.support.AbridorOrdemServico
+import br.com.servicetrack.application.ordemServico.service.support.AssociadorItensOrdemServico
+import br.com.servicetrack.application.ordemServico.service.support.DecididorOrcamento
+import br.com.servicetrack.application.ordemServico.service.support.ResolvedorOrdemServicoPorToken
 import br.com.servicetrack.application.servico.ports.`out`.ServicoRepositoryPort
 import br.com.servicetrack.application.usuario.ports.`out`.JwtPort
-import br.com.servicetrack.domain.ordemServico.vo.OrdemServicoId
 import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
-import br.com.servicetrack.infrastructure.auditoria.AuditoriaProxy
+import br.com.servicetrack.domain.ordemServico.vo.OrdemServicoId
+import br.com.servicetrack.infrastructure.observabilidade.UseCaseProxy
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.event.Event
 import jakarta.enterprise.inject.Produces
 
 @ApplicationScoped
-class OrdemServicoServiceConfig {
+class OrdemServicoServiceConfig(
+    private val proxy: UseCaseProxy,
+    private val auditoria: RegistrarAuditoriaPort,
+) {
 
     @Produces
     @ApplicationScoped
@@ -59,7 +62,7 @@ class OrdemServicoServiceConfig {
         usuarioRepositoryPort: UsuarioRepositoryPort,
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
-    ): CriarOrdemServicoUseCase = AuditoriaProxy.envolver(
+    ): CriarOrdemServicoUseCase = proxy.envolver(
         CriarOrdemServicoService(
             repository,
             usuarioRepositoryPort,
@@ -80,7 +83,7 @@ class OrdemServicoServiceConfig {
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
         statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
-    ): CriarOrdemServicoCompletaUseCase = AuditoriaProxy.envolver(
+    ): CriarOrdemServicoCompletaUseCase = proxy.envolver(
         CriarOrdemServicoCompletaService(
             repository,
             usuarioRepositoryPort,
@@ -100,7 +103,7 @@ class OrdemServicoServiceConfig {
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
         statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
-    ): EnviarParaDiagnosticoUseCase = AuditoriaProxy.envolver(
+    ): EnviarParaDiagnosticoUseCase = proxy.envolver(
         EnviarParaDiagnosticoService(repository, jwtPort, statusAlteradoEvent),
         EnviarParaDiagnosticoUseCase::class.java,
         auditoria,
@@ -113,7 +116,11 @@ class OrdemServicoServiceConfig {
         repository: OrdemServicoRepositoryPort,
         usuarioRepository: UsuarioRepositoryPort,
         jwtPort: JwtPort,
-    ): BuscarOrdemServicoUseCase = BuscarOrdemServicoService(repository, usuarioRepository, jwtPort)
+    ): BuscarOrdemServicoUseCase = proxy.envolver(
+        BuscarOrdemServicoService(repository, usuarioRepository, jwtPort),
+        BuscarOrdemServicoUseCase::class.java,
+        auditoria,
+    )
 
     @Produces
     @ApplicationScoped
@@ -121,7 +128,11 @@ class OrdemServicoServiceConfig {
         repository: OrdemServicoRepositoryPort,
         usuarioRepository: UsuarioRepositoryPort,
         jwtPort: JwtPort,
-    ): ListarOrdensServicoUseCase = ListarOrdensServicoService(repository, usuarioRepository, jwtPort)
+    ): ListarOrdensServicoUseCase = proxy.envolver(
+        ListarOrdensServicoService(repository, usuarioRepository, jwtPort),
+        ListarOrdensServicoUseCase::class.java,
+        auditoria,
+    )
 
     @Produces
     @ApplicationScoped
@@ -131,7 +142,7 @@ class OrdemServicoServiceConfig {
         insumoRepository: InsumoRepositoryPort,
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
-    ): AssociarItensOrdemServicoUseCase = AuditoriaProxy.envolver(
+    ): AssociarItensOrdemServicoUseCase = proxy.envolver(
         AssociarItensOrdemServicoService(
             osRepository,
             jwtPort,
@@ -150,7 +161,7 @@ class OrdemServicoServiceConfig {
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
         statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
-    ): GerarOrcamentoUseCase = AuditoriaProxy.envolver(
+    ): GerarOrcamentoUseCase = proxy.envolver(
         GerarOrcamentoService(osRepository, insumoRepository, jwtPort, statusAlteradoEvent),
         GerarOrcamentoUseCase::class.java,
         auditoria,
@@ -181,7 +192,7 @@ class OrdemServicoServiceConfig {
         enfileirarNotificacao: EnfileirarNotificacaoUseCase,
         auditoria: RegistrarAuditoriaPort,
         statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
-    ): AprovarOrcamentoUseCase = AuditoriaProxy.envolver(
+    ): AprovarOrcamentoUseCase = proxy.envolver(
         AprovarOrcamentoService(
             repository,
             jwtPort,
@@ -202,7 +213,7 @@ class OrdemServicoServiceConfig {
         enfileirarNotificacao: EnfileirarNotificacaoUseCase,
         auditoria: RegistrarAuditoriaPort,
         statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
-    ): ReprovarOrcamentoUseCase = AuditoriaProxy.envolver(
+    ): ReprovarOrcamentoUseCase = proxy.envolver(
         ReprovarOrcamentoService(
             osRepository,
             jwtPort,
@@ -223,7 +234,7 @@ class OrdemServicoServiceConfig {
         enfileirarNotificacao: EnfileirarNotificacaoUseCase,
         auditoria: RegistrarAuditoriaPort,
         statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
-    ): AprovarOrcamentoViaEmailUseCase = AuditoriaProxy.envolver(
+    ): AprovarOrcamentoViaEmailUseCase = proxy.envolver(
         AprovarOrcamentoViaEmailService(
             ResolvedorOrdemServicoPorToken(tokenPort, osRepository),
             decididorOrcamento(osRepository, insumoRepository, usuarioRepository, enfileirarNotificacao, statusAlteradoEvent),
@@ -242,7 +253,7 @@ class OrdemServicoServiceConfig {
         enfileirarNotificacao: EnfileirarNotificacaoUseCase,
         auditoria: RegistrarAuditoriaPort,
         statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
-    ): ReprovarOrcamentoViaEmailUseCase = AuditoriaProxy.envolver(
+    ): ReprovarOrcamentoViaEmailUseCase = proxy.envolver(
         ReprovarOrcamentoViaEmailService(
             ResolvedorOrdemServicoPorToken(tokenPort, osRepository),
             decididorOrcamento(osRepository, insumoRepository, usuarioRepository, enfileirarNotificacao, statusAlteradoEvent),
@@ -259,7 +270,7 @@ class OrdemServicoServiceConfig {
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
         statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
-    ): CancelarOrdemServicoUseCase = AuditoriaProxy.envolver(
+    ): CancelarOrdemServicoUseCase = proxy.envolver(
         CancelarOrdemServicoService(osRepository, insumoRepository, jwtPort, statusAlteradoEvent),
         CancelarOrdemServicoUseCase::class.java,
         auditoria,
@@ -274,7 +285,7 @@ class OrdemServicoServiceConfig {
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
         statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
-    ): FinalizarOrdemServicoUseCase = AuditoriaProxy.envolver(
+    ): FinalizarOrdemServicoUseCase = proxy.envolver(
         FinalizarOrdemServicoService(osRepository, usuarioRepository, jwtPort, statusAlteradoEvent),
         FinalizarOrdemServicoUseCase::class.java,
         auditoria,
@@ -289,7 +300,7 @@ class OrdemServicoServiceConfig {
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
         statusAlteradoEvent: Event<OrdemServicoStatusAlteradoEvent>,
-    ): EntregarOrdemServicoUseCase = AuditoriaProxy.envolver(
+    ): EntregarOrdemServicoUseCase = proxy.envolver(
         EntregarOrdemServicoService(osRepository, usuarioRepository, jwtPort, statusAlteradoEvent),
         EntregarOrdemServicoUseCase::class.java,
         auditoria,
@@ -302,7 +313,7 @@ class OrdemServicoServiceConfig {
         osRepository: OrdemServicoRepositoryPort,
         jwtPort: JwtPort,
         auditoria: RegistrarAuditoriaPort,
-    ): ConcluirItemServicoUseCase = AuditoriaProxy.envolver(
+    ): ConcluirItemServicoUseCase = proxy.envolver(
         ConcluirItemServicoService(osRepository, jwtPort),
         ConcluirItemServicoUseCase::class.java,
         auditoria,

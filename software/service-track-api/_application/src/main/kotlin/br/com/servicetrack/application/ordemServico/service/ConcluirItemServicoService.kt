@@ -3,6 +3,8 @@ package br.com.servicetrack.application.ordemServico.service
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.ordemServico.dto.request.ConcluirItemServicoReqDTO
 import br.com.servicetrack.application.ordemServico.dto.response.OrdemServicoResDTO
 import br.com.servicetrack.application.ordemServico.ports.`in`.ConcluirItemServicoUseCase
@@ -19,6 +21,7 @@ class ConcluirItemServicoService(
 ) : ConcluirItemServicoUseCase {
 
     @Auditavel(entidade = TipoEntidade.ORDEM_SERVICO, evento = TipoEventoAuditoria.ATUALIZADO)
+    @Observavel(codigo = CodigoUseCase.OS_CONCLUIR_ITEM)
     override fun concluirItemServico(
         ordemServicoId: String,
         itemServicoId: String,

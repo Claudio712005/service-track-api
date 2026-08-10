@@ -5,6 +5,8 @@ import br.com.servicetrack.application.insumo.dto.CriarInsumoReqDTO
 import br.com.servicetrack.application.insumo.dto.InsumoResDTO
 import br.com.servicetrack.application.insumo.ports.`in`.CriarInsumoUseCase
 import br.com.servicetrack.application.insumo.ports.`out`.InsumoRepositoryPort
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.domain.auditoria.enums.TipoEntidade
 import br.com.servicetrack.domain.auditoria.enums.TipoEventoAuditoria
 import br.com.servicetrack.domain.insumo.Insumo
@@ -15,6 +17,7 @@ class CriarInsumoService(
 ) : CriarInsumoUseCase {
 
     @Auditavel(entidade = TipoEntidade.INSUMO, evento = TipoEventoAuditoria.CRIADO)
+    @Observavel(codigo = CodigoUseCase.INSUMO_CRIAR)
     override fun criarInsumo(req: CriarInsumoReqDTO): InsumoResDTO {
         val insumo = Insumo.criar(
             nome = req.nome,

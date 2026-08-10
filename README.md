@@ -119,12 +119,27 @@ Para detalhes de cada camada, veja:
 | [ADR-019](docs/adr/ADR-019-observabilidade-opentelemetry.md) | Observabilidade OpenTelemetry | Vendor-neutral via OTLP; backend por configuração |
 | [ADR-020](docs/adr/ADR-020-aplicacao-nao-e-dona-de-infraestrutura.md) | Aplicação sem infraestrutura | Uma única descrição da infra; CD delega o deploy |
 
-As decisões de infraestrutura tomadas na Fase 2 — [ADR-015](docs/adr/ADR-015-kubernetes-eks.md)
-(EKS), [ADR-016](docs/adr/ADR-016-terraform-iac.md) (Terraform),
-[ADR-017](docs/adr/ADR-017-gitops-argocd.md) (GitOps) e
-[ADR-018](docs/adr/ADR-018-bootstrap-scripts-operacionais.md) (bootstrap) — continuam válidas
-como decisão, mas **a execução delas vive em `service-track-aws-iac`**. Os documentos ficam
-aqui por serem o registro histórico de quando foram tomadas.
+### Decisões que saíram deste repositório
+
+As decisões de infraestrutura tomadas na Fase 2 foram transferidas para
+`service-track-aws-iac`, que é quem as executa. O conteúdo foi preservado; mudou a numeração,
+para não colidir com os ADRs que já existiam lá.
+
+| Era aqui | Passou a ser | Assunto |
+|---|---|---|
+| `API-ADR-015` / `API-RFC-015` | `IAC-ADR-019` / `IAC-RFC-002` | Kubernetes no EKS |
+| `API-ADR-016` / `API-RFC-016` | `IAC-ADR-020` / `IAC-RFC-003` | Terraform |
+| `API-ADR-017` / `API-RFC-017` | `IAC-ADR-021` / `IAC-RFC-004` | GitOps com ArgoCD |
+| `API-ADR-018` / `API-RFC-018` | `IAC-ADR-022` / `IAC-RFC-005` | Bootstrap de segredos |
+
+A numeração local **não foi reaproveitada**: 015 a 018 seguem vagos, para que referências
+antigas — inclusive as dos relatórios em PDF das Fases 1 e 2 — continuem apontando para o
+lugar certo pela tabela acima.
+
+Os desenhos de rede, deployment e CI/CD da Fase 2 estão em
+[`docs/mvp-2/infra-fase-2/`](docs/mvp-2/infra-fase-2/). Descrevem o cluster `servicetrack-dev`,
+que não existe mais — valem como registro da entrega, não como referência. Os diagramas atuais
+estão em `service-track-aws-iac/docs/diagramas/`.
 
 ---
 
@@ -234,11 +249,11 @@ http://localhost:8080/q/swagger-ui
 ServiceTrack-API/
 ├── .github/workflows/     # ci, security, cd-app
 ├── docs/
-│   ├── adr/               # Architecture Decision Records (001–019)
-│   ├── rfc/               # Request for Comments (001–019)
+│   ├── adr/               # Architecture Decision Records (001–014, 019, 020)
+│   ├── rfc/               # Request for Comments (001–014, 019)
 │   ├── c4/                # Diagramas C4 (context, container, components, code)
-│   ├── infra/             # Desenhos renderizados da Fase 2 (histórico)
 │   ├── mvp-1/ mvp-2/      # Enunciados das fases + colinha do vídeo (mvp-2)
+│   │   └── infra-fase-2/  # Desenhos de rede/deploy da Fase 2 (histórico)
 │   ├── template/          # Templates de ADR/RFC
 │   └── srs.md             # Software Requirements Specification
 └── software/
@@ -248,7 +263,8 @@ ServiceTrack-API/
         ├── _infrastructure/ # REST, persistência, JWT, adapters
         ├── openApi/        # Especificações OpenAPI por recurso (contract-first)
         ├── openapi.yaml    # Spec agregada (input do OpenAPI Generator)
-        ├── observability/  # Configs do stack local: otel-collector, prometheus, grafana
+        ├── observability/  # Stack local: otel-collector, prometheus, loki, promtail,
+        │                   #   datasources e dashboard provisionados do Grafana
         ├── scripts/        # postgres-init (roles), security-scan, convert-to-sarif
         ├── service-track.postman_collection.json  # Collection das APIs
         ├── docker-compose.yaml
@@ -320,63 +336,98 @@ Pipeline em `.github/workflows/security.yml`. Executa nos mesmos branches do CI.
 
 ## Observabilidade
 
-Instrumentação **vendor-neutral** com **OpenTelemetry**, exportando **traces, métricas e logs**
-via **OTLP**. A aplicação não conhece o backend: a escolha é apenas por configuração
-(desenvolvimento local usa OpenTelemetry; produção usará Datadog). Decisão em
-[ADR-019](docs/adr/ADR-019-observabilidade-opentelemetry.md) e
-[RFC-019](docs/rfc/RFC-019-observabilidade-opentelemetry.md).
+Instrumentação **vendor-neutral** com OpenTelemetry, exportando traces e métricas por OTLP.
+A aplicação não conhece o backend: quem responde no endpoint OTLP é uma decisão de ambiente
+([ADR-019](docs/adr/ADR-019-observabilidade-opentelemetry.md)).
 
-### Como a arquitetura foi desacoplada
+### Local: Grafana ou Datadog, mesma aplicação
 
-Toda a observabilidade fica na camada `_infrastructure/.../observability/`
-(`configuration/` + `metrics/`), sem código proprietário espalhado pela aplicação:
-
-- `ObservabilityResourceConfig` — atributos do `Resource` OTel (`service.name`, `namespace`,
-  `deployment.environment`).
-- `OtlpMeterRegistryConfig` — registry de métricas via OTLP.
-- `CommonMetricsTagsConfig` — tags comuns das métricas.
-
-O destino é definido só por variável de ambiente — sem alterar código:
-
-```text
-DEV: OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-PRD: OTEL_EXPORTER_OTLP_ENDPOINT=http://datadog-agent:4317
-```
-
-### Ambiente local (100% offline)
+O compose sobe **um dos dois**, e a aplicação não muda de configuração. Os dois backends
+respondem pelo mesmo nome de rede, `coletor-otlp`:
 
 ```bash
-cd software/service-track-api
-docker compose --profile observability up --build
+docker compose --profile grafana up --build     # padrão para desenvolvimento
+docker compose --profile datadog up --build     # exige DD_API_KEY no .env
 ```
 
-Sobe a aplicação + **OpenTelemetry Collector**, **Jaeger**, **Prometheus** e **Grafana** — sem
-Datadog Agent, sem API Key, sem SaaS.
-
-| Sinal | Onde visualizar | URL |
+| Profile | O que sobe | Onde ver |
 |---|---|---|
-| **Traces** | Jaeger UI | `http://localhost:16686` |
-| **Métricas** | Prometheus UI | `http://localhost:9090` |
-| **Métricas + Traces** | Grafana (Prometheus + Jaeger provisionados) | `http://localhost:3001` |
-| **Logs** | stdout da aplicação | `docker logs servicetrack-api` |
+| `grafana` | Collector, Jaeger, Prometheus, **Loki**, **Promtail**, Grafana | Grafana `:3001` (traces, métricas e logs) · Jaeger `:16686` · Prometheus `:9090` |
+| `datadog` | Datadog Agent com OTLP, APM e coleta de logs | app.datadoghq.com |
 
-> A exportação de **logs via OTLP** exige Quarkus 3.16+ (o projeto está em 3.15.1); por ora os
-> logs são consultados pelo stdout da aplicação. O pipeline de logs já está pronto no Collector
-> para quando a plataforma for atualizada. Traces e métricas fluem por OTLP normalmente.
+Traces e métricas chegam por OTLP. **Logs chegam por outro caminho:** a aplicação escreve JSON
+no stdout e o Promtail lê pelo socket do Docker, empurrando para o Loki — o mesmo princípio que
+o agente do Datadog usa na nuvem. Exportar log por OTLP exigiria Quarkus 3.16+.
 
-Fluxo: `app --OTLP--> otel-collector --> {Jaeger, Prometheus, logs}`.
-A aplicação roda mesmo sem o stack (os envios OTLP são descartados).
+No Grafana, o campo `traceId` do log é clicável e leva ao trace no Jaeger.
 
-### Futuro: Datadog em produção (só configuração)
+`grafana` é o padrão para teste local: roda **100% offline**, sem conta, sem chave, sem SaaS.
+`datadog` existe para reproduzir localmente o que roda em `hml` e `prd`.
 
-O compose traz um profile `datadog` **preparado** (não-default). Nenhuma mudança de código é
-necessária para usar Datadog — basta apontar o endpoint OTLP para o agente:
+> **O `--profile` não é opcional.** Todo o stack de observabilidade está atrás de profile.
+> `docker compose up` sem profile sobe apenas `postgres` e `api`, e a aplicação passa a repetir
+> `UnknownHostException: coletor-otlp` a cada 15 segundos — o coletor simplesmente não existe.
+> Não é defeito de configuração; é o profile faltando.
 
-```bash
-docker compose --profile datadog up   # exige DD_API_KEY no .env
-```
+> Subir os dois profiles ao mesmo tempo faz o alias `coletor-otlp` ficar ambíguo. Suba um de
+> cada vez.
 
-> Esta etapa **não altera** a infraestrutura de produção (Terraform/Kubernetes/pipelines).
+#### O que abrir no Grafana
+
+`http://localhost:3001` (admin/admin, ou leitura anônima). O dashboard **ServiceTrack — visão
+geral** é provisionado automaticamente, na pasta `ServiceTrack`:
+
+| Seção | O que mostra |
+|---|---|
+| Casos de uso | execuções por minuto, taxa de erro, p95 global, p95 e média por caso de uso, erros por entidade |
+| HTTP | p95 por rota e requisições por status |
+| Logs | volume por nível e as linhas dos casos de uso, vindas do Loki |
+| Runtime | memória da JVM, threads e CPU |
+
+Se o dashboard aparecer vazio, o motivo quase sempre é um destes: subiu sem `--profile`, ou
+ainda não passaram os 15 segundos do primeiro ciclo de exportação de métricas, ou não houve
+tráfego — o agendador de notificações gera dado sozinho depois de ~30 s.
+
+As métricas chegam ao Prometheus com o nome achatado pelo collector:
+`servicetrack.usecase.duracao` vira `servicetrack_usecase_duracao_milliseconds_*` e
+`servicetrack.usecase.execucoes` vira `servicetrack_usecase_execucoes_total`. Ao escrever
+consulta nova, usar o nome achatado.
+
+### Logs estruturados e rastreabilidade dos casos de uso
+
+No perfil `prod` os logs saem em **JSON**, com `traceId` e `spanId` no MDC. Em modo de
+desenvolvimento seguem legíveis.
+
+Todo caso de uso da camada de aplicação é observado por um proxy dinâmico (`UseCaseProxy`),
+que emite três sinais sem que o caso de uso saiba disso:
+
+| Sinal | Nome |
+|---|---|
+| Span | código do caso de uso, por exemplo `OS_CRIAR` |
+| Log | `use_case`, `entidade`, `duracao_ms`, `erro_codigo`, `erro_tipo` + campos marcados |
+| Métrica | `servicetrack.usecase.duracao` e `servicetrack.usecase.execucoes`, com tags `use_case`, `entidade` e `resultado` |
+
+O que aparece do payload é **decidido por anotação, e o padrão é não aparecer**: só campos
+marcados com `@Rastreavel` são logados, e `@Mascarado` revela apenas os últimos dígitos. Senha
+não tem anotação nenhuma — não aparece nem mascarada.
+
+Mensagem de exceção só é logada quando a exceção vem dos pacotes da aplicação ou do domínio.
+Erro de terceiro registra apenas o tipo, porque a mensagem pode carregar dado do usuário.
+
+### Em nuvem
+
+Datadog em `hml` e `prd`, provisionado por Terraform no
+[service-track-aws-iac](https://github.com/Claudio712005/service-track-aws-iac). A aplicação
+envia OTLP para o agente do **próprio node**, via `status.hostIP` — nenhuma configuração da
+aplicação muda entre local e nuvem, apenas o endereço.
+
+Variáveis que o ambiente fornece:
+
+| Variável | De onde vem |
+|---|---|
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `status.hostIP` do node, no Deployment |
+| `OTEL_ENVIRONMENT` | ConfigMap do overlay (`local`, `hml`, `prd`) |
+| `OTEL_SERVICE_NAME` | Deployment |
 
 ---
 

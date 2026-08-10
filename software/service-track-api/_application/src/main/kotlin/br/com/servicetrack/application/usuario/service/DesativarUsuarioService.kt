@@ -3,6 +3,8 @@ package br.com.servicetrack.application.usuario.service
 import br.com.servicetrack.application.auditoria.annotation.Auditavel
 import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.exception.OperacaoNegadaException
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.usuario.ports.`in`.DesativarUsuarioUseCase
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
@@ -17,6 +19,7 @@ class DesativarUsuarioService(
 ) : DesativarUsuarioUseCase {
 
     @Auditavel(entidade = TipoEntidade.CLIENTE, evento = TipoEventoAuditoria.REMOVIDO)
+    @Observavel(codigo = CodigoUseCase.CLIENTE_DESATIVAR)
     override fun desativarUsuario(id: UsuarioId) {
         val solicitanteId = jwt.getUsuarioId()
 

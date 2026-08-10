@@ -9,18 +9,21 @@ import br.com.servicetrack.application.usuario.ports.`in`.ResetarSenhaUseCase
 import br.com.servicetrack.application.usuario.ports.out.CriptografiaPort
 import br.com.servicetrack.application.usuario.ports.out.JwtPort
 import br.com.servicetrack.application.usuario.ports.out.UsuarioRepositoryPort
-import br.com.servicetrack.domain.usuario.vo.UsuarioId
 import br.com.servicetrack.application.usuario.service.AtualizarUsuarioService
 import br.com.servicetrack.application.usuario.service.BuscarClienteService
 import br.com.servicetrack.application.usuario.service.CriarUsuarioService
 import br.com.servicetrack.application.usuario.service.DesativarUsuarioService
 import br.com.servicetrack.application.usuario.service.ResetarSenhaService
-import br.com.servicetrack.infrastructure.auditoria.AuditoriaProxy
+import br.com.servicetrack.domain.usuario.vo.UsuarioId
+import br.com.servicetrack.infrastructure.observabilidade.UseCaseProxy
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Produces
 
 @ApplicationScoped
-class UsuarioServiceConfig {
+class UsuarioServiceConfig(
+    private val proxy: UseCaseProxy,
+    private val auditoria: RegistrarAuditoriaPort,
+) {
 
     @Produces
     @ApplicationScoped
@@ -28,7 +31,7 @@ class UsuarioServiceConfig {
         repository: UsuarioRepositoryPort,
         criptografia: CriptografiaPort,
         auditoria: RegistrarAuditoriaPort
-    ): CriarUsuarioUseCase = AuditoriaProxy.envolver(
+    ): CriarUsuarioUseCase = proxy.envolver(
         CriarUsuarioService(repository, criptografia),
         CriarUsuarioUseCase::class.java,
         auditoria
@@ -39,7 +42,11 @@ class UsuarioServiceConfig {
     fun buscarClienteUseCase(
         usuarioRepository: UsuarioRepositoryPort,
         jwt: JwtPort
-    ): BuscarClienteUseCase = BuscarClienteService(usuarioRepository, jwt)
+    ): BuscarClienteUseCase = proxy.envolver(
+        BuscarClienteService(usuarioRepository, jwt),
+        BuscarClienteUseCase::class.java,
+        auditoria,
+    )
 
     @Produces
     @ApplicationScoped
@@ -47,7 +54,7 @@ class UsuarioServiceConfig {
         usuarioRepository: UsuarioRepositoryPort,
         jwt: JwtPort,
         auditoria: RegistrarAuditoriaPort
-    ): AtualizarUsuarioUseCase = AuditoriaProxy.envolver(
+    ): AtualizarUsuarioUseCase = proxy.envolver(
         AtualizarUsuarioService(usuarioRepository, jwt),
         AtualizarUsuarioUseCase::class.java,
         auditoria,
@@ -60,7 +67,7 @@ class UsuarioServiceConfig {
         usuarioRepository: UsuarioRepositoryPort,
         jwt: JwtPort,
         auditoria: RegistrarAuditoriaPort
-    ): DesativarUsuarioUseCase = AuditoriaProxy.envolver(
+    ): DesativarUsuarioUseCase = proxy.envolver(
         DesativarUsuarioService(usuarioRepository, jwt),
         DesativarUsuarioUseCase::class.java,
         auditoria,
@@ -74,7 +81,7 @@ class UsuarioServiceConfig {
         criptografia: CriptografiaPort,
         jwt: JwtPort,
         auditoria: RegistrarAuditoriaPort
-    ): ResetarSenhaUseCase = AuditoriaProxy.envolver(
+    ): ResetarSenhaUseCase = proxy.envolver(
         ResetarSenhaService(usuarioRepository, criptografia, jwt),
         ResetarSenhaUseCase::class.java,
         auditoria

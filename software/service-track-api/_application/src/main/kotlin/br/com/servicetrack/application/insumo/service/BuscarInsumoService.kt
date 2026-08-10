@@ -5,6 +5,8 @@ import br.com.servicetrack.application.exception.EntidadeNaoEncontradaException
 import br.com.servicetrack.application.insumo.dto.InsumoResDTO
 import br.com.servicetrack.application.insumo.ports.`in`.BuscarInsumoUseCase
 import br.com.servicetrack.application.insumo.ports.`out`.InsumoRepositoryPort
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.domain.auditoria.enums.TipoEntidade
 import br.com.servicetrack.domain.auditoria.enums.TipoEventoAuditoria
 import br.com.servicetrack.domain.insumo.Insumo
@@ -13,6 +15,8 @@ import br.com.servicetrack.domain.insumo.vo.InsumoId
 class BuscarInsumoService(
     private val repository: InsumoRepositoryPort
 ) : BuscarInsumoUseCase {
+
+    @Observavel(codigo = CodigoUseCase.INSUMO_BUSCAR)
 
     override fun buscarInsumo(id: InsumoId): InsumoResDTO {
         val insumo = repository.buscarPorId(id)

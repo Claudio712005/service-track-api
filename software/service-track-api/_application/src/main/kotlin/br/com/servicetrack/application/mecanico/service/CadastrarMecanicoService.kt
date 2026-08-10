@@ -8,6 +8,8 @@ import br.com.servicetrack.application.mecanico.dto.response.MecanicoResDTO
 import br.com.servicetrack.application.mecanico.mapper.toDomain
 import br.com.servicetrack.application.mecanico.ports.`in`.CadastrarMecanicoUseCase
 import br.com.servicetrack.application.mecanico.ports.`out`.MecanicoRepositoryPort
+import br.com.servicetrack.application.observabilidade.annotation.Observavel
+import br.com.servicetrack.application.observabilidade.enums.CodigoUseCase
 import br.com.servicetrack.application.usuario.ports.`out`.CriptografiaPort
 import br.com.servicetrack.application.usuario.ports.`out`.UsuarioRepositoryPort
 import br.com.servicetrack.domain.auditoria.enums.TipoEntidade
@@ -25,6 +27,7 @@ class CadastrarMecanicoService(
 ) : CadastrarMecanicoUseCase {
 
     @Auditavel(entidade = TipoEntidade.MECANICO, evento = TipoEventoAuditoria.CRIADO)
+    @Observavel(codigo = CodigoUseCase.MECANICO_CADASTRAR)
     override fun cadastrarMecanico(req: CadastrarMecanicoReqDTO): MecanicoResDTO {
         if (usuarioRepository.existePorEmailOuCpf(req.email, req.cpf)) {
             throw UsuarioJaExisteException(req.email, req.cpf)
