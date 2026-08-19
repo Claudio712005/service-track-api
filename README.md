@@ -119,6 +119,7 @@ Para detalhes de cada camada, veja:
 | [ADR-019](docs/adr/ADR-019-observabilidade-opentelemetry.md) | Observabilidade OpenTelemetry | Vendor-neutral via OTLP; backend por configuração |
 | [ADR-020](docs/adr/ADR-020-aplicacao-nao-e-dona-de-infraestrutura.md) | Aplicação sem infraestrutura | Uma única descrição da infra; CD delega o deploy |
 | [ADR-021](docs/adr/ADR-021-datadog-backend-unico.md) | Datadog como backend único | Um caminho só de observabilidade, do local à produção |
+| [ADR-022](docs/adr/ADR-022-tracer-datadog-no-ambiente-local.md) | Tracer do Datadog local | Traces pelo tracer, métricas por OTLP; auth instrumentado sem código |
 
 ### Decisões que saíram deste repositório
 
@@ -427,9 +428,39 @@ do collector (`failed to register process metrics`).
 Os dashboards e monitores de `hml` e `prd` são provisionados por Terraform e filtram
 `env:hml` / `env:prd`. O ambiente local não aparece neles, por desenho.
 
-> **O serviço de autenticação ainda não é instrumentado.** Ele aparece em Logs, coletado pelo
-> agente, mas não emite traces nem métricas próprias — não tem OpenTelemetry. O fluxo de
-> login é, hoje, invisível no APM.
+#### Como os sinais chegam
+
+| Sinal | Caminho | Destino |
+|---|---|---|
+| Traces | `dd-java-agent.jar` injetado como `-javaagent` | agente `:8126` |
+| Métricas de negócio | Micrometer, exportador OTLP | agente `:4318` |
+| Logs | stdout em JSON, lidos pelo socket do Docker | agente |
+
+O tracer está nas duas imagens — aplicação e autenticação — **desligado por padrão**
+(`DD_TRACE_ENABLED=false`). Só o compose liga. Rodar a imagem fora do compose se comporta
+como antes, sem tentar exportar nada.
+
+É o tracer que torna o **serviço de autenticação visível no APM**: ele instrumenta JAX-RS,
+JDBC e cliente HTTP sem alterar código. Antes disso o fluxo de login não gerava trace nenhum.
+Ver [ADR-022](docs/adr/ADR-022-tracer-datadog-no-ambiente-local.md).
+
+> **Local e nuvem divergem no caminho de traces.** `hml` e `prd` continuam exportando por
+> OTLP; o local usa o tracer. Métricas e logs seguem idênticos nos dois. Consequência prática:
+> os nomes de métrica derivadas de trace diferem — os monitores do Terraform consultam
+> `trace.http.server.request`, que é o nome gerado pela conversão OTLP e **não** aparece
+> localmente.
+
+Verificando que o tracer subiu:
+
+```bash
+docker logs servicetrack-api 2>&1 | grep "DATADOG TRACER CONFIGURATION"
+```
+
+Procure `"agent_error":false` e o `"service"` correto. Quantos traces chegaram:
+
+```bash
+docker exec datadog-agent agent status | grep -A2 "Traces received"
+```
 
 
 ### Logs estruturados e rastreabilidade dos casos de uso
