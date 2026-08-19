@@ -418,6 +418,12 @@ Diagnóstico do agente:
 docker exec dd-agent agent status
 ```
 
+Na seção `OTLP`, `Collector status` precisa estar `Running`. Se estiver `Closed`, o agente
+abortou o pipeline no boot e as portas 4317/4318 não sobem — a aplicação passa a exportar
+contra porta fechada e registra `Connection refused: coletor-otlp`. A causa conhecida são
+mounts de `/proc` e `/sys/fs/cgroup` no container do agente, que quebram a telemetria interna
+do collector (`failed to register process metrics`).
+
 Os dashboards e monitores de `hml` e `prd` são provisionados por Terraform e filtram
 `env:hml` / `env:prd`. O ambiente local não aparece neles, por desenho.
 
