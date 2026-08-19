@@ -47,10 +47,41 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://coletor-otlp:4317}
       OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-http://coletor-otlp:4318/v1/metrics}
       OTEL_ENVIRONMENT: ${OTEL_ENVIRONMENT:-local}
+    labels:
+      com.datadoghq.ad.logs: '[{"source":"java","service":"service-track-api"}]'
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/q/health/ready > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
     depends_on:
       postgres:
+        condition: service_healthy
+      datadog-agent:
+        condition: service_started
+
+  auth:
+    image: ${AUTH_IMAGE:-servicetrack-auth:local}
+    container_name: servicetrack-auth
+    restart: unless-stopped
+    networks:
+      - servicetrack-network
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: servicetrack
+      POSTGRES_USER: ${APP_DB_USER}
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD}
+      DB_POOL_MAX_SIZE: ${AUTH_DB_POOL_MAX_SIZE:-2}
+    labels:
+      com.datadoghq.ad.logs: '[{"source":"java","service":"service-track-auth"}]'
+    ports:
+      - "8081:8080"
+    depends_on:
+      api:
         condition: service_healthy
 
   datadog-agent:
@@ -74,7 +105,7 @@ services:
       DD_LOGS_ENABLED: "true"
       DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: "true"
       DD_ENV: ${OTEL_ENVIRONMENT:-local}
-      DD_SERVICE: service-track-api
+      DD_TAGS: "projeto:servicetrack"
       DD_CONTAINER_EXCLUDE: "name:dd-agent"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
