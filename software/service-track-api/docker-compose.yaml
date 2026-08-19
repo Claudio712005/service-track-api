@@ -53,101 +53,10 @@ services:
       postgres:
         condition: service_healthy
 
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.109.0
-    container_name: servicetrack-otel-collector
-    restart: unless-stopped
-    profiles: ["grafana"]
-    command: ["--config=/etc/otel/config.yaml"]
-    networks:
-      servicetrack-network:
-        aliases:
-          - coletor-otlp
-    volumes:
-      - ./observability/otel-collector.yaml:/etc/otel/config.yaml:ro
-    ports:
-      - "4317:4317"
-      - "4318:4318"
-      - "8889:8889"
-    depends_on:
-      - jaeger
-
-  jaeger:
-    image: jaegertracing/all-in-one:1.60
-    container_name: servicetrack-jaeger
-    restart: unless-stopped
-    profiles: ["grafana"]
-    networks:
-      - servicetrack-network
-    environment:
-      COLLECTOR_OTLP_ENABLED: "true"
-    ports:
-      - "16686:16686"
-
-  prometheus:
-    image: prom/prometheus:v2.54.1
-    container_name: servicetrack-prometheus
-    restart: unless-stopped
-    profiles: ["grafana"]
-    networks:
-      - servicetrack-network
-    volumes:
-      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    ports:
-      - "9090:9090"
-
-  loki:
-    image: grafana/loki:3.1.1
-    container_name: servicetrack-loki
-    restart: unless-stopped
-    profiles: ["grafana"]
-    command: -config.file=/etc/loki/local-config.yaml
-    networks:
-      - servicetrack-network
-    ports:
-      - "3100:3100"
-
-  promtail:
-    image: grafana/promtail:3.1.1
-    container_name: servicetrack-promtail
-    restart: unless-stopped
-    profiles: ["grafana"]
-    command: -config.file=/etc/promtail/config.yaml
-    networks:
-      - servicetrack-network
-    volumes:
-      - ./observability/promtail.yaml:/etc/promtail/config.yaml:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    depends_on:
-      - loki
-
-  grafana:
-    image: grafana/grafana:11.2.0
-    container_name: servicetrack-grafana
-    restart: unless-stopped
-    profiles: ["grafana"]
-    networks:
-      - servicetrack-network
-    environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
-      GF_AUTH_ANONYMOUS_ENABLED: "true"
-      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
-    volumes:
-      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
-    ports:
-      - "3001:3000"
-    depends_on:
-      - prometheus
-      - jaeger
-      - loki
-
   datadog-agent:
     image: gcr.io/datadoghq/agent:7
     container_name: dd-agent
     restart: unless-stopped
-    profiles: ["datadog"]
     networks:
       servicetrack-network:
         aliases:
