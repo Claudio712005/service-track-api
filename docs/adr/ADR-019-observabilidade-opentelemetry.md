@@ -8,6 +8,12 @@
 ## Status
 
 - Aceita
+- **Parcialmente superada por `ADR-021`** quanto ao backend local.
+
+A decisão central — instrumentar com OpenTelemetry e exportar por OTLP, mantendo a aplicação
+sem conhecer o fornecedor — continua valendo integralmente. O que mudou foi a resposta a
+"quem responde no endpoint local": desde `ADR-021` é o agente Datadog, o mesmo de `hml` e
+`prd`. O caminho Collector + Jaeger + Prometheus + Grafana descrito abaixo foi removido.
 
 ---
 

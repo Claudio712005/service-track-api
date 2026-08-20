@@ -31,12 +31,19 @@ RUN --mount=type=cache,target=/root/.gradle,sharing=locked \
 
 FROM eclipse-temurin:21-jre-alpine
 
+ARG DD_TRACE_VERSION=1.65.1
+
 ENV TZ=UTC \
-    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8"
+    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8" \
+    DD_TRACE_ENABLED=false
 
 WORKDIR /app
 
 RUN addgroup -S servicetrack && adduser -S servicetrack -G servicetrack
+
+ADD --chown=servicetrack:servicetrack \
+    https://repo1.maven.org/maven2/com/datadoghq/dd-java-agent/${DD_TRACE_VERSION}/dd-java-agent-${DD_TRACE_VERSION}.jar \
+    /app/dd-java-agent.jar
 
 COPY --from=build --chown=servicetrack:servicetrack \
     /workspace/_infrastructure/build/quarkus-app ./
@@ -46,6 +53,7 @@ USER servicetrack
 EXPOSE 8080
 
 ENTRYPOINT ["java", \
+    "-javaagent:/app/dd-java-agent.jar", \
     "-XX:+UseContainerSupport", \
     "-XX:MaxRAMPercentage=75.0", \
     "-Djava.util.logging.manager=org.jboss.logmanager.LogManager", \

@@ -118,6 +118,8 @@ Para detalhes de cada camada, veja:
 | [ADR-005](docs/adr/ADR-005-autenticacao-jwt.md) | JWT RS256 | Stateless, integrado via SmallRye JWT · emissão movida para a Lambda em `GLOBAL-ADR-004` |
 | [ADR-019](docs/adr/ADR-019-observabilidade-opentelemetry.md) | Observabilidade OpenTelemetry | Vendor-neutral via OTLP; backend por configuração |
 | [ADR-020](docs/adr/ADR-020-aplicacao-nao-e-dona-de-infraestrutura.md) | Aplicação sem infraestrutura | Uma única descrição da infra; CD delega o deploy |
+| [ADR-021](docs/adr/ADR-021-datadog-backend-unico.md) | Datadog como backend único | Um caminho só de observabilidade, do local à produção |
+| [ADR-022](docs/adr/ADR-022-tracer-datadog-no-ambiente-local.md) | Tracer do Datadog local | Traces pelo tracer, métricas por OTLP; auth instrumentado sem código |
 
 ### Decisões que saíram deste repositório
 
@@ -170,6 +172,26 @@ openssl genrsa -out privateKey.pem 4096
 openssl rsa -in privateKey.pem -pubout -out publicKey.pem
 ```
 
+> **O par é compartilhado com o serviço de autenticação.** Quem emite o token de login é a
+> Lambda; quem o verifica é esta aplicação — que também assina com a mesma chave privada, nos
+> tokens de decisão de orçamento. Gerar um par novo aqui exige copiá-lo para
+> `service-track-lambda/src/main/resources/`, senão todo login local termina em 401.
+> Ver `GLOBAL-RFC-007`.
+
+### Construindo a imagem de autenticação
+
+O login não está mais nesta aplicação: ele é um serviço à parte, em
+[service-track-lambda](https://github.com/Claudio712005/service-track-lambda). O Compose
+consome a imagem dele por nome, e ela precisa existir antes da primeira subida:
+
+```bash
+cd ../../../service-track-lambda/service-track-lambda
+docker build -f Dockerfile.local -t servicetrack-auth:local .
+```
+
+O build acontece dentro da imagem — não exige JDK na máquina. Refaça sempre que o código de
+autenticação mudar. Para apontar para outra imagem, use `AUTH_IMAGE` no `.env`.
+
 ### Subindo com Docker Compose
 
 ```bash
@@ -177,13 +199,28 @@ cd software/service-track-api
 docker compose up --build
 ```
 
-O Compose aguarda o Postgres passar no healthcheck antes de iniciar a API — a primeira subida pode levar alguns segundos extras.
+A ordem de subida é encadeada por healthcheck: Postgres → API → autenticação. A API precisa
+estar saudável antes do serviço de autenticação porque quem cria as tabelas `usuarios` e
+`usuario_roles` é o Flyway daqui. A primeira subida leva alguns segundos extras.
 
 | Serviço | URL |
 |---|---|
 | API | `http://localhost:8080` |
+| Autenticação | `http://localhost:8081` |
 | PostgreSQL | `localhost:5432` |
 | Swagger UI | `http://localhost:8080/q/swagger-ui` |
+
+#### Obtendo um token
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:8081/autenticacao \
+  -H 'Content-Type: application/json' \
+  -d '{"cpf":"13646633093","senha":"<senha do seed>"}' | jq -r .token)
+
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/clientes
+```
+
+Os CPFs disponíveis vêm do seed em `V2__seed_data.sql`.
 
 #### Rebuild sem cache (quando necessário)
 
@@ -263,8 +300,6 @@ ServiceTrack-API/
         ├── _infrastructure/ # REST, persistência, JWT, adapters
         ├── openApi/        # Especificações OpenAPI por recurso (contract-first)
         ├── openapi.yaml    # Spec agregada (input do OpenAPI Generator)
-        ├── observability/  # Stack local: otel-collector, prometheus, loki, promtail,
-        │                   #   datasources e dashboard provisionados do Grafana
         ├── scripts/        # postgres-init (roles), security-scan, convert-to-sarif
         ├── service-track.postman_collection.json  # Collection das APIs
         ├── docker-compose.yaml
@@ -340,58 +375,93 @@ Instrumentação **vendor-neutral** com OpenTelemetry, exportando traces e métr
 A aplicação não conhece o backend: quem responde no endpoint OTLP é uma decisão de ambiente
 ([ADR-019](docs/adr/ADR-019-observabilidade-opentelemetry.md)).
 
-### Local: Grafana ou Datadog, mesma aplicação
-
-O compose sobe **um dos dois**, e a aplicação não muda de configuração. Os dois backends
-respondem pelo mesmo nome de rede, `coletor-otlp`:
+### Local: Datadog, o mesmo backend de hml e prd
 
 ```bash
-docker compose --profile grafana up --build     # padrão para desenvolvimento
-docker compose --profile datadog up --build     # exige DD_API_KEY no .env
+docker compose up --build
 ```
 
-| Profile | O que sobe | Onde ver |
-|---|---|---|
-| `grafana` | Collector, Jaeger, Prometheus, **Loki**, **Promtail**, Grafana | Grafana `:3001` (traces, métricas e logs) · Jaeger `:16686` · Prometheus `:9090` |
-| `datadog` | Datadog Agent com OTLP, APM e coleta de logs | app.datadoghq.com |
+O agente do Datadog sobe junto e recebe OTLP pelo alias de rede `coletor-otlp`. **Exige
+`DD_API_KEY` no `.env`** — sem chave o agente não sobe, e a aplicação passa a repetir
+`UnknownHostException: coletor-otlp` a cada 15 segundos ao tentar exportar. Não é defeito de
+configuração; é a chave faltando.
 
 Traces e métricas chegam por OTLP. **Logs chegam por outro caminho:** a aplicação escreve JSON
-no stdout e o Promtail lê pelo socket do Docker, empurrando para o Loki — o mesmo princípio que
-o agente do Datadog usa na nuvem. Exportar log por OTLP exigiria Quarkus 3.16+.
+no stdout e o agente lê pelo socket do Docker — o mesmo mecanismo que ele usa no cluster.
+Exportar log por OTLP exigiria Quarkus 3.16+.
 
-No Grafana, o campo `traceId` do log é clicável e leva ao trace no Jaeger.
+Até a Fase 3 havia um segundo caminho local, com Grafana, Prometheus, Loki e Jaeger atrás de
+um profile. Foi removido: manter dois backends dobrava a manutenção e fazia o ambiente local
+deixar de ser evidência do que roda em produção. Custo assumido — não há mais observabilidade
+local 100% offline. Decisão em `GLOBAL-RFC-007` e [ADR-021](docs/adr/ADR-021-datadog-backend-unico.md).
 
-`grafana` é o padrão para teste local: roda **100% offline**, sem conta, sem chave, sem SaaS.
-`datadog` existe para reproduzir localmente o que roda em `hml` e `prd`.
+A instrumentação **não mudou**: continua OpenTelemetry puro, exportando por OTLP. A aplicação
+não conhece o fornecedor — o alias `coletor-otlp` existe justamente para manter isso
+([ADR-019](docs/adr/ADR-019-observabilidade-opentelemetry.md)).
 
-> **O `--profile` não é opcional.** Todo o stack de observabilidade está atrás de profile.
-> `docker compose up` sem profile sobe apenas `postgres` e `api`, e a aplicação passa a repetir
-> `UnknownHostException: coletor-otlp` a cada 15 segundos — o coletor simplesmente não existe.
-> Não é defeito de configuração; é o profile faltando.
+#### O que abrir no Datadog
 
-> Subir os dois profiles ao mesmo tempo faz o alias `coletor-otlp` ficar ambíguo. Suba um de
-> cada vez.
+`app.datadoghq.com`, filtrando por `env:local`:
 
-#### O que abrir no Grafana
-
-`http://localhost:3001` (admin/admin, ou leitura anônima). O dashboard **ServiceTrack — visão
-geral** é provisionado automaticamente, na pasta `ServiceTrack`:
-
-| Seção | O que mostra |
+| Onde | O que mostra |
 |---|---|
-| Casos de uso | execuções por minuto, taxa de erro, p95 global, p95 e média por caso de uso, erros por entidade |
-| HTTP | p95 por rota e requisições por status |
-| Logs | volume por nível e as linhas dos casos de uso, vindas do Loki |
-| Runtime | memória da JVM, threads e CPU |
+| APM → Services | `service-track-api` e `service-track-auth`, latência e taxa de erro por rota |
+| Metrics Explorer | `servicetrack.usecase.duracao` e `servicetrack.usecase.execucoes`, por `use_case`, `entidade` e `resultado` |
+| Logs | `service:service-track-api env:local` — linhas dos casos de uso, com `traceId` clicável para o trace |
 
-Se o dashboard aparecer vazio, o motivo quase sempre é um destes: subiu sem `--profile`, ou
-ainda não passaram os 15 segundos do primeiro ciclo de exportação de métricas, ou não houve
-tráfego — o agendador de notificações gera dado sozinho depois de ~30 s.
+Se não aparecer nada, o motivo quase sempre é um destes: `DD_API_KEY` vazia ou de outro site
+(confira `DD_SITE`), ainda não passaram os 15 segundos do primeiro ciclo de exportação de
+métricas, ou não houve tráfego — o agendador de notificações gera dado sozinho depois de ~30 s.
 
-As métricas chegam ao Prometheus com o nome achatado pelo collector:
-`servicetrack.usecase.duracao` vira `servicetrack_usecase_duracao_milliseconds_*` e
-`servicetrack.usecase.execucoes` vira `servicetrack_usecase_execucoes_total`. Ao escrever
-consulta nova, usar o nome achatado.
+Diagnóstico do agente:
+
+```bash
+docker exec dd-agent agent status
+```
+
+Na seção `OTLP`, `Collector status` precisa estar `Running`. Se estiver `Closed`, o agente
+abortou o pipeline no boot e as portas 4317/4318 não sobem — a aplicação passa a exportar
+contra porta fechada e registra `Connection refused: coletor-otlp`. A causa conhecida são
+mounts de `/proc` e `/sys/fs/cgroup` no container do agente, que quebram a telemetria interna
+do collector (`failed to register process metrics`).
+
+Os dashboards e monitores de `hml` e `prd` são provisionados por Terraform e filtram
+`env:hml` / `env:prd`. O ambiente local não aparece neles, por desenho.
+
+#### Como os sinais chegam
+
+| Sinal | Caminho | Destino |
+|---|---|---|
+| Traces | `dd-java-agent.jar` injetado como `-javaagent` | agente `:8126` |
+| Métricas de negócio | Micrometer, exportador OTLP | agente `:4318` |
+| Logs | stdout em JSON, lidos pelo socket do Docker | agente |
+
+O tracer está nas duas imagens — aplicação e autenticação — **desligado por padrão**
+(`DD_TRACE_ENABLED=false`). Só o compose liga. Rodar a imagem fora do compose se comporta
+como antes, sem tentar exportar nada.
+
+É o tracer que torna o **serviço de autenticação visível no APM**: ele instrumenta JAX-RS,
+JDBC e cliente HTTP sem alterar código. Antes disso o fluxo de login não gerava trace nenhum.
+Ver [ADR-022](docs/adr/ADR-022-tracer-datadog-no-ambiente-local.md).
+
+> **Local e nuvem divergem no caminho de traces.** `hml` e `prd` continuam exportando por
+> OTLP; o local usa o tracer. Métricas e logs seguem idênticos nos dois. Consequência prática:
+> os nomes de métrica derivadas de trace diferem — os monitores do Terraform consultam
+> `trace.http.server.request`, que é o nome gerado pela conversão OTLP e **não** aparece
+> localmente.
+
+Verificando que o tracer subiu:
+
+```bash
+docker logs servicetrack-api 2>&1 | grep "DATADOG TRACER CONFIGURATION"
+```
+
+Procure `"agent_error":false` e o `"service"` correto. Quantos traces chegaram:
+
+```bash
+docker exec datadog-agent agent status | grep -A2 "Traces received"
+```
+
 
 ### Logs estruturados e rastreabilidade dos casos de uso
 

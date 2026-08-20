@@ -47,107 +47,70 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://coletor-otlp:4317}
       OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-http://coletor-otlp:4318/v1/metrics}
       OTEL_ENVIRONMENT: ${OTEL_ENVIRONMENT:-local}
+      OTEL_TRACES_ENABLED: "false"
+      DD_TRACE_ENABLED: "true"
+      DD_AGENT_HOST: datadog-agent
+      DD_TRACE_AGENT_PORT: "8126"
+      DD_ENV: ${OTEL_ENVIRONMENT:-local}
+      DD_SERVICE: service-track-api
+      DD_VERSION: ${APP_VERSION:-local}
+      DD_LOGS_INJECTION: "true"
+      DD_TRACE_REMOVE_INTEGRATION_SERVICE_NAMES_ENABLED: "true"
+    labels:
+      com.datadoghq.ad.logs: '[{"source":"java","service":"service-track-api"}]'
+      com.datadoghq.tags.env: ${OTEL_ENVIRONMENT:-local}
+      com.datadoghq.tags.service: service-track-api
+      com.datadoghq.tags.version: ${APP_VERSION:-local}
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/q/health/ready > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
     depends_on:
       postgres:
         condition: service_healthy
+      datadog-agent:
+        condition: service_started
 
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.109.0
-    container_name: servicetrack-otel-collector
+  auth:
+    image: ${AUTH_IMAGE:-servicetrack-auth:local}
+    container_name: servicetrack-auth
     restart: unless-stopped
-    profiles: ["grafana"]
-    command: ["--config=/etc/otel/config.yaml"]
-    networks:
-      servicetrack-network:
-        aliases:
-          - coletor-otlp
-    volumes:
-      - ./observability/otel-collector.yaml:/etc/otel/config.yaml:ro
-    ports:
-      - "4317:4317"
-      - "4318:4318"
-      - "8889:8889"
-    depends_on:
-      - jaeger
-
-  jaeger:
-    image: jaegertracing/all-in-one:1.60
-    container_name: servicetrack-jaeger
-    restart: unless-stopped
-    profiles: ["grafana"]
     networks:
       - servicetrack-network
     environment:
-      COLLECTOR_OTLP_ENABLED: "true"
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: servicetrack
+      POSTGRES_USER: ${APP_DB_USER}
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD}
+      DB_POOL_MAX_SIZE: ${AUTH_DB_POOL_MAX_SIZE:-2}
+      DD_TRACE_ENABLED: "true"
+      DD_AGENT_HOST: datadog-agent
+      DD_TRACE_AGENT_PORT: "8126"
+      DD_ENV: ${OTEL_ENVIRONMENT:-local}
+      DD_SERVICE: service-track-auth
+      DD_VERSION: ${APP_VERSION:-local}
+      DD_LOGS_INJECTION: "true"
+      DD_TRACE_REMOVE_INTEGRATION_SERVICE_NAMES_ENABLED: "true"
+    labels:
+      com.datadoghq.ad.logs: '[{"source":"java","service":"service-track-auth"}]'
+      com.datadoghq.tags.env: ${OTEL_ENVIRONMENT:-local}
+      com.datadoghq.tags.service: service-track-auth
+      com.datadoghq.tags.version: ${APP_VERSION:-local}
     ports:
-      - "16686:16686"
-
-  prometheus:
-    image: prom/prometheus:v2.54.1
-    container_name: servicetrack-prometheus
-    restart: unless-stopped
-    profiles: ["grafana"]
-    networks:
-      - servicetrack-network
-    volumes:
-      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    ports:
-      - "9090:9090"
-
-  loki:
-    image: grafana/loki:3.1.1
-    container_name: servicetrack-loki
-    restart: unless-stopped
-    profiles: ["grafana"]
-    command: -config.file=/etc/loki/local-config.yaml
-    networks:
-      - servicetrack-network
-    ports:
-      - "3100:3100"
-
-  promtail:
-    image: grafana/promtail:3.1.1
-    container_name: servicetrack-promtail
-    restart: unless-stopped
-    profiles: ["grafana"]
-    command: -config.file=/etc/promtail/config.yaml
-    networks:
-      - servicetrack-network
-    volumes:
-      - ./observability/promtail.yaml:/etc/promtail/config.yaml:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "8081:8080"
     depends_on:
-      - loki
-
-  grafana:
-    image: grafana/grafana:11.2.0
-    container_name: servicetrack-grafana
-    restart: unless-stopped
-    profiles: ["grafana"]
-    networks:
-      - servicetrack-network
-    environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
-      GF_AUTH_ANONYMOUS_ENABLED: "true"
-      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
-    volumes:
-      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
-    ports:
-      - "3001:3000"
-    depends_on:
-      - prometheus
-      - jaeger
-      - loki
+      api:
+        condition: service_healthy
 
   datadog-agent:
     image: gcr.io/datadoghq/agent:7
-    container_name: dd-agent
+    container_name: datadog-agent
     restart: unless-stopped
-    profiles: ["datadog"]
     networks:
       servicetrack-network:
         aliases:
@@ -155,6 +118,7 @@ services:
     ports:
       - "4317:4317"
       - "4318:4318"
+      - "8126:8126"
     environment:
       DD_API_KEY: ${DD_API_KEY:-}
       DD_SITE: ${DD_SITE:-datadoghq.com}
@@ -162,15 +126,14 @@ services:
       DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_GRPC_ENDPOINT: "0.0.0.0:4317"
       DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_HTTP_ENDPOINT: "0.0.0.0:4318"
       DD_APM_ENABLED: "true"
+      DD_APM_NON_LOCAL_TRAFFIC: "true"
       DD_LOGS_ENABLED: "true"
       DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: "true"
       DD_ENV: ${OTEL_ENVIRONMENT:-local}
-      DD_SERVICE: service-track-api
-      DD_CONTAINER_EXCLUDE: "name:dd-agent"
+      DD_TAGS: "projeto:servicetrack"
+      DD_CONTAINER_EXCLUDE: "name:datadog-agent"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /proc/:/host/proc/:ro
-      - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
 
 volumes:
   postgres_data:
