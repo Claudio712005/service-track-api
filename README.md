@@ -229,6 +229,29 @@ docker compose build --no-cache
 docker compose up
 ```
 
+#### Consumo de disco
+
+As imagens de terceiros têm versão fixa no `docker-compose.yaml` (`postgres:16.15-alpine`,
+`gcr.io/datadoghq/agent:7.82.3`). Tag flutuante baixa uma imagem inteira a cada release
+upstream e deixa a anterior pendurada — o agente passa de 1 GB, então acumula rápido.
+Atualizar é deliberado: troque a versão no compose.
+
+As duas imagens próprias compartilham a base `eclipse-temurin:21-jre-alpine`, então a segunda
+custa só as camadas da aplicação.
+
+O que mais ocupa espaço não são as imagens, e sim o **cache de build**: os dois `Dockerfile`
+usam `--mount=type=cache` para o diretório do Gradle, que cresce sem teto. Vendo e limpando:
+
+```bash
+docker system df                 # onde está o espaço
+docker builder prune             # cache de build — costuma ser o maior
+docker image prune               # imagens penduradas, sobra de --build repetido
+docker system prune -a --volumes # radical: remove tudo que não está em uso, inclusive o banco
+```
+
+O último apaga o volume `postgres_data`. Perder esse volume é barato — o Flyway reaplica
+`V1..V3` com o seed na próxima subida — mas é perda de dado, então não rode por reflexo.
+
 ### Modo dev (H2 in-memory)
 
 ```bash
