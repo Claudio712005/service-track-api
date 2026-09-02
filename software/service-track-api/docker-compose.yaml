@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16.15-alpine
     container_name: servicetrack-postgres
     restart: unless-stopped
     networks:
@@ -108,7 +108,7 @@ services:
         condition: service_healthy
 
   datadog-agent:
-    image: gcr.io/datadoghq/agent:7
+    image: gcr.io/datadoghq/agent:7.82.3
     container_name: datadog-agent
     restart: unless-stopped
     networks:
