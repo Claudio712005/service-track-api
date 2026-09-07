@@ -22,6 +22,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: cd-app-${{ inputs.env || 'hml' }}
+  cancel-in-progress: false
+
 env:
   AWS_REGION: us-east-1
   APP_DIR: software/service-track-api
