@@ -165,9 +165,22 @@ jobs:
     name: "4. Entregar ao repositorio de infraestrutura"
     needs: [preparar, verificar]
     runs-on: ubuntu-latest
+    environment: ${{ needs.preparar.outputs.ambiente }}
     outputs:
       run_id: ${{ steps.execucao.outputs.run_id }}
     steps:
+      - name: Conferir o token de integracao
+        env:
+          GH_TOKEN: ${{ secrets.OPS_TOKEN }}
+        run: |
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::OPS_TOKEN vazio neste repositorio."
+            echo "::error::Defina em Settings > Secrets and variables > Actions > Repository secrets."
+            echo "::error::Precisa de Actions e Contents com Read and write em ${IAC_REPO}."
+            exit 1
+          fi
+          echo "OPS_TOKEN presente."
+
       - name: Disparar o deploy
         env:
           GH_TOKEN: ${{ secrets.OPS_TOKEN }}
@@ -204,6 +217,7 @@ jobs:
     name: "5. Acompanhar o deploy"
     needs: [preparar, entregar]
     runs-on: ubuntu-latest
+    environment: ${{ needs.preparar.outputs.ambiente }}
     steps:
       - name: Aguardar o resultado do rollout
         env:
