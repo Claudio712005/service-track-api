@@ -1,5 +1,7 @@
 name: CD - App
 
+run-name: "CD app -> ${{ inputs.env || 'hml' }} por @${{ github.actor }}"
+
 on:
   push:
     branches: [main]
@@ -32,13 +34,15 @@ env:
   IAC_REPO: Claudio712005/service-track-aws-iac
 
 jobs:
-  publicar:
-    name: Publica a imagem e dispara o deploy
+  preparar:
+    name: "1. Preparar"
     runs-on: ubuntu-latest
-    environment: ${{ inputs.env || 'hml' }}
+    outputs:
+      ambiente: ${{ steps.alvo.outputs.ambiente }}
+      tag: ${{ steps.alvo.outputs.tag }}
+      repositorio: ${{ steps.alvo.outputs.repositorio }}
+      promover: ${{ steps.alvo.outputs.promover }}
     steps:
-      - uses: actions/checkout@v4
-
       - name: Definir ambiente e tag
         id: alvo
         run: |
@@ -51,6 +55,33 @@ jobs:
             echo "repositorio=servicetrack-$AMBIENTE-app"
             echo "promover=$PROMOVER"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Resumo
+        run: |
+          {
+            echo "### 1. Preparar"
+            echo ""
+            echo "| Campo | Valor |"
+            echo "|---|---|"
+            echo "| Ambiente | \`$( [ -n "${{ inputs.env }}" ] && echo "${{ inputs.env }}" || echo hml )\` |"
+            echo "| Tag | \`${{ steps.alvo.outputs.tag }}\` |"
+            echo "| Promocao de tag existente | ${{ steps.alvo.outputs.promover }} |"
+            echo ""
+            if [ "${{ steps.alvo.outputs.promover }}" = "true" ]; then
+              echo "A imagem ja existe no ECR: o job de construcao e pulado."
+            else
+              echo "A imagem sera construida a partir do commit atual."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  construir:
+    name: "2. Construir a imagem"
+    needs: preparar
+    if: needs.preparar.outputs.promover == 'false'
+    runs-on: ubuntu-latest
+    environment: ${{ needs.preparar.outputs.ambiente }}
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Configurar credenciais AWS
         uses: aws-actions/configure-aws-credentials@v4
@@ -65,32 +96,44 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Setup Buildx
-        if: steps.alvo.outputs.promover == 'false'
         uses: docker/setup-buildx-action@v3
 
       - name: Build e push da imagem
-        if: steps.alvo.outputs.promover == 'false'
         uses: docker/build-push-action@v6
         with:
           context: ${{ env.APP_DIR }}
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.ecr.outputs.registry }}/${{ steps.alvo.outputs.repositorio }}:${{ steps.alvo.outputs.tag }}
+          tags: ${{ steps.ecr.outputs.registry }}/${{ needs.preparar.outputs.repositorio }}:${{ needs.preparar.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  verificar:
+    name: "3. Verificar a imagem"
+    needs: [preparar, construir]
+    if: always() && needs.preparar.result == 'success' && needs.construir.result != 'failure'
+    runs-on: ubuntu-latest
+    environment: ${{ needs.preparar.outputs.ambiente }}
+    env:
+      REPO: ${{ needs.preparar.outputs.repositorio }}
+      TAG: ${{ needs.preparar.outputs.tag }}
+    steps:
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Confirmar que a tag existe no ECR
         run: |
           aws ecr describe-images \
-            --repository-name "${{ steps.alvo.outputs.repositorio }}" \
-            --image-ids imageTag="${{ steps.alvo.outputs.tag }}" >/dev/null
+            --repository-name "$REPO" --image-ids imageTag="$TAG" >/dev/null
 
       - name: Portao de vulnerabilidade
         run: |
-          REPO="${{ steps.alvo.outputs.repositorio }}"
-          TAG="${{ steps.alvo.outputs.tag }}"
           STATUS=PENDING
-
           for i in $(seq 1 30); do
             STATUS="$(aws ecr describe-image-scan-findings \
               --repository-name "$REPO" --image-id imageTag="$TAG" \
@@ -118,23 +161,82 @@ jobs:
             exit 1
           fi
 
-      - name: Disparar o deploy no repositorio de infraestrutura
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.IAC_REPO_TOKEN }}
-          repository: ${{ env.IAC_REPO }}
-          event-type: image-published
-          client-payload: '{"environment": "${{ steps.alvo.outputs.ambiente }}", "image_tag": "${{ steps.alvo.outputs.tag }}"}'
+  entregar:
+    name: "4. Entregar ao repositorio de infraestrutura"
+    needs: [preparar, verificar]
+    runs-on: ubuntu-latest
+    outputs:
+      run_id: ${{ steps.execucao.outputs.run_id }}
+    steps:
+      - name: Disparar o deploy
+        env:
+          GH_TOKEN: ${{ secrets.OPS_TOKEN }}
+          AMBIENTE: ${{ needs.preparar.outputs.ambiente }}
+          TAG: ${{ needs.preparar.outputs.tag }}
+        run: |
+          gh api "repos/$IAC_REPO/dispatches" \
+            -f event_type=image-published \
+            -F "client_payload[environment]=$AMBIENTE" \
+            -F "client_payload[image_tag]=$TAG"
+
+      - name: Localizar a execucao disparada
+        id: execucao
+        env:
+          GH_TOKEN: ${{ secrets.OPS_TOKEN }}
+        run: |
+          for i in $(seq 1 24); do
+            sleep 5
+            ID="$(gh run list --repo "$IAC_REPO" --workflow deploy-image.yml --limit 5 \
+              --json databaseId,status \
+              --jq '[.[] | select(.status != "completed")] | first | .databaseId // empty')"
+            if [ -n "$ID" ]; then
+              echo "run_id=$ID" >> "$GITHUB_OUTPUT"
+              echo "execucao: https://github.com/$IAC_REPO/actions/runs/$ID"
+              exit 0
+            fi
+            echo "  procurando a execucao... ($i/24)"
+          done
+          echo "::error::A execucao de deploy-image nao apareceu em 2 minutos."
+          echo "::error::Confira se OPS_TOKEN tem Actions: read no repositorio $IAC_REPO."
+          exit 1
+
+  acompanhar:
+    name: "5. Acompanhar o deploy"
+    needs: [preparar, entregar]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aguardar o resultado do rollout
+        env:
+          GH_TOKEN: ${{ secrets.OPS_TOKEN }}
+          RUN_ID: ${{ needs.entregar.outputs.run_id }}
+        run: |
+          echo "acompanhando https://github.com/$IAC_REPO/actions/runs/$RUN_ID"
+          if ! gh run watch "$RUN_ID" --repo "$IAC_REPO" --exit-status --interval 20; then
+            echo "::error::O deploy falhou no repositorio de infraestrutura."
+            echo "::error::Detalhes: https://github.com/$IAC_REPO/actions/runs/$RUN_ID"
+            exit 1
+          fi
 
       - name: Resumo
+        if: always()
+        env:
+          RUN_ID: ${{ needs.entregar.outputs.run_id }}
         run: |
           {
-            echo "### Imagem publicada"
-            echo
-            echo "- ambiente: \`${{ steps.alvo.outputs.ambiente }}\`"
-            echo "- repositorio ECR: \`${{ steps.alvo.outputs.repositorio }}\`"
-            echo "- tag: \`${{ steps.alvo.outputs.tag }}\`"
-            echo
-            echo "O deploy foi delegado a [${{ env.IAC_REPO }}](https://github.com/${{ env.IAC_REPO }}),"
-            echo "que atualiza o overlay do ambiente e deixa o ArgoCD sincronizar."
+            echo "### Deploy — ${{ needs.preparar.outputs.ambiente }}"
+            echo ""
+            echo "| Campo | Valor |"
+            echo "|---|---|"
+            echo "| Tag | \`${{ needs.preparar.outputs.tag }}\` |"
+            echo "| Repositorio ECR | \`${{ needs.preparar.outputs.repositorio }}\` |"
+            echo "| Resultado | ${{ job.status }} |"
+            echo ""
+            echo "[Execucao no repositorio de infraestrutura](https://github.com/$IAC_REPO/actions/runs/$RUN_ID)"
+            echo ""
+            if [ "${{ job.status }}" = "success" ]; then
+              echo "A imagem esta rodando no cluster. Esta esteira so fica verde quando o"
+              echo "rollout conclui de verdade."
+            else
+              echo "A imagem foi publicada, mas o deploy nao chegou ao fim."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
