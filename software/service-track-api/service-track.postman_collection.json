@@ -15,11 +15,25 @@
       }
     ]
   },
-  "event": [],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const chave = pm.collectionVariables.get('apiKey');",
+          "if (chave && chave.trim() !== '') {",
+          "  pm.request.headers.upsert({ key: 'x-api-key', value: chave });",
+          "}"
+        ]
+      }
+    }
+  ],
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8080"
+      "value": "http://localhost:8080",
+      "description": "Local: http://localhost:8080. hml/prd: URL do gateway com o stage."
     },
     {
       "key": "tokenMecanico",
@@ -79,11 +93,13 @@
     },
     {
       "key": "cpfCliente",
-      "value": ""
+      "value": "13646633093",
+      "description": "João Silva, papel CLIENTE, do V2__seed_data.sql"
     },
     {
       "key": "cpfMecanico",
-      "value": ""
+      "value": "98124421030",
+      "description": "Mário Máquina, papel MECANICO, do V2__seed_data.sql"
     },
     {
       "key": "placaVeiculo",
@@ -96,7 +112,20 @@
     {
       "key": "cpf",
       "value": "13646633093",
-      "type": "string"
+      "type": "string",
+      "description": "CPF generico. Prefira cpfCliente ou cpfMecanico."
+    },
+    {
+      "key": "apiKey",
+      "value": "",
+      "type": "string",
+      "description": "Vazio em local; em hml/prd vem de terraform output -json api_key_values | jq -r .web"
+    },
+    {
+      "key": "authUrl",
+      "value": "{{baseUrl}}",
+      "type": "string",
+      "description": "Local usa http://localhost:8081; em hml/prd e o proprio gateway"
     }
   ],
   "item": [
@@ -115,9 +144,9 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/autenticacao",
+              "raw": "{{authUrl}}/autenticacao",
               "host": [
-                "{{baseUrl}}"
+                "{{authUrl}}"
               ],
               "path": [
                 "autenticacao"
@@ -129,7 +158,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"cpf\": \"{{cpf}}\",\n  \"senha\": \"{{senhaMecanico}}\"\n}",
+              "raw": "{\n  \"cpf\": \"{{cpfMecanico}}\",\n  \"senha\": \"{{senhaMecanico}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -164,9 +193,9 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/autenticacao",
+              "raw": "{{authUrl}}/autenticacao",
               "host": [
-                "{{baseUrl}}"
+                "{{authUrl}}"
               ],
               "path": [
                 "autenticacao"
@@ -178,7 +207,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"cpf\": \"{{cpf}}\",\n  \"senha\": \"{{senhaCliente}}\"\n}",
+              "raw": "{\n  \"cpf\": \"{{cpfCliente}}\",\n  \"senha\": \"{{senhaCliente}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2381,6 +2410,350 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status ok', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Observabilidade e alertas",
+      "description": "Requisicoes para exercitar a telemetria e disparar os monitores provisionados em iac/modules/observability. Cada item diz qual monitor ele alimenta.\n\nPara gerar volume, use o Collection Runner apontando para esta pasta com varias iteracoes, ou scripts/gerar-carga.sh no repositorio da aplicacao.\n\nAs metricas levam ate 15s para exportar e mais alguns minutos para indexar no Datadog.",
+      "item": [
+        {
+          "name": "Aquecimento — catálogo de serviços",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/catalogo/servicos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "catalogo",
+                "servicos"
+              ]
+            },
+            "description": "Rota barata e sempre valida. Rode com muitas iteracoes no Runner para alimentar latencia p95 (trace.http.server.request) e saturacao de CPU dos nodes.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 esperado', () => pm.response.to.have.status(200));",
+                  "pm.test('latencia registrada', () => pm.expect(pm.response.responseTime).to.be.a('number'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Erro de caso de uso — veículo inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/veiculos/00000000-0000-0000-0000-000000000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "veiculos",
+                "00000000-0000-0000-0000-000000000000"
+              ]
+            },
+            "description": "Alimenta servicetrack.usecase.execucoes{resultado:erro}. O interceptor de casos de uso registra a falha com entidade e codigo de erro.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404 esperado', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Erro de ordem de serviço — orçamento em OS inexistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ordem-servico/00000000-0000-0000-0000-000000000000/orcamento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ordem-servico",
+                "00000000-0000-0000-0000-000000000000",
+                "orcamento"
+              ]
+            },
+            "description": "Alimenta o monitor '[HML] Falha no processamento de ordens de servico', que consulta entidade:ordem_servico com resultado:erro.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenMecanico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('nao deve ser 2xx', () => pm.expect(pm.response.code).to.be.above(399));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Erro de ordem de serviço — finalizar OS inexistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ordem-servico/00000000-0000-0000-0000-000000000000/finalizacao",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ordem-servico",
+                "00000000-0000-0000-0000-000000000000",
+                "finalizacao"
+              ]
+            },
+            "description": "Segunda fonte de erro na mesma entidade. Repita algumas vezes para passar do limite do monitor (10 em 15 min no hml).",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenMecanico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('nao deve ser 2xx', () => pm.expect(pm.response.code).to.be.above(399));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Integração externa — sugestões de imagem",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/veiculos/imagens/sugestoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "veiculos",
+                "imagens",
+                "sugestoes"
+              ]
+            },
+            "description": "Exercita a integracao com o Unsplash. Se a chave estiver invalida ou o circuito abrir, gera IntegracaoExternaException no log — fonte do monitor de log '[HML] Falhas nas integracoes externas' (so criado com habilitar_monitores_de_log).",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('resposta recebida', () => pm.expect(pm.response.code).to.be.oneOf([200, 400, 502, 503]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "401 — token ausente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/veiculos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "veiculos"
+              ]
+            },
+            "description": "Rota protegida sem Bearer. Serve para conferir que a aplicacao rejeita, e nao o gateway.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 esperado', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "403 — sem x-api-key",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/veiculos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "veiculos"
+              ]
+            },
+            "description": "Remove o header no pre-request. Em hml/prd o gateway barra antes de chegar na aplicacao. Em local nao ha gateway, entao aqui o resultado sera 401.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.request.headers.remove('x-api-key');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const local = pm.collectionVariables.get('apiKey') === '';",
+                  "pm.test(local ? '401 local (sem gateway)' : '403 do gateway', () => {",
+                  "  pm.expect(pm.response.code).to.be.oneOf(local ? [401] : [403]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Validação do gateway — body inválido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/clientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "clientes"
+              ]
+            },
+            "description": "O gateway valida o corpo antes de rotear (x-amazon-apigateway-request-validators). Deve devolver 400 sem tocar na aplicacao.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"campo\": \"invalido\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 esperado', () => pm.response.to.have.status(400));"
                 ]
               }
             }
