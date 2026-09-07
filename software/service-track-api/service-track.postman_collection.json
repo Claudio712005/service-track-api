@@ -21,9 +21,16 @@
       "script": {
         "type": "text/javascript",
         "exec": [
-          "const chave = pm.collectionVariables.get('apiKey');",
+          "const chave = pm.collectionVariables.get('apiKey') || pm.environment.get('apiKey');",
+          "const url = pm.request.url.toString();",
+          "const local = url.includes('localhost') || url.includes('127.0.0.1');",
+          "",
           "if (chave && chave.trim() !== '') {",
           "  pm.request.headers.upsert({ key: 'x-api-key', value: chave });",
+          "} else if (!local) {",
+          "  console.warn('[ServiceTrack] apiKey vazia e a URL nao e local: o gateway vai responder 403.');",
+          "  console.warn('[ServiceTrack] Selecione o environment no canto superior direito,');",
+          "  console.warn('[ServiceTrack] ou gere um com scripts/gerar-env-postman.sh hml');",
           "}"
         ]
       }
