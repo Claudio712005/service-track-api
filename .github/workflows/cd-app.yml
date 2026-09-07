@@ -95,10 +95,27 @@ jobs:
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Verificar se a tag ja existe no ECR
+        id: tag
+        env:
+          REPO: ${{ needs.preparar.outputs.repositorio }}
+          TAG: ${{ needs.preparar.outputs.tag }}
+        run: |
+          if aws ecr describe-images --repository-name "$REPO" \
+               --image-ids imageTag="$TAG" >/dev/null 2>&1; then
+            echo "existe=true" >> "$GITHUB_OUTPUT"
+            echo "A tag $TAG ja esta publicada. O repositorio e imutavel, entao"
+            echo "a construcao e pulada e a imagem existente segue para a entrega."
+          else
+            echo "existe=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup Buildx
+        if: steps.tag.outputs.existe == 'false'
         uses: docker/setup-buildx-action@v3
 
       - name: Build e push da imagem
+        if: steps.tag.outputs.existe == 'false'
         uses: docker/build-push-action@v6
         with:
           context: ${{ env.APP_DIR }}
