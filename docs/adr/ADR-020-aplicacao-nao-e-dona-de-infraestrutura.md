@@ -71,7 +71,7 @@ neste repositório como registro histórico de quando foram tomadas. A **execuç
 
 ### Negativas
 - Subir um ambiente do zero passa a exigir navegar por três repositórios.
-- O CD depende do secret `IAC_REPO_TOKEN`. Se vazar, o dano máximo é um commit de bump,
+- O CD depende do secret `OPS_TOKEN` (era `IAC_REPO_TOKEN` até `GLOBAL-RFC-008`). Se vazar, o dano máximo é um commit de bump,
   revertível — mas é mais um segredo a manter.
 - Desenvolvimento local em Kubernetes deixa de ter manifestos aqui; usar os do repositório de
   infraestrutura.

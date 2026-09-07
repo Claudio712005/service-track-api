@@ -372,7 +372,8 @@ push na main ──► build ──► push no ECR servicetrack-<env>-app (tag =
 | **Run workflow** | `hml` ou `prd`; informando `image_tag`, promove uma imagem já publicada sem reconstruir |
 
 Segredos necessários: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` por
-environment, e `IAC_REPO_TOKEN` — um token fino com `contents: write` apenas no repositório de
+environment, e `OPS_TOKEN` — a credencial única de integração entre repositórios, com `contents: write` e
+`actions: read` no repositório de
 infraestrutura. Se vazar, o dano máximo é um commit de bump, revertível.
 
 O portão de vulnerabilidade é responsabilidade desta esteira, por decisão registrada no
