@@ -33,7 +33,7 @@
     {
       "key": "baseUrl",
       "value": "http://localhost:8080",
-      "description": "Local: http://localhost:8080. hml/prd: URL do gateway com o stage."
+      "description": "Local. Para hml/prd importe o environment gerado por scripts/gerar-env-postman.sh."
     },
     {
       "key": "tokenMecanico",
@@ -45,39 +45,48 @@
     },
     {
       "key": "clienteId",
-      "value": ""
+      "value": "550e8400-e29b-41d4-a716-446655440001",
+      "description": "João Silva. Sobrescrito pelo login."
     },
     {
       "key": "mecanicoId",
-      "value": ""
+      "value": "550e8400-e29b-41d4-a716-446655440101",
+      "description": "Mário Máquina, SENIOR. Sobrescrito pelo login."
     },
     {
       "key": "veiculoId",
-      "value": ""
+      "value": "660e8400-e29b-41d4-a716-446655550001",
+      "description": "Honda Civic 2020 do João Silva."
     },
     {
       "key": "servicoId",
-      "value": ""
+      "value": "770e8400-e29b-41d4-a716-446655660001",
+      "description": "Troca de Óleo, R$ 150,00."
     },
     {
       "key": "insumoId",
-      "value": ""
+      "value": "880e8400-e29b-41d4-a716-446655770001",
+      "description": "Óleo Motor 5W-30, R$ 45,00."
     },
     {
       "key": "ordemServicoId",
-      "value": ""
+      "value": "aa0e8400-e29b-41d4-a716-446655880002",
+      "description": "OS 'Barulho no motor'. Tem item associado."
     },
     {
       "key": "itemServicoId",
-      "value": ""
+      "value": "ce573a8e-dd9f-45d0-817c-e2c8b73e9f02",
+      "description": "Item de Alinhamento na OS acima."
     },
     {
       "key": "notificacaoId",
-      "value": ""
+      "value": "99999999-9999-9999-9999-000000000001",
+      "description": "Notificacao do seed."
     },
     {
       "key": "emailCliente",
-      "value": ""
+      "value": "joao.silva@example.com",
+      "description": "Do seed."
     },
     {
       "key": "senhaCliente",
@@ -85,7 +94,8 @@
     },
     {
       "key": "emailMecanico",
-      "value": ""
+      "value": "mario.maquina@example.com",
+      "description": "Do seed."
     },
     {
       "key": "senhaMecanico",
@@ -103,7 +113,8 @@
     },
     {
       "key": "placaVeiculo",
-      "value": ""
+      "value": "ABC1C34",
+      "description": "Placa do veiculo acima."
     },
     {
       "key": "decisaoToken",
@@ -123,9 +134,9 @@
     },
     {
       "key": "authUrl",
-      "value": "{{baseUrl}}",
+      "value": "http://localhost:8081",
       "type": "string",
-      "description": "Local usa http://localhost:8081; em hml/prd e o proprio gateway"
+      "description": "Local: servico de autenticacao na 8081. Em hml/prd o environment aponta para o gateway."
     }
   ],
   "item": [
