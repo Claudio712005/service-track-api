@@ -584,7 +584,17 @@
                 "{{mecanicoId}}"
               ]
             },
-            "description": "Detalhes do mecânico."
+            "description": "Detalhes do mecânico.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenMecanico}}",
+                  "type": "string"
+                }
+              ]
+            }
           },
           "response": [],
           "event": [
@@ -613,7 +623,17 @@
                 "mecanicos"
               ]
             },
-            "description": "Lista mecânicos."
+            "description": "Lista mecânicos.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenMecanico}}",
+                  "type": "string"
+                }
+              ]
+            }
           },
           "response": [],
           "event": [
@@ -1024,7 +1044,17 @@
                 "servicos"
               ]
             },
-            "description": "Lista serviços."
+            "description": "Lista serviços.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenMecanico}}",
+                  "type": "string"
+                }
+              ]
+            }
           },
           "response": [],
           "event": [
@@ -1054,7 +1084,17 @@
                 "{{servicoId}}"
               ]
             },
-            "description": "Detalhes do serviço."
+            "description": "Detalhes do serviço.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenMecanico}}",
+                  "type": "string"
+                }
+              ]
+            }
           },
           "response": [],
           "event": [
@@ -1139,7 +1179,17 @@
                 "tempo-medio-conclusao"
               ]
             },
-            "description": "Tempo médio histórico de conclusão do serviço."
+            "description": "Tempo médio histórico de conclusão do serviço.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenMecanico}}",
+                  "type": "string"
+                }
+              ]
+            }
           },
           "response": [],
           "event": [
@@ -1269,7 +1319,17 @@
                 "insumos"
               ]
             },
-            "description": "Lista insumos."
+            "description": "Lista insumos.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenMecanico}}",
+                  "type": "string"
+                }
+              ]
+            }
           },
           "response": [],
           "event": [
@@ -1299,7 +1359,17 @@
                 "{{insumoId}}"
               ]
             },
-            "description": "Detalhes do insumo."
+            "description": "Detalhes do insumo.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenMecanico}}",
+                  "type": "string"
+                }
+              ]
+            }
           },
           "response": [],
           "event": [
