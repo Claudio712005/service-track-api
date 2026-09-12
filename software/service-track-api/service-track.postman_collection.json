@@ -2589,7 +2589,7 @@
           ]
         },
         {
-          "name": "Erro de ordem de serviço — orçamento em OS inexistente",
+          "name": "Erro de ordem de serviço — transição inválida",
           "request": {
             "method": "POST",
             "header": [
@@ -2598,18 +2598,6 @@
                 "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{baseUrl}}/ordem-servico/00000000-0000-0000-0000-000000000000/orcamento",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "ordem-servico",
-                "00000000-0000-0000-0000-000000000000",
-                "orcamento"
-              ]
-            },
-            "description": "Alimenta o monitor '[HML] Falha no processamento de ordens de servico', que consulta entidade:ordem_servico com resultado:erro.",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -2620,59 +2608,22 @@
                 }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('nao deve ser 2xx', () => pm.expect(pm.response.code).to.be.above(399));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Erro de ordem de serviço — finalizar OS inexistente",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
             "url": {
-              "raw": "{{baseUrl}}/ordem-servico/00000000-0000-0000-0000-000000000000/finalizacao",
+              "raw": "{{baseUrl}}/ordem-servico/{{ordemServicoId}}/finalizacao",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "ordem-servico",
-                "00000000-0000-0000-0000-000000000000",
+                "{{ordemServicoId}}",
                 "finalizacao"
               ]
             },
-            "description": "Segunda fonte de erro na mesma entidade. Repita algumas vezes para passar do limite do monitor (10 em 15 min no hml).",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{tokenMecanico}}",
-                  "type": "string"
-                }
-              ]
-            },
             "body": {
               "mode": "raw",
               "raw": "{}"
-            }
+            },
+            "description": "Finaliza uma OS que nao esta no estado permitido. Responde 409 e alimenta servicetrack.usecase.execucoes{entidade:ordem_servico,resultado:erro}, que e a consulta do monitor '[HML] Falha no processamento de ordens de servico'.\n\nPrecisa de uma OS que EXISTE: erro em OS inexistente falha antes do interceptor marcar a entidade, e nao conta para o monitor.\n\nRode 12 vezes no Collection Runner — o limite em hml e 10 em 15 minutos."
           },
           "event": [
             {
@@ -2680,7 +2631,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('nao deve ser 2xx', () => pm.expect(pm.response.code).to.be.above(399));"
+                  "pm.test('409 esperado', () => pm.response.to.have.status(409));",
+                  "pm.test('erro de dominio', () => pm.expect(pm.response.json()).to.have.property('mensagem'));"
                 ]
               }
             }
