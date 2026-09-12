@@ -1,3 +1,16 @@
+FROM eclipse-temurin:21-jdk-jammy AS tracer
+
+ARG DD_TRACE_VERSION=1.65.1
+
+RUN set -eux; \
+    (command -v curl >/dev/null || (apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*)); \
+    curl -fsSL --retry 5 --retry-all-errors --retry-delay 3 \
+      -A "servicetrack-ci/1.0" \
+      -o /tmp/dd-java-agent.jar \
+      "https://repo1.maven.org/maven2/com/datadoghq/dd-java-agent/${DD_TRACE_VERSION}/dd-java-agent-${DD_TRACE_VERSION}.jar"; \
+    test -s /tmp/dd-java-agent.jar
+
+
 FROM eclipse-temurin:21-jdk-jammy AS build
 
 ENV GRADLE_USER_HOME=/root/.gradle
@@ -41,9 +54,8 @@ WORKDIR /app
 
 RUN addgroup -S servicetrack && adduser -S servicetrack -G servicetrack
 
-ADD --chown=servicetrack:servicetrack \
-    https://repo1.maven.org/maven2/com/datadoghq/dd-java-agent/${DD_TRACE_VERSION}/dd-java-agent-${DD_TRACE_VERSION}.jar \
-    /app/dd-java-agent.jar
+COPY --from=tracer --chown=servicetrack:servicetrack \
+    /tmp/dd-java-agent.jar /app/dd-java-agent.jar
 
 COPY --from=build --chown=servicetrack:servicetrack \
     /workspace/_infrastructure/build/quarkus-app ./
