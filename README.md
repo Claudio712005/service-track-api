@@ -192,6 +192,29 @@ docker build -f Dockerfile.local -t servicetrack-auth:local .
 O build acontece dentro da imagem — não exige JDK na máquina. Refaça sempre que o código de
 autenticação mudar. Para apontar para outra imagem, use `AUTH_IMAGE` no `.env`.
 
+### Testando um ambiente de nuvem pelo Postman
+
+URL e chave de API mudam a cada recriação, então a coleção versionada não os carrega.
+Gere uma cópia pronta para o ambiente:
+
+```bash
+cd software/service-track-api
+./scripts/gerar-collection.sh hml          # colecao com url e chave embutidas
+```
+
+Importe `servicetrack-hml.postman_collection.json` e use — não precisa selecionar
+environment. O arquivo contém a chave e é ignorado por git.
+
+Para manter a coleção versionada e trocar só o ambiente, existe a alternativa por
+environment:
+
+```bash
+./scripts/gerar-env-postman.sh hml
+```
+
+Nesse caso é obrigatório **selecionar o environment** no canto superior direito do Postman —
+sem isso a chave fica vazia e o gateway devolve `403`.
+
 ### Subindo com Docker Compose
 
 ```bash

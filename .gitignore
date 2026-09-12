@@ -71,3 +71,4 @@ override.tf.json
 
 ### Postman ###
 *.postman_environment.json
+servicetrack-*.postman_collection.json
