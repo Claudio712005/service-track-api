@@ -7,7 +7,7 @@ repositórios próprios — ver [O sistema](#o-sistema).
 
 ---  
 
-## O sistema
+## O sistema 
 
 O ServiceTrack é distribuído em quatro repositórios. Cada um tem um dono claro, e nenhum
 provisiona o que pertence a outro.
