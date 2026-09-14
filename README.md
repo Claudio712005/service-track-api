@@ -5,7 +5,7 @@ Backend para gestão de ordens de serviço de oficinas mecânicas. Responsável 
 **Este repositório contém apenas a aplicação.** Infraestrutura, banco e autenticação vivem em
 repositórios próprios — ver [O sistema](#o-sistema).
 
----
+---  
 
 ## O sistema
 
