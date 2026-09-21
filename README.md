@@ -338,7 +338,6 @@ ServiceTrack-API/
 │   ├── mvp-1/ mvp-2/      # Enunciados das fases + colinha do vídeo (mvp-2)
 │   │   └── infra-fase-2/  # Desenhos de rede/deploy da Fase 2 (histórico)
 │   ├── template/          # Templates de ADR/RFC
-│   └── srs.md             # Software Requirements Specification
 └── software/
     └── service-track-api/
         ├── _domain/        # Regras de negócio puras
