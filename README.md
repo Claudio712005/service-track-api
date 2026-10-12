@@ -2,6 +2,20 @@
 
 Backend para gestão de ordens de serviço de oficinas mecânicas. Responsável por controlar todo o ciclo de vida de uma OS — da abertura ao diagnóstico, orçamento, execução e entrega — com auditoria das operações de negócio.
 
+> ## ⚠️ Este repositório será arquivado
+>
+> Decidido em 05/10/2026. A Fase 4 quebrou o monólito em microsserviços, e **o domínio da ordem
+> de serviço foi portado** daqui para o [service-track-ordens](https://github.com/Claudio712005/service-track-ordens),
+> com a máquina de estado intacta. O monólito **não** virou o BFF: um
+> [service-track-bff](https://github.com/Claudio712005/service-track-bff) novo foi criado.
+>
+> O que leu aqui descreve o sistema da **Fase 2**. Para o sistema de hoje, os repositórios são
+> `service-track-catalogo`, `service-track-usuarios-veiculos`, `service-track-ordens`,
+> `service-track-checkout` e `service-track-bff`.
+>
+> `infra/**` deste repositório é resíduo da Fase 2 e **não** é a infraestrutura viva — ela está
+> em `service-track-aws-iac`.
+
 **Este repositório contém apenas a aplicação.** Infraestrutura, banco e autenticação vivem em
 repositórios próprios — ver [O sistema](#o-sistema).
 
